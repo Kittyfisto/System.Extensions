@@ -69,7 +69,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\System.Threading.Tasks.Extensions\System.Threading.Tasks.Extensions.csproj">
+    <ProjectReference Include="..\System.Threading.Extensions\System.Threading.Extensions.csproj">
       <Project>{2CC8FEE6-C702-49EB-8FA3-4399D47BB756}</Project>
       <Name>System.Threading.Tasks.Extensions</Name>
     </ProjectReference>
