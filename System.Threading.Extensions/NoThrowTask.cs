@@ -1,4 +1,4 @@
-﻿namespace System.Threading.Tasks
+﻿namespace System.Threading
 {
 	/// <summary>
 	///     Similar to <see cref="NoThrowTask" />, but doesn't throw exceptions when the task was cancelled or faulted.

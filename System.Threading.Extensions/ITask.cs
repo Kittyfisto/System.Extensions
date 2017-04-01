@@ -1,4 +1,4 @@
-﻿namespace System.Threading.Tasks
+﻿namespace System.Threading
 {
 	/// <summary>
 	///     The interface for an asynchronous operation where the caller is NOT interested

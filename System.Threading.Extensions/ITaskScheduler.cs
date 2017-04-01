@@ -1,4 +1,6 @@
-﻿namespace System.Threading.Tasks
+﻿using System.Threading.Tasks;
+
+namespace System.Threading
 {
 	/// <summary>
 	///     Similar to <see cref="System.Threading.Tasks.TaskScheduler" />, it is capable of scheduling tasks.

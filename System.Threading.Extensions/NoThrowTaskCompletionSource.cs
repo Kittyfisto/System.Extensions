@@ -1,7 +1,9 @@
-﻿namespace System.Threading.Tasks
+﻿using System.Threading.Tasks;
+
+namespace System.Threading
 {
 	/// <summary>
-	///     Similar to <see cref="TaskCompletionSource{T}" />, but produces <see cref="ITask" />s
+	///     Similar to <see cref="TaskCompletionSource{TResult}" />, but produces <see cref="ITask" />s
 	///     which require explicit checking of whether the task failed or not.
 	/// </summary>
 	public class NoThrowTaskCompletionSource

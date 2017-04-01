@@ -7,8 +7,8 @@
     <ProjectGuid>{4FA322AF-8493-45DC-A03E-91261AB1F526}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>System.Threading.Tasks.Extensions.Test</RootNamespace>
-    <AssemblyName>System.Threading.Tasks.Extensions.Test</AssemblyName>
+    <RootNamespace>System.Threading.Extensions.Test</RootNamespace>
+    <AssemblyName>System.Threading.Extensions.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

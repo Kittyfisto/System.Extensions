@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using log4net;
 
-namespace System.Threading.Tasks
+namespace System.Threading
 {
 	/// <summary>
 	///     Similar to <see cref="System.Threading.Tasks.TaskScheduler" />, it is capable of scheduling tasks.

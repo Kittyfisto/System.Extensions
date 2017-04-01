@@ -2,7 +2,7 @@
 using System.Reflection;
 using log4net;
 
-namespace System.Threading.Tasks
+namespace System.Threading
 {
 	internal sealed class PeriodicTask
 		: IPeriodicTask

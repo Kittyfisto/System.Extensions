@@ -2,7 +2,7 @@
 using Moq;
 using NUnit.Framework;
 
-namespace System.Threading.Tasks.Extensions.Test
+namespace System.Threading.Extensions.Test
 {
 	[TestFixture]
 	[LocalTest("Won't work on AppVeyor anymore...")]

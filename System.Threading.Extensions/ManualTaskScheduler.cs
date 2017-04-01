@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace System.Threading.Tasks
+namespace System.Threading
 {
 	/// <summary>
 	///     <see cref="ITaskScheduler" /> implementation that allows the user to control when and if tasks are executed.
