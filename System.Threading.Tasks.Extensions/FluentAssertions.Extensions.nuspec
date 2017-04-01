@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>System.Threading.Tasks.Extensions</id>
+    <version>$version$</version>
+    <authors>Kittyfisto</authors>
+    <owners>Kittyfisto</owners>
+    <licenseUrl>https://github.com/Kittyfisto/System.Threading.Tasks.Extensions/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/Kittyfisto/System.Threading.Tasks.Extensions</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Threading library</description>
+    <releaseNotes>Release</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>.NET Tasks Timers</tags>
+    <dependencies>
+      <!--<dependency id="SampleDependency" version="1.0" />-->
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\bin\Release\System.Threading.Tasks.Extensions.XML" target="lib\net45\" />
+    <file src="..\bin\Release\System.Threading.Tasks.Extensions.pdb" target="lib\net45\" />
+    <file src="..\bin\Release\System.Threading.Tasks.Extensions.dll" target="lib\net45\" />
+  </files>
+</package>

@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("System.Threading.Tasks.Extensions")]
+[assembly: AssemblyTitle("System.Threading.Tasks.Extensions.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("System.Threading.Tasks.Extensions")]
-[assembly: AssemblyCopyright("Copyright © Simon Mießler 2016")]
+[assembly: AssemblyProduct("System.Threading.Tasks.Extensions.Test")]
+[assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("7a055d1c-cabb-4994-9b3e-0bfbf1f9403f")]
+[assembly: Guid("4fa322af-8493-45dc-a03e-91261ab1f526")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -34,5 +34,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-
-[assembly: InternalsVisibleTo("System.Threading.Tasks.Extensions.Test")]
