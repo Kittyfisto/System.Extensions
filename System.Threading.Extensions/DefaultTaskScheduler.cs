@@ -149,7 +149,13 @@ namespace System.Threading
 
 			lock (_tasks)
 			{
-				return _tasks.Remove(periodicTask);
+				if (_tasks.Remove(periodicTask))
+				{
+					periodicTask.IsRemoved = true;
+					return true;
+				}
+
+				return false;
 			}
 		}
 

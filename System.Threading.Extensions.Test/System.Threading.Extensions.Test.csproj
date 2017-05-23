@@ -63,7 +63,7 @@
     <Compile Include="LocalTest.cs" />
     <Compile Include="PeriodicTaskTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TaskSchedulerTest.cs" />
+    <Compile Include="DefaultTaskSchedulerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
