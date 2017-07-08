@@ -1,6 +1,6 @@
 # Task Extensions
 
-[![Build status]()]()
+[![Build status](https://ci.appveyor.com/api/projects/status/t70n74bkqoyf7ktc?svg=true)](https://ci.appveyor.com/project/Kittyfisto/system-threading-tasks-extensions)
 
 Several extensions to the awesome Task classes of the .NET Framework.
 
@@ -17,7 +17,7 @@ void SomeMethod(ITaskScheduler scheduler)
 
 ## Credits
 
-Simon Mieﬂler 2017
+Simon Mie√üler 2017
 
 ## License
 
