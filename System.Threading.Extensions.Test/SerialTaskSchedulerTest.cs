@@ -80,7 +80,10 @@ namespace System.Threading.Extensions.Test
 		{
 			using (var scheduler = new SerialTaskScheduler())
 			{
-				var task = scheduler.StartNew<string>(() => throw new UnauthorizedAccessException("Stuff"));
+				var task = scheduler.StartNew<string>(() =>
+				{
+					throw new UnauthorizedAccessException("Stuff");
+				});
 				task.Should().NotBeNull();
 
 				new Action(() => task.Wait(TimeSpan.FromSeconds(1)))
