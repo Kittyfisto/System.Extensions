@@ -30,7 +30,10 @@ namespace System.Threading
 
 		private DefaultTaskScheduler(TaskScheduler scheduler)
 		{
-			_scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
+			if (scheduler == null)
+				throw new ArgumentNullException(nameof(scheduler));
+
+			_scheduler = scheduler;
 			_tasks = new List<PeriodicTask>();
 		}
 
