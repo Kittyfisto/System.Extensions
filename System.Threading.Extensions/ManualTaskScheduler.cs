@@ -14,23 +14,18 @@ namespace System.Threading
 		private readonly List<PeriodicTask> _tasks;
 		private long _lastId;
 
+		/// <summary>
+		///     Initializes this scheduler.
+		/// </summary>
 		public ManualTaskScheduler()
 		{
 			_syncRoot = new object();
 			_tasks = new List<PeriodicTask>();
 		}
 
-		public int PeriodicTaskCount
-		{
-			get
-			{
-				lock (_syncRoot)
-				{
-					return _tasks.Count;
-				}
-			}
-		}
-
+		/// <summary>
+		///     All started periodic tasks (which haven't been stopped yet).
+		/// </summary>
 		public IEnumerable<IPeriodicTask> PeriodicTasks
 		{
 			get
@@ -42,16 +37,31 @@ namespace System.Threading
 			}
 		}
 
+		/// <inheritdoc />
+		public int PeriodicTaskCount
+		{
+			get
+			{
+				lock (_syncRoot)
+				{
+					return _tasks.Count;
+				}
+			}
+		}
+
+		/// <inheritdoc />
 		public Task Start(Action callback)
 		{
 			return Task.Factory.StartNew(callback);
 		}
 
+		/// <inheritdoc />
 		public Task<T> Start<T>(Func<T> callback)
 		{
 			return Task.Factory.StartNew(callback);
 		}
 
+		/// <inheritdoc />
 		public IPeriodicTask StartPeriodic(Action callback, TimeSpan minimumWaitTime, string name = null)
 		{
 			var task = new PeriodicTask(Interlocked.Increment(ref _lastId), callback, minimumWaitTime, name);
@@ -62,6 +72,7 @@ namespace System.Threading
 			return task;
 		}
 
+		/// <inheritdoc />
 		public IPeriodicTask StartPeriodic(Func<TimeSpan> callback, string name = null)
 		{
 			var task = new PeriodicTask(Interlocked.Increment(ref _lastId), callback, name);
@@ -72,6 +83,7 @@ namespace System.Threading
 			return task;
 		}
 
+		/// <inheritdoc />
 		public bool StopPeriodic(IPeriodicTask task)
 		{
 			var actualTask = task as PeriodicTask;
@@ -95,18 +107,20 @@ namespace System.Threading
 				tasks = _tasks.ToList();
 			}
 
-			foreach (PeriodicTask task in tasks)
-			{
+			foreach (var task in tasks)
 				task.Run();
-			}
 		}
 
+		/// <summary>
+		///     Executes all pending tasks for the given amount of times.
+		///     This method may be desired when it is known that the first run will
+		///     spawn subsequent tasks which shall also run.
+		/// </summary>
+		/// <param name="count"></param>
 		public void Run(int count)
 		{
-			for (int i = 0; i < count; ++i)
-			{
+			for (var i = 0; i < count; ++i)
 				RunOnce();
-			}
 		}
 	}
 }
