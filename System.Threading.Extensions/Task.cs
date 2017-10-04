@@ -28,34 +28,28 @@
 			_isFaulted = isFaulted;
 		}
 
-		public bool IsCompleted
-		{
-			get { return _isCompleted; }
-		}
+		/// <inheritdoc />
+		public bool IsCompleted => _isCompleted;
 
-		public bool IsCanceled
-		{
-			get { return _isCanceled; }
-		}
+		/// <inheritdoc />
+		public bool IsCanceled => _isCanceled;
 
-		public bool IsFaulted
-		{
-			get { return _isFaulted; }
-		}
+		/// <inheritdoc />
+		public bool IsFaulted => _isFaulted;
 
+		/// <inheritdoc />
 		public void Wait()
 		{
 			
 		}
 
+		/// <inheritdoc />
 		public bool Wait(TimeSpan timeout)
 		{
 			return true;
 		}
 
-		public T Result
-		{
-			get { return _result; }
-		}
+		/// <inheritdoc />
+		public T Result => _result;
 	}
 }
