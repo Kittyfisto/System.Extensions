@@ -103,7 +103,7 @@ namespace System.Extensions.Test.IO
 
 		[Test]
 		[Description("Verifies that CreateSubdirectory can create single sub directory")]
-		public void TestCreateDirectory4()
+		public void TestCreateSubdirectory1()
 		{
 			var directory = _filesystem.Current;
 			var child = Await(directory.CreateSubdirectory("SomeStuff"));
@@ -117,7 +117,7 @@ namespace System.Extensions.Test.IO
 
 		[Test]
 		[Description("Verifies that CreateSubdirectory can create multiple directories at the same time")]
-		public void TestCreateDirectory5()
+		public void TestCreateSubdirectory2()
 		{
 			var directory = _filesystem.Current;
 			var child = Await(directory.CreateSubdirectory("Some\\Stuff"));
@@ -127,6 +127,18 @@ namespace System.Extensions.Test.IO
 
 			Await(child.Exists).Should().BeTrue();
 			Await(_filesystem.DirectoryExists(child.FullName)).Should().BeTrue();
+		}
+
+		[Test]
+		[Description("Verifies that a created subdirectory can be found via enumeration")]
+		public void TestCreateSubdirectory3()
+		{
+			var directory = _filesystem.Current;
+			var child = Await(directory.CreateSubdirectory("Yes"));
+			var childDirectories = Await(_filesystem.EnumerateDirectories(directory.FullName));
+			childDirectories.Should().NotBeNull();
+			childDirectories.Should().HaveCount(1);
+			childDirectories[0].Should().Be(child.FullName);
 		}
 
 		protected static T Await<T>(Task<T> task)

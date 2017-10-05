@@ -111,6 +111,12 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<bool> DirectoryExists(string path)
 		{
+			if (string.IsNullOrWhiteSpace(path))
+				return Task.FromResult(false);
+
+			if (Path2.HasIllegalCharacters(path))
+				return Task.FromResult(false);
+
 			path = CaptureFullPath(path);
 			return _taskScheduler.StartNew(() =>
 			{
@@ -146,7 +152,15 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path)
 		{
-			throw new NotImplementedException();
+			path = CaptureFullPath(path);
+			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
+			{
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(path, out directory))
+					return new string[0];
+
+				return directory.Subdirectories.Select(x => x.FullName).ToList();
+			});
 		}
 
 		/// <inheritdoc />
@@ -354,6 +368,17 @@ namespace System.IO
 			public string FullName => _fullName;
 
 			public Task<bool> Exists => Task.FromResult(true);
+
+			public IEnumerable<IDirectoryInfoAsync> Subdirectories
+			{
+				get
+				{
+					lock (_syncRoot)
+					{
+						return _subDirectories.Values.ToList();
+					}
+				}
+			}
 
 			public Task<IDirectoryInfo> Capture()
 			{

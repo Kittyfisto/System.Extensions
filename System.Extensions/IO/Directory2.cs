@@ -28,7 +28,7 @@ namespace System.IO
 			}
 
 			if (Path.IsPathRooted(path))
-				components[0] = components[0] + DirectorySeparatorChar;
+				components[index: 0] = components[index: 0] + DirectorySeparatorChar;
 
 			if (start < path.Length)
 				components.Add(path.Substring(start));
