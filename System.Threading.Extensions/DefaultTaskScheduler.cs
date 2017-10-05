@@ -8,7 +8,7 @@ namespace System.Threading
 	/// <summary>
 	///     Similar to <see cref="System.Threading.Tasks.TaskScheduler" />, it is capable of scheduling tasks.
 	///     Can also schedule periodic tasks that are executed with a minimum time between them (until removed).
-	///     <see cref="StartPeriodic" /> and <see cref="StopPeriodic" />.
+	///     <see cref="StartPeriodic(System.Action,System.TimeSpan,string)" /> and <see cref="StopPeriodic" />.
 	/// </summary>
 	public sealed class DefaultTaskScheduler
 		: ITaskScheduler

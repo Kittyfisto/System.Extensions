@@ -1,5 +1,10 @@
 ﻿namespace System.Threading
 {
+	/// <summary>
+	///     The interface for a periodic task (similar to a timer) which executes a delegate
+	///     in a user defined interval. <see cref="ITaskScheduler.StartPeriodic(System.Action,System.TimeSpan,string)" />
+	///     and <see cref="ITaskScheduler.StopPeriodic" />.
+	/// </summary>
 	public interface IPeriodicTask
 	{
 		/// <summary>

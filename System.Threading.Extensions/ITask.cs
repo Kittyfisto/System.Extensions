@@ -8,11 +8,31 @@
 	/// </summary>
 	public interface ITask
 	{
+		/// <summary>
+		///     True when this task has been completed, false otherwise.
+		/// </summary>
 		bool IsCompleted { get; }
+
+		/// <summary>
+		///     True when this task has been cancelled, false otherwise.
+		/// </summary>
 		bool IsCanceled { get; }
+
+		/// <summary>
+		///     True when this task has faulted, false otherwise.
+		/// </summary>
 		bool IsFaulted { get; }
 
+		/// <summary>
+		///     Blocks until the task completes or faults.
+		/// </summary>
 		void Wait();
+
+		/// <summary>
+		///     Blocks until the task completes, faults, or the given amount of time elapses.
+		/// </summary>
+		/// <param name="timeout"></param>
+		/// <returns></returns>
 		bool Wait(TimeSpan timeout);
 	}
 

@@ -10,26 +10,37 @@ namespace System.Threading
 	{
 		private readonly NoThrowTask _task;
 
+		/// <summary>
+		///     Initializes this object.
+		/// </summary>
 		public NoThrowTaskCompletionSource()
 		{
 			_task = new NoThrowTask();
 		}
 
-		public ITask Task
-		{
-			get { return _task; }
-		}
+		/// <summary>
+		/// </summary>
+		public ITask Task => _task;
 
+		/// <summary>
+		/// </summary>
+		/// <returns></returns>
 		public bool TrySetFinished()
 		{
 			return _task.TrySetFinished();
 		}
 
+		/// <summary>
+		/// </summary>
+		/// <returns></returns>
 		public bool TrySetCanceled()
 		{
 			return _task.TrySetCanceled();
 		}
 
+		/// <summary>
+		/// </summary>
+		/// <returns></returns>
 		public bool TrySetFaulted()
 		{
 			return _task.TrySetFaulted();
@@ -44,26 +55,43 @@ namespace System.Threading
 	{
 		private readonly NoThrowTask<T> _task;
 
+		/// <summary>
+		///     Initializes this object.
+		/// </summary>
 		public NoThrowTaskCompletionSource()
 		{
 			_task = new NoThrowTask<T>();
 		}
 
-		public ITask<T> Task
-		{
-			get { return _task; }
-		}
+		/// <summary>
+		/// 
+		/// </summary>
+		public ITask<T> Task => _task;
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		public bool TrySetResult(T value)
 		{
 			return _task.TrySetFinished(value);
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
 		public bool TrySetCanceled()
 		{
 			return _task.TrySetCanceled();
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="e"></param>
+		/// <returns></returns>
 		public bool TrySetException(Exception e)
 		{
 			return _task.TrySetException(e);
