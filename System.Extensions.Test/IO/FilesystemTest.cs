@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -11,34 +9,31 @@ namespace System.Extensions.Test.IO
 {
 	[TestFixture]
 	public class FilesystemTest
+		: AbstractFilesystemTest
 	{
-		private Filesystem _filesystem;
 		private SerialTaskScheduler _scheduler;
+		private string _testclassPath;
 
-		public static IEnumerable<string> InvalidPaths => new[]
+		[OneTimeSetUp]
+		public void OneTimeSetup()
 		{
-			null,
-			"",
-			" ",
-			"  ",
-			"\t",
-			"\r",
-			"\n",
-			" \t ",
-			":",
-			"?",
-			"C\\?"
-		};
-
-		[SetUp]
-		public void Setup()
-		{
+			_testclassPath = Path.Combine(Path.GetTempPath(), "FilesystemTest");
 			_scheduler = new SerialTaskScheduler();
-			_filesystem = new Filesystem(_scheduler);
 		}
 
-		[TearDown]
-		public void Teardown()
+		[SetUp]
+		public new void Setup()
+		{
+			var testDirectory = Path.Combine(_testclassPath, TestContext.CurrentContext.Test.ID);
+			if (Directory.Exists(testDirectory))
+				Directory.Delete(testDirectory, true);
+			Directory.CreateDirectory(testDirectory);
+			Directory.SetCurrentDirectory(testDirectory);
+			Console.WriteLine("Directory: {0}", testDirectory);
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTeardown()
 		{
 			_scheduler.Dispose();
 		}
@@ -46,14 +41,14 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestFileExists1()
 		{
-			Await(_filesystem.FileExists("wdawaddwawadoknfawonafw"))
+			Await(Filesystem.FileExists("wdawaddwawadoknfawonafw"))
 				.Should().BeFalse("because the file doesn't exist");
 		}
 
 		[Test]
 		public void TestFileExists2()
 		{
-			Await(_filesystem.FileExists(AssemblyFilePath))
+			Await(Filesystem.FileExists(AssemblyFilePath))
 				.Should().BeTrue("because that assembly most certainly exists");
 		}
 
@@ -61,35 +56,36 @@ namespace System.Extensions.Test.IO
 		public void TestFileExists3([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			File.Exists(invalidPath).Should().BeFalse();
-			Await(_filesystem.FileExists(invalidPath)).Should().BeFalse();
+			Await(Filesystem.FileExists(invalidPath)).Should().BeFalse();
 		}
 
 		[Test]
 		public void TestDirectoryExists1()
 		{
-			Await(_filesystem.DirectoryExists("dawwadwadadwawd"))
+			Await(Filesystem.DirectoryExists("dawwadwadadwawd"))
 				.Should().BeFalse("because the directory doesn't exist");
 		}
 
 		[Test]
 		public void TestDirectoryExists2()
 		{
-			Await(_filesystem.DirectoryExists(AssemblyDirectory))
+			Await(Filesystem.DirectoryExists(AssemblyDirectory))
 				.Should().BeTrue("because that directory most certainly exists");
 		}
 
 		[Test]
+		[Description("Verifies that the filesystem implementation behaves just like Directory.Exists when given invalid paths")]
 		public void TestDirectoryExists3([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			Directory.Exists(invalidPath).Should().BeFalse();
-			Await(_filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
+			Await(Filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
 		}
 
 		[Test]
 		public void TestEnumerateFiles1()
 		{
 			var expected = Directory.EnumerateFiles(AssemblyDirectory).ToList();
-			var actual = Await(_filesystem.EnumerateFiles(AssemblyDirectory));
+			var actual = Await(Filesystem.EnumerateFiles(AssemblyDirectory));
 
 			Console.WriteLine("Found {0} files", actual.Count);
 			actual.Should().NotBeNull();
@@ -101,7 +97,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string filter = "*.pdb";
 			var expected = Directory.EnumerateFiles(AssemblyDirectory, filter).ToList();
-			var actual = Await(_filesystem.EnumerateFiles(AssemblyDirectory, filter));
+			var actual = Await(Filesystem.EnumerateFiles(AssemblyDirectory, filter));
 
 			Console.WriteLine("Found {0} files", actual.Count);
 			actual.Should().NotBeNull();
@@ -113,7 +109,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateFiles3()
 		{
 			new Action(() => Directory.EnumerateFiles(null)).ShouldThrow<ArgumentNullException>();
-			new Action(() => Await(_filesystem.EnumerateFiles(null))).ShouldThrow<ArgumentNullException>();
+			new Action(() => Await(Filesystem.EnumerateFiles(null))).ShouldThrow<ArgumentNullException>();
 		}
 
 		[Test]
@@ -122,7 +118,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string searchPattern = "*.*";
 			new Action(() => Directory.EnumerateFiles(null, searchPattern)).ShouldThrow<ArgumentNullException>();
-			new Action(() => Await(_filesystem.EnumerateFiles(null, searchPattern))).ShouldThrow<ArgumentNullException>();
+			new Action(() => Await(Filesystem.EnumerateFiles(null, searchPattern))).ShouldThrow<ArgumentNullException>();
 		}
 
 		[Test]
@@ -130,7 +126,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateFiles5()
 		{
 			new Action(() => Directory.EnumerateFiles(AssemblyDirectory, null)).ShouldThrow<ArgumentNullException>();
-			new Action(() => Await(_filesystem.EnumerateFiles(AssemblyDirectory, null))).ShouldThrow<ArgumentNullException>();
+			new Action(() => Await(Filesystem.EnumerateFiles(AssemblyDirectory, null))).ShouldThrow<ArgumentNullException>();
 		}
 
 		[Test]
@@ -138,14 +134,14 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateFiles6()
 		{
 			new Action(() => Directory.EnumerateFiles(AssemblyFilePath)).ShouldThrow<IOException>();
-			new Action(() => Await(_filesystem.EnumerateFiles(AssemblyFilePath))).ShouldThrow<IOException>();
+			new Action(() => Await(Filesystem.EnumerateFiles(AssemblyFilePath))).ShouldThrow<IOException>();
 		}
 
 		[Test]
 		public void TestGetFileInfo1()
 		{
 			var expected = new FileInfo(AssemblyFilePath);
-			var actual = _filesystem.GetFileInfo(AssemblyFilePath);
+			var actual = Filesystem.GetFileInfo(AssemblyFilePath);
 			actual.Should().NotBeNull();
 			actual.Name.Should().Be(expected.Name);
 			actual.FullPath.Should().Be(AssemblyFilePath);
@@ -159,14 +155,14 @@ namespace System.Extensions.Test.IO
 		public void TestGetFileInfo2([ValueSource(nameof(InvalidPaths))] string path)
 		{
 			new Action(() => new FileInfo(path)).ShouldThrow<ArgumentException>();
-			new Action(() => _filesystem.GetFileInfo(path)).ShouldThrow<ArgumentException>();
+			new Action(() => Filesystem.GetFileInfo(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestGetFileInfo3()
 		{
 			var expected = new FileInfo(AssemblyFilePath);
-			var actual = Await(_filesystem.GetFileInfo(AssemblyFilePath).Capture());
+			var actual = Await(Filesystem.GetFileInfo(AssemblyFilePath).Capture());
 			actual.Should().NotBeNull();
 			actual.Name.Should().Be(expected.Name);
 			actual.FullPath.Should().Be(AssemblyFilePath);
@@ -180,7 +176,7 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestGetDirectoryInfo1()
 		{
-			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
+			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
 			info.Should().NotBeNull();
 			info.Name.Should().Be(Path.GetDirectoryName(AssemblyDirectory));
 			info.FullName.Should().Be(AssemblyDirectory);
@@ -190,8 +186,8 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestGetDirectoryInfo2()
 		{
-			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
-			var expected = Await(_filesystem.EnumerateFiles(AssemblyDirectory));
+			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
+			var expected = Await(Filesystem.EnumerateFiles(AssemblyDirectory));
 			var actual = Await(info.EnumerateFiles());
 
 			foreach (var fileInfo in actual)
@@ -205,8 +201,8 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestGetDirectoryInfo3()
 		{
-			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
-			var expected = Await(_filesystem.EnumerateFiles(AssemblyDirectory, "*.dll"));
+			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
+			var expected = Await(Filesystem.EnumerateFiles(AssemblyDirectory, "*.dll"));
 			var actual = Await(info.EnumerateFiles("*.dll"));
 
 			foreach (var fileInfo in actual)
@@ -220,8 +216,8 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestGetDirectoryInfo4([Values(SearchOption.AllDirectories, SearchOption.TopDirectoryOnly)] SearchOption searchOption)
 		{
-			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
-			var expected = Await(_filesystem.EnumerateFiles(AssemblyDirectory, "*.dll", searchOption));
+			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
+			var expected = Await(Filesystem.EnumerateFiles(AssemblyDirectory, "*.dll", searchOption));
 			var actual = Await(info.EnumerateFiles("*.dll", searchOption));
 
 			foreach (var fileInfo in actual)
@@ -236,7 +232,7 @@ namespace System.Extensions.Test.IO
 		public void TestGetDirectoryInfo5()
 		{
 			var actual = new DirectoryInfo(AssemblyDirectory);
-			var info = Await(_filesystem.GetDirectoryInfo(AssemblyDirectory).Capture());
+			var info = Await(Filesystem.GetDirectoryInfo(AssemblyDirectory).Capture());
 			info.Name.Should().Be(actual.Name);
 			info.FullName.Should().Be(actual.FullName);
 			info.Exists.Should().Be(actual.Exists);
@@ -248,7 +244,7 @@ namespace System.Extensions.Test.IO
 		[Description("Verifies that a directory snapshot is linked correctly")]
 		public void TestGetDirectoryInfo6()
 		{
-			var info = Await(_filesystem.GetDirectoryInfo(AssemblyDirectory).Capture());
+			var info = Await(Filesystem.GetDirectoryInfo(AssemblyDirectory).Capture());
 			var root = info.Root;
 
 			var dir = info;
@@ -257,15 +253,6 @@ namespace System.Extensions.Test.IO
 				dir.Root.Should().BeSameAs(root, "because all directories should point to the same root object");
 				dir = dir.Parent;
 			}
-		}
-
-		private static T Await<T>(Task<T> task)
-		{
-			task.Should().NotBeNull();
-
-			var waitTime = TimeSpan.FromSeconds(2);
-			task.Wait(waitTime).Should().BeTrue("because the task should've been finished after {0} seconds", waitTime.TotalSeconds);
-			return task.Result;
 		}
 
 		private static string AssemblyFilePath
@@ -280,5 +267,10 @@ namespace System.Extensions.Test.IO
 		}
 
 		private static string AssemblyDirectory => Path.GetDirectoryName(AssemblyFilePath);
+
+		protected override IFilesystem Create()
+		{
+			return new Filesystem(_scheduler);
+		}
 	}
 }

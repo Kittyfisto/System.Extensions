@@ -11,12 +11,16 @@ namespace System.IO
 		private readonly string _name;
 		private readonly string _fullName;
 
-		public DirectoryInfoAsync(Filesystem filesystem, string fullName)
+		public DirectoryInfoAsync(Filesystem filesystem, string fullName, string name)
 		{
 			_filesystem = filesystem;
-			_name = Path.GetDirectoryName(fullName);
+			_name = name;
 			_fullName = fullName;
 		}
+
+		public DirectoryInfoAsync(Filesystem filesystem, string fullName)
+			: this(filesystem, fullName, Path.GetDirectoryName(fullName))
+		{}
 
 		public string Name => _name;
 

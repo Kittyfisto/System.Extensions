@@ -280,17 +280,27 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
+		public string CurrentDirectory
+		{
+			get { return Directory.GetCurrentDirectory(); }
+			set { Directory.SetCurrentDirectory(value); }
+		}
+
+		/// <inheritdoc />
 		public Task<IDirectoryInfoAsync> CreateDirectory(string path)
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
 
 			path = CaptureFullPath(path);
+			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
+				path += Path.DirectorySeparatorChar;
+
 			return _scheduler.StartNew<IDirectoryInfoAsync>(() =>
 			{
 				Log.DebugFormat("Creating directory '{0}'...", path);
-				Directory.CreateDirectory(path);
-				return new DirectoryInfoAsync(this, path);
+				var info = Directory.CreateDirectory(path);
+				return new DirectoryInfoAsync(this, info.FullName, info.Name);
 			});
 		}
 

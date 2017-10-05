@@ -53,6 +53,7 @@
     <Compile Include="IO\FileInfo2.cs" />
     <Compile Include="IO\FileInfoAsync.cs" />
     <Compile Include="IO\Filesystem.cs" />
+    <Compile Include="IO\InMemoryFilesystem.cs" />
     <Compile Include="IO\FilesystemWatchdog.cs" />
     <Compile Include="IO\FolderWatcher.cs" />
     <Compile Include="IO\IDirectoryChangeListener.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="IO\PathComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Threading\DefaultTaskScheduler.cs" />
+    <Compile Include="Threading\ImmediateTaskScheduler.cs" />
     <Compile Include="Threading\IOneShotTask.cs" />
     <Compile Include="Threading\IPeriodicTask.cs" />
     <Compile Include="Threading\ISerialTaskScheduler.cs" />

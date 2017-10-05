@@ -11,6 +11,14 @@ namespace System.IO
 		#region Directories
 
 		/// <summary>
+		///     The current directory, used when relative paths are given to any of these methods.
+		/// </summary>
+		/// <remarks>
+		///     **Always** equals <see cref="Directory.GetCurrentDirectory"/>.
+		/// </remarks>
+		string CurrentDirectory { get; set; }
+
+		/// <summary>
 		///     Creates the given directory if it doesn't exist yet.
 		/// </summary>
 		/// <param name="path"></param>

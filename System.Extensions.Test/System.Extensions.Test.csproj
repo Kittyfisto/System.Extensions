@@ -65,10 +65,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IO\AbstractFilesystemTest.cs" />
     <Compile Include="IO\FilesystemTest.cs" />
+    <Compile Include="IO\InMemoryFilesystemTest.cs" />
     <Compile Include="IO\PathComparerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Threading\AbstractSerialTaskSchedulerTest.cs" />
     <Compile Include="Threading\DefaultTaskSchedulerTest.cs" />
+    <Compile Include="Threading\ImmediateTaskSchedulerTest.cs" />
     <Compile Include="Threading\LocalTest.cs" />
     <Compile Include="Threading\PeriodicTaskTest.cs" />
     <Compile Include="Threading\SerialTaskSchedulerTest.cs" />
