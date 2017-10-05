@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IO\Directory2.cs" />
     <Compile Include="IO\DirectoryInfo2.cs" />
     <Compile Include="IO\DirectoryInfoAsync.cs" />
     <Compile Include="IO\FileCreatedNotifier.cs" />

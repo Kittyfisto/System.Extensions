@@ -15,7 +15,12 @@
 			_parent = parent;
 			_fullName = fullName;
 			_exists = exists;
-			_name = Path.GetFileName(fullName);
+			_name = parent == null ? fullName : Directory2.GetDirName(fullName);
+		}
+
+		public override string ToString()
+		{
+			return "{" + _fullName + "}";
 		}
 
 		public IDirectoryInfo Root => _root;

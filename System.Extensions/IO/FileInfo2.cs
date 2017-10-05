@@ -20,6 +20,11 @@
 			_name = Path.GetFileName(fullPath);
 		}
 
+		public override string ToString()
+		{
+			return "{" + _fullPath + "}";
+		}
+
 		public IDirectoryInfo Directory => _directory;
 
 		public string DirectoryName => _directory.FullName;

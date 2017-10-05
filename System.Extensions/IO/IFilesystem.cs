@@ -14,9 +14,14 @@ namespace System.IO
 		///     The current directory, used when relative paths are given to any of these methods.
 		/// </summary>
 		/// <remarks>
-		///     **Always** equals <see cref="Directory.GetCurrentDirectory"/>.
+		///     **Always** equals <see cref="Directory.GetCurrentDirectory" />.
 		/// </remarks>
 		string CurrentDirectory { get; set; }
+
+		/// <summary>
+		///     The current root directories (="drives") of this filesystem.
+		/// </summary>
+		Task<IEnumerable<IDirectoryInfoAsync>> Roots { get; }
 
 		/// <summary>
 		///     Creates the given directory if it doesn't exist yet.

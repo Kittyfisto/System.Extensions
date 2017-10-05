@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,6 +51,21 @@ namespace System.IO
 		{
 			get { return _currentDirectory; }
 			set { _currentDirectory = value; }
+		}
+
+		/// <inheritdoc />
+		public Task<IEnumerable<IDirectoryInfoAsync>> Roots
+		{
+			get
+			{
+				return _taskScheduler.StartNew<IEnumerable<IDirectoryInfoAsync>>(() =>
+				{
+					lock (_syncRoot)
+					{
+						return _roots.Values.ToList();
+					}
+				});
+			}
 		}
 
 		/// <inheritdoc />
@@ -282,6 +298,11 @@ namespace System.IO
 				_name = Path.GetFileName(fullPath);
 			}
 
+			public override string ToString()
+			{
+				return "{" + _fullPath + "}";
+			}
+
 			public string Name => _name;
 
 			public string FullPath => _fullPath;
@@ -329,6 +350,11 @@ namespace System.IO
 				_syncRoot = new object();
 				_subDirectories = new Dictionary<string, InMemoryDirectory>();
 				_files = new Dictionary<string, InMemoryFile>();
+			}
+
+			public override string ToString()
+			{
+				return "{" + _fullName + "}";
 			}
 
 			public string Name => _name;

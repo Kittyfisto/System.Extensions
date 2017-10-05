@@ -287,6 +287,19 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
+		public Task<IEnumerable<IDirectoryInfoAsync>> Roots
+		{
+			get
+			{
+				return _scheduler.StartNew<IEnumerable<IDirectoryInfoAsync>>(() =>
+				{
+					var drives = DriveInfo.GetDrives();
+					return drives.Select(x => new DirectoryInfoAsync(this, x.Name, x.Name)).ToList();
+				});
+			}
+		}
+
+		/// <inheritdoc />
 		public Task<IDirectoryInfoAsync> CreateDirectory(string path)
 		{
 			if (path == null)

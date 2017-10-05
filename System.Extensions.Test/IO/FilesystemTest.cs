@@ -39,6 +39,21 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestRoots2()
+		{
+			var actualRoots = DriveInfo.GetDrives().Select(x => new DirectoryInfo(x.Name)).ToList();
+			var roots = Await(Filesystem.Roots);
+
+			roots.Should().HaveCount(actualRoots.Count);
+			foreach (var root in roots)
+			{
+				var actual = actualRoots.FirstOrDefault(x => Equals(x.Name, root.Name));
+				actual.Should().NotBeNull();
+				root.FullName.Should().Be(actual.FullName);
+			}
+		}
+
+		[Test]
 		public void TestFileExists1()
 		{
 			Await(Filesystem.FileExists("wdawaddwawadoknfawonafw"))
@@ -177,8 +192,9 @@ namespace System.Extensions.Test.IO
 		public void TestGetDirectoryInfo1()
 		{
 			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
+
 			info.Should().NotBeNull();
-			info.Name.Should().Be(Path.GetDirectoryName(AssemblyDirectory));
+			info.Name.Should().Be(new DirectoryInfo(AssemblyDirectory).Name);
 			info.FullName.Should().Be(AssemblyDirectory);
 			Await(info.Exists).Should().BeTrue("because the folder most certainly exists");
 		}
@@ -253,6 +269,24 @@ namespace System.Extensions.Test.IO
 				dir.Root.Should().BeSameAs(root, "because all directories should point to the same root object");
 				dir = dir.Parent;
 			}
+		}
+
+		[Test]
+		[Description("Verifies that name and fullname behave identical to their DirectoryInfo counterparts")]
+		public void TestGetDirectoryInfo7()
+		{
+			var path1 = AssemblyDirectory;
+			var path2 = AssemblyDirectory + "\\";
+
+			var expectedInfo1 = new DirectoryInfo(path1);
+			var actualInfo1 = Filesystem.GetDirectoryInfo(path1);
+			actualInfo1.Name.Should().Be(expectedInfo1.Name);
+			actualInfo1.FullName.Should().Be(expectedInfo1.FullName);
+
+			var expectedInfo2 = new DirectoryInfo(path2);
+			var actualInfo2 = Filesystem.GetDirectoryInfo(path2);
+			actualInfo2.Name.Should().Be(expectedInfo2.Name);
+			actualInfo2.FullName.Should().Be(expectedInfo2.FullName);
 		}
 
 		private static string AssemblyFilePath

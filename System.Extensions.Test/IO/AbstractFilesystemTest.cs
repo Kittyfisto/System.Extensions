@@ -37,6 +37,21 @@ namespace System.Extensions.Test.IO
 		};
 
 		[Test]
+		public void TestRoots1()
+		{
+			var roots = Await(Filesystem.Roots);
+			roots.Should().NotBeNull();
+			roots.Should().NotBeEmpty();
+			foreach (var root in roots)
+			{
+				root.Should().NotBeNull();
+				root.Name.Should().NotBeNullOrEmpty();
+				root.FullName.Should().NotBeNullOrEmpty();
+				root.Name.Should().Be(root.FullName);
+			}
+		}
+
+		[Test]
 		public void TestDirectoryExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			Await(Filesystem.DirectoryExists(invalidPath)).Should().BeFalse();

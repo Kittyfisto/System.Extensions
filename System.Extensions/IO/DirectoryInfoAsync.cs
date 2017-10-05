@@ -19,8 +19,13 @@ namespace System.IO
 		}
 
 		public DirectoryInfoAsync(Filesystem filesystem, string fullName)
-			: this(filesystem, fullName, Path.GetDirectoryName(fullName))
+			: this(filesystem, fullName, Directory2.GetDirName(fullName))
 		{}
+
+		public override string ToString()
+		{
+			return "{" + _fullName + "}";
+		}
 
 		public string Name => _name;
 
