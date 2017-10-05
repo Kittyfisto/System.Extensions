@@ -3,12 +3,12 @@
 	/// <summary>
 	///     This listener is invoked whenever a file in the watched directory is created.
 	/// </summary>
-	public interface IDirectoryChangeListener
+	internal interface IDirectoryChangeListener
 	{
 		/// <summary>
 		/// </summary>
 		/// <param name="file"></param>
-		void OnFileCreated(string addedFile);
+		void OnFileCreated(string file);
 
 		/// <summary>
 		/// </summary>

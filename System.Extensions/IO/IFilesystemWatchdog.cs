@@ -1,6 +1,6 @@
 ﻿namespace System.IO
 {
-	interface IFilesystemWatchdog
+	internal interface IFilesystemWatchdog
 	{
 		/// <summary>
 		///     Creates a new filesystem-watch which notifies the given listener about the creation/deleting of files.

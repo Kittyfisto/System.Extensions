@@ -8,7 +8,7 @@ namespace System.IO
 	///     Two strings are equal if they represent the same path, regardless
 	///     of formatting.
 	/// </summary>
-	public sealed class PathComparer
+	internal sealed class PathComparer
 		: IEqualityComparer<string>
 	{
 		public bool Equals(string x, string y)

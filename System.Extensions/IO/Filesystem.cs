@@ -21,6 +21,10 @@ namespace System.IO
 
 		private readonly ISerialTaskScheduler _scheduler;
 
+		/// <summary>
+		/// Initializes this object.
+		/// </summary>
+		/// <param name="scheduler"></param>
 		public Filesystem(ISerialTaskScheduler scheduler)
 		{
 			if (scheduler == null)
@@ -71,6 +75,7 @@ namespace System.IO
 			});
 		}
 
+		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path)
 		{
 			if (path == null)

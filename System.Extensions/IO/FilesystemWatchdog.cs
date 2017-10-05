@@ -3,7 +3,7 @@ using System.Diagnostics.Contracts;
 
 namespace System.IO
 {
-	public sealed class FilesystemWatchdog
+	internal sealed class FilesystemWatchdog
 		: IFilesystemWatchdog
 	{
 		private readonly object _syncRoot;
