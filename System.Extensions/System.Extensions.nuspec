@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>System.Extensions</id>
+    <id>System.Ext</id>
     <version>$version$</version>
     <authors>Kittyfisto</authors>
     <owners>Kittyfisto</owners>
