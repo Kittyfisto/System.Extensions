@@ -1,23 +1,26 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>System.Threading.Extensions</id>
+    <id>System.Extensions</id>
     <version>$version$</version>
     <authors>Kittyfisto</authors>
     <owners>Kittyfisto</owners>
-    <licenseUrl>https://github.com/Kittyfisto/System.Threading.Extensions/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/Kittyfisto/System.Threading.Extensions</projectUrl>
+    <licenseUrl>https://github.com/Kittyfisto/System.Extensions/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/Kittyfisto/System.Extensions</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Threading library</description>
     <releaseNotes>Release</releaseNotes>
     <copyright>Copyright 2017</copyright>
-    <tags>.NET Tasks Timers</tags>
+    <tags>.NET Tasks Timers Schedulers AsyncIO Folderwatch</tags>
     <dependencies>
-      <!--<dependency id="SampleDependency" version="1.0" />-->
+      <dependency id="log4net" version="2.0.8" />
     </dependencies>
   </metadata>
   <files>
+    <file src="..\bin\Release\System.IO.Extensions.XML" target="lib\net45\" />
+    <file src="..\bin\Release\System.IO.Extensions.pdb" target="lib\net45\" />
+    <file src="..\bin\Release\System.IO.Extensions.dll" target="lib\net45\" />
     <file src="..\bin\Release\System.Threading.Extensions.XML" target="lib\net45\" />
     <file src="..\bin\Release\System.Threading.Extensions.pdb" target="lib\net45\" />
     <file src="..\bin\Release\System.Threading.Extensions.dll" target="lib\net45\" />
