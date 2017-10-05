@@ -163,6 +163,21 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestGetFileInfo3()
+		{
+			var expected = new FileInfo(AssemblyFilePath);
+			var actual = Await(_filesystem.GetFileInfo(AssemblyFilePath).Capture());
+			actual.Should().NotBeNull();
+			actual.Name.Should().Be(expected.Name);
+			actual.FullPath.Should().Be(AssemblyFilePath);
+			actual.Length.Should().Be(expected.Length, "because both methods should find the same file size");
+			actual.Exists.Should().BeTrue("because the file most certainly exists");
+			actual.IsReadOnly.Should().Be(expected.IsReadOnly, "because both methods should find the same attribute");
+			actual.Directory.Should().NotBeNull();
+			actual.DirectoryName.Should().Be(expected.DirectoryName);
+		}
+
+		[Test]
 		public void TestGetDirectoryInfo1()
 		{
 			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
@@ -214,6 +229,33 @@ namespace System.Extensions.Test.IO
 				fileInfo.Should().NotBeNull();
 				expected.Should().Contain(fileInfo.FullPath);
 				Await(fileInfo.Exists).Should().BeTrue();
+			}
+		}
+
+		[Test]
+		public void TestGetDirectoryInfo5()
+		{
+			var actual = new DirectoryInfo(AssemblyDirectory);
+			var info = Await(_filesystem.GetDirectoryInfo(AssemblyDirectory).Capture());
+			info.Name.Should().Be(actual.Name);
+			info.FullName.Should().Be(actual.FullName);
+			info.Exists.Should().Be(actual.Exists);
+			info.Parent.Should().NotBeNull();
+			info.Root.Should().NotBeNull();
+		}
+
+		[Test]
+		[Description("Verifies that a directory snapshot is linked correctly")]
+		public void TestGetDirectoryInfo6()
+		{
+			var info = Await(_filesystem.GetDirectoryInfo(AssemblyDirectory).Capture());
+			var root = info.Root;
+
+			var dir = info;
+			while (dir != null)
+			{
+				dir.Root.Should().BeSameAs(root, "because all directories should point to the same root object");
+				dir = dir.Parent;
 			}
 		}
 

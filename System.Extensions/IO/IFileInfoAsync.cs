@@ -20,6 +20,12 @@ namespace System.IO
 		string FullPath { get; }
 
 		/// <summary>
+		///     Captures and returns the current state/attributes of this file.
+		/// </summary>
+		/// <returns></returns>
+		Task<IFileInfo> Capture();
+
+		/// <summary>
 		///     The length of the file in bytes.
 		/// </summary>
 		Task<long> Length { get; }

@@ -354,5 +354,51 @@ namespace System.IO
 
 			return path;
 		}
+
+		internal Task<IFileInfo> CaptureFile(string fullName)
+		{
+			return _scheduler.StartNew<IFileInfo>(() =>
+			{
+				Log.DebugFormat("Capturing properties of '{0}'...", fullName);
+
+				var info = new FileInfo(fullName);
+				var directory = CaptureDirectoryBranch(info.DirectoryName);
+				return new FileInfo2(directory, fullName, info.Length, info.IsReadOnly, info.Exists);
+			});
+		}
+
+		internal Task<IDirectoryInfo> CaptureDirectory(string path)
+		{
+			return _scheduler.StartNew<IDirectoryInfo>(() =>
+			{
+				Log.DebugFormat("Capturing properties of '{0}'...", path);
+				return CaptureDirectoryBranch(path);
+			});
+		}
+
+		private DirectoryInfo2 CaptureDirectoryBranch(string path)
+		{
+			var info = new DirectoryInfo(path);
+			var root = new DirectoryInfo2(null, null, path, Directory.Exists(path));
+			if (ReferenceEquals(info, info.Root))
+			{
+				return root;
+			}
+
+			return Capture(root, info);
+		}
+
+		private DirectoryInfo2 Capture(DirectoryInfo2 root, DirectoryInfo info)
+		{
+			if (info == null)
+				return null;
+
+			if (info.Parent == null)
+				return root;
+
+			var parentSnapshot = Capture(root, info.Parent);
+			var snapshot = new DirectoryInfo2(root, parentSnapshot, info.FullName, info.Exists);
+			return snapshot;
+		}
 	}
 }

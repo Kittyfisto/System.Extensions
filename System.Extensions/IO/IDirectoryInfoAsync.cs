@@ -6,7 +6,7 @@ namespace System.IO
 	/// <summary>
 	///     Represents a directory on disk.
 	///     Information (which may change) can only be queried asynchronously.
-	///     Can be created through <see cref="IFilesystem.GetDirectoryInfo"/>.
+	///     Can be created through <see cref="IFilesystem.GetDirectoryInfo" />.
 	/// </summary>
 	public interface IDirectoryInfoAsync
 	{
@@ -24,6 +24,12 @@ namespace System.IO
 		///     Whether or not the directory exists.
 		/// </summary>
 		Task<bool> Exists { get; }
+
+		/// <summary>
+		///     Captures and returns the current state/attributes of this directory.
+		/// </summary>
+		/// <returns></returns>
+		Task<IDirectoryInfo> Capture();
 
 		/// <summary>
 		///     Returns an enumerable collection of file information in the current directory.

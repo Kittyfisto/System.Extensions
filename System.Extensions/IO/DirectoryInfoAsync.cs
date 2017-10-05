@@ -24,6 +24,11 @@ namespace System.IO
 
 		public Task<bool> Exists => _filesystem.DirectoryExists(_fullName);
 
+		public Task<IDirectoryInfo> Capture()
+		{
+			return _filesystem.CaptureDirectory(_fullName);
+		}
+
 		public async Task<IEnumerable<IFileInfoAsync>> EnumerateFiles()
 		{
 			var fileNames = await _filesystem.EnumerateFiles(_fullName);

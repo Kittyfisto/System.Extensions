@@ -46,14 +46,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IO\DirectoryInfo2.cs" />
     <Compile Include="IO\DirectoryInfoAsync.cs" />
     <Compile Include="IO\FileCreatedNotifier.cs" />
+    <Compile Include="IO\FileInfo2.cs" />
     <Compile Include="IO\FileInfoAsync.cs" />
     <Compile Include="IO\Filesystem.cs" />
     <Compile Include="IO\FilesystemWatchdog.cs" />
     <Compile Include="IO\FolderWatcher.cs" />
     <Compile Include="IO\IDirectoryChangeListener.cs" />
+    <Compile Include="IO\IDirectoryInfo.cs" />
     <Compile Include="IO\IDirectoryInfoAsync.cs" />
+    <Compile Include="IO\IFileInfo.cs" />
     <Compile Include="IO\IFileInfoAsync.cs" />
     <Compile Include="IO\IFilesystem.cs" />
     <Compile Include="IO\IFilesystemWatcher.cs" />

@@ -20,6 +20,11 @@ namespace System.IO
 
 		public string FullPath => _fullName;
 
+		public Task<IFileInfo> Capture()
+		{
+			return _filesystem.CaptureFile(_fullName);
+		}
+
 		public Task<long> Length => _filesystem.FileLength(_fullName);
 
 		public Task<bool> IsReadOnly => _filesystem.IsFileReadOnly(_fullName);
