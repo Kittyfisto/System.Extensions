@@ -10,7 +10,7 @@ namespace System.IO
 	///     implementation.
 	/// </summary>
 	internal sealed class FileCreatedNotifier
-		: IFilesystemWatch
+		: IFilesystemWatcher
 	{
 		private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 

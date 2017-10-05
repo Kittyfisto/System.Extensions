@@ -1,6 +1,6 @@
 namespace System.IO
 {
-	internal interface IFilesystemWatch
+	internal interface IFilesystemWatcher
 	{
 		string Path { get; }
 	}

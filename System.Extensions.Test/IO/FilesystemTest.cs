@@ -141,6 +141,82 @@ namespace System.Extensions.Test.IO
 			new Action(() => Await(_filesystem.EnumerateFiles(AssemblyFilePath))).ShouldThrow<IOException>();
 		}
 
+		[Test]
+		public void TestGetFileInfo1()
+		{
+			var expected = new FileInfo(AssemblyFilePath);
+			var actual = _filesystem.GetFileInfo(AssemblyFilePath);
+			actual.Should().NotBeNull();
+			actual.Name.Should().Be(expected.Name);
+			actual.FullPath.Should().Be(AssemblyFilePath);
+			Await(actual.Length).Should().Be(expected.Length, "because both methods should find the same file size");
+			Await(actual.Exists).Should().BeTrue("because the file most certainly exists");
+			Await(actual.IsReadOnly).Should().Be(expected.IsReadOnly, "because both methods should find the same attribute");
+		}
+
+		[Test]
+		[Ignore("Not fully implemented")]
+		public void TestGetFileInfo2([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => new FileInfo(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.GetFileInfo(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestGetDirectoryInfo1()
+		{
+			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
+			info.Should().NotBeNull();
+			info.Name.Should().Be(Path.GetDirectoryName(AssemblyDirectory));
+			info.FullName.Should().Be(AssemblyDirectory);
+			Await(info.Exists).Should().BeTrue("because the folder most certainly exists");
+		}
+
+		[Test]
+		public void TestGetDirectoryInfo2()
+		{
+			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
+			var expected = Await(_filesystem.EnumerateFiles(AssemblyDirectory));
+			var actual = Await(info.EnumerateFiles());
+
+			foreach (var fileInfo in actual)
+			{
+				fileInfo.Should().NotBeNull();
+				expected.Should().Contain(fileInfo.FullPath);
+				Await(fileInfo.Exists).Should().BeTrue();
+			}
+		}
+
+		[Test]
+		public void TestGetDirectoryInfo3()
+		{
+			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
+			var expected = Await(_filesystem.EnumerateFiles(AssemblyDirectory, "*.dll"));
+			var actual = Await(info.EnumerateFiles("*.dll"));
+
+			foreach (var fileInfo in actual)
+			{
+				fileInfo.Should().NotBeNull();
+				expected.Should().Contain(fileInfo.FullPath);
+				Await(fileInfo.Exists).Should().BeTrue();
+			}
+		}
+
+		[Test]
+		public void TestGetDirectoryInfo4([Values(SearchOption.AllDirectories, SearchOption.TopDirectoryOnly)] SearchOption searchOption)
+		{
+			var info = _filesystem.GetDirectoryInfo(AssemblyDirectory);
+			var expected = Await(_filesystem.EnumerateFiles(AssemblyDirectory, "*.dll", searchOption));
+			var actual = Await(info.EnumerateFiles("*.dll", searchOption));
+
+			foreach (var fileInfo in actual)
+			{
+				fileInfo.Should().NotBeNull();
+				expected.Should().Contain(fileInfo.FullPath);
+				Await(fileInfo.Exists).Should().BeTrue();
+			}
+		}
+
 		private static T Await<T>(Task<T> task)
 		{
 			task.Should().NotBeNull();

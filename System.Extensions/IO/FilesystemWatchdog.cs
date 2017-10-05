@@ -21,7 +21,7 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public IFilesystemWatch StartDirectoryWatch(string path, IDirectoryChangeListener listener)
+		public IFilesystemWatcher StartDirectoryWatch(string path, IDirectoryChangeListener listener)
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
@@ -46,15 +46,15 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public void StopWatch(IFilesystemWatch filesystemWatch)
+		public void StopWatch(IFilesystemWatcher filesystemWatcher)
 		{
 			lock (_syncRoot)
 			{
-				var path = filesystemWatch.Path;
+				var path = filesystemWatcher.Path;
 				FolderWatcher watcher;
 				if (path != null && _watches.TryGetValue(path, out watcher))
 				{
-					watcher.Remove(filesystemWatch);
+					watcher.Remove(filesystemWatcher);
 					if (!watcher.HasListeners)
 					{
 						_watches.Remove(path);

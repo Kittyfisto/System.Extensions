@@ -15,15 +15,15 @@ namespace System.IO
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path"/> is null</exception>
-		Task<IDirectoryInfo> CreateDirectory(string path);
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
+		Task<IDirectoryInfoAsync> CreateDirectory(string path);
 
 		/// <summary>
 		///     Deletes an empty directory from a specified path.
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path"/> is null</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
 		Task DeleteDirectory(string path);
 
 		/// <summary>
@@ -33,7 +33,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <param name="recursive"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path"/> is null</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
 		Task DeleteDirectory(string path, bool recursive);
 
 		/// <summary>
@@ -48,8 +48,8 @@ namespace System.IO
 		/// </summary>
 		/// <param name="directoryName"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="directoryName"/> is null</exception>
-		Task<IDirectoryInfo> GetDirectoryInfo(string directoryName);
+		/// <exception cref="ArgumentNullException">When <paramref name="directoryName" /> is null</exception>
+		IDirectoryInfoAsync GetDirectoryInfo(string directoryName);
 
 		/// <summary>
 		///     Returns an enumerable collection of file names in a specified path.
@@ -65,7 +65,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <param name="searchPattern"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path"/> is null</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
 		Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern);
 
 		/// <summary>
@@ -75,7 +75,7 @@ namespace System.IO
 		/// <param name="searchPattern"></param>
 		/// <param name="searchOption"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path"/> is null</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
 		Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern, SearchOption searchOption);
 
 		/// <summary>
@@ -83,7 +83,7 @@ namespace System.IO
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path"/> is null</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
 		Task<IReadOnlyList<string>> EnumerateDirectories(string path);
 
 		/// <summary>
@@ -92,7 +92,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <param name="searchPattern"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path"/> is null</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
 		Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern);
 
 		/// <summary>
@@ -102,7 +102,7 @@ namespace System.IO
 		/// <param name="searchPattern"></param>
 		/// <param name="searchOption"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path"/> is null</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
 		Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption);
 
 		#endregion
@@ -114,7 +114,7 @@ namespace System.IO
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
-		Task<IFileInfo> GetFileInfo(string fileName);
+		IFileInfoAsync GetFileInfo(string fileName);
 
 		/// <summary>
 		///     Tests if a file with the given path exists.
@@ -122,6 +122,22 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <returns></returns>
 		Task<bool> FileExists(string path);
+
+		/// <summary>
+		///     The length of a file (in bytes).
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
+		Task<long> FileLength(string path);
+
+		/// <summary>
+		///     Whether or not the given file is readonly.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
+		Task<bool> IsFileReadOnly(string path);
 
 		/// <summary>
 		///     Writes the given data to the given file.

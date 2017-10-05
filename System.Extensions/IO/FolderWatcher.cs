@@ -60,7 +60,7 @@ namespace System.IO
 			Log.DebugFormat("Stopping filesystem watch on '{0}'...", _path);
 		}
 
-		public IFilesystemWatch Add(IDirectoryChangeListener listener)
+		public IFilesystemWatcher Add(IDirectoryChangeListener listener)
 		{
 			var notifier = new FileCreatedNotifier(_path, listener);
 
@@ -72,11 +72,11 @@ namespace System.IO
 			return notifier;
 		}
 
-		public void Remove(IFilesystemWatch filesystemWatch)
+		public void Remove(IFilesystemWatcher filesystemWatcher)
 		{
 			lock (_syncRoot)
 			{
-				_creationNotifiers.Remove(filesystemWatch as FileCreatedNotifier);
+				_creationNotifiers.Remove(filesystemWatcher as FileCreatedNotifier);
 			}
 		}
 

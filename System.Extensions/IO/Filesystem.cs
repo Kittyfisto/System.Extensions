@@ -118,31 +118,26 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public Task<IFileInfo> GetFileInfo(string fileName)
+		public IFileInfoAsync GetFileInfo(string fileName)
 		{
 			if (fileName == null)
 				throw new ArgumentNullException(nameof(fileName));
 
+			if (string.IsNullOrWhiteSpace(fileName))
+				throw new ArgumentException(nameof(fileName));
+
 			fileName = CaptureFullPath(fileName);
-			return _scheduler.StartNew(() =>
-			{
-				Log.DebugFormat("Obtaining information about file '{0}'...", fileName);
-				return FileInfo2.Capture(fileName);
-			});
+			return new FileInfoAsync(this, fileName);
 		}
 
 		/// <inheritdoc />
-		public Task<IDirectoryInfo> GetDirectoryInfo(string directoryName)
+		public IDirectoryInfoAsync GetDirectoryInfo(string directoryName)
 		{
 			if (directoryName == null)
 				throw new ArgumentNullException(nameof(directoryName));
 
 			directoryName = CaptureFullPath(directoryName);
-			return _scheduler.StartNew(() =>
-			{
-				Log.DebugFormat("Obtaining information about directory '{0}'...", directoryName);
-				return DirectoryInfo2.Capture(directoryName);
-			});
+			return new DirectoryInfoAsync(this, directoryName);
 		}
 
 		/// <inheritdoc />
@@ -156,6 +151,34 @@ namespace System.IO
 			{
 				Log.DebugFormat("Testing if file '{0}' exists...", path);
 				return File.Exists(path);
+			});
+		}
+
+		/// <inheritdoc />
+		public Task<long> FileLength(string path)
+		{
+			if (path == null)
+				throw new ArgumentNullException(nameof(path));
+
+			path = CaptureFullPath(path);
+			return _scheduler.StartNew(() =>
+			{
+				Log.DebugFormat("Getting length of '{0}'...", path);
+				return new FileInfo(path).Length;
+			});
+		}
+
+		/// <inheritdoc />
+		public Task<bool> IsFileReadOnly(string path)
+		{
+			if (path == null)
+				throw new ArgumentNullException(nameof(path));
+
+			path = CaptureFullPath(path);
+			return _scheduler.StartNew(() =>
+			{
+				Log.DebugFormat("Testing if '{0}' is readonly...", path);
+				return new FileInfo(path).IsReadOnly;
 			});
 		}
 
@@ -257,16 +280,17 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public Task<IDirectoryInfo> CreateDirectory(string path)
+		public Task<IDirectoryInfoAsync> CreateDirectory(string path)
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _scheduler.StartNew<IDirectoryInfoAsync>(() =>
 			{
 				Log.DebugFormat("Creating directory '{0}'...", path);
-				return DirectoryInfo2.Capture(Directory.CreateDirectory(path));
+				Directory.CreateDirectory(path);
+				return new DirectoryInfoAsync(this, path);
 			});
 		}
 

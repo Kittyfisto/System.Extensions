@@ -11,14 +11,16 @@
 		/// <param name="path"></param>
 		/// <param name="listener"></param>
 		/// <returns></returns>
-		IFilesystemWatch StartDirectoryWatch(string path, IDirectoryChangeListener listener);
+		IFilesystemWatcher StartDirectoryWatch(string path, IDirectoryChangeListener listener);
 
 		/// <summary>
 		///     Stops the given watch.
 		///     Should be called when one is no longer interested in being notified of file related
 		///     events (in order to free-up system resources).
 		/// </summary>
-		/// <param name="filesystemWatch"></param>
-		void StopWatch(IFilesystemWatch filesystemWatch);
+		/// <param name="filesystemWatcher"></param>
+		void StopWatch(IFilesystemWatcher filesystemWatcher);
 	}
+
+	
 }
