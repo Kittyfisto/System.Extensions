@@ -54,6 +54,17 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
+		public IDirectoryInfoAsync Current
+		{
+			get
+			{
+				InMemoryDirectory directory;
+				TryGetDirectory(CurrentDirectory, out directory);
+				return directory;
+			}
+		}
+
+		/// <inheritdoc />
 		public Task<IEnumerable<IDirectoryInfoAsync>> Roots
 		{
 			get
@@ -237,7 +248,7 @@ namespace System.IO
 
 		private bool TryGetDirectory(string path, out InMemoryDirectory directory)
 		{
-			var components = Split(path);
+			var components = Directory2.Split(path);
 			if (!TryGetRoot(components[0], out directory))
 			{
 				return false;
@@ -251,25 +262,6 @@ namespace System.IO
 			}
 
 			return true;
-		}
-
-		[Pure]
-		private static IReadOnlyList<string> Split(string path)
-		{
-			var components = new List<string>();
-			var separator = Path.DirectorySeparatorChar;
-			int next;
-			int start = 0;
-			while ((next = path.IndexOf(separator, start)) != -1)
-			{
-				var component = path.Substring(start, next + 1);
-				components.Add(component);
-				start = next + 1;
-			}
-
-			if (start < path.Length)
-				components.Add(path.Substring(start));
-			return components;
 		}
 
 		private bool TryGetRoot(string root, out InMemoryDirectory directory)
@@ -383,6 +375,25 @@ namespace System.IO
 				throw new NotImplementedException();
 			}
 
+			public Task<IDirectoryInfoAsync> CreateSubdirectory(string path)
+			{
+				if (!Path.IsPathRooted(path))
+				{
+					return _taskScheduler.StartNew<IDirectoryInfoAsync>(() =>
+					{
+						var components = Directory2.Split(path);
+						var directory = this;
+						foreach (var directoryName in components)
+						{
+							directory = directory.CreateChildDirectory(directoryName);
+						}
+						return directory;
+					});
+				}
+
+				throw new NotImplementedException();
+			}
+
 			public bool TryGetDirectoryFromPath(string path, out InMemoryDirectory directory)
 			{
 				var root = Path.GetPathRoot(path);
@@ -409,6 +420,9 @@ namespace System.IO
 			{
 				lock (_syncRoot)
 				{
+					directoryName = directoryName.Replace(Directory2.DirectorySeparatorChar, "");
+					directoryName = directoryName.Replace(Directory2.AltDirectorySeparatorChar, "");
+
 					InMemoryDirectory directory;
 					if (!_subDirectories.TryGetValue(directoryName, out directory))
 					{

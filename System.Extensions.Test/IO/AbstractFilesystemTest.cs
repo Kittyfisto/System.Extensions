@@ -101,6 +101,34 @@ namespace System.Extensions.Test.IO
 			actual.FullName.Should().Be(expected.FullName);
 		}
 
+		[Test]
+		[Description("Verifies that CreateSubdirectory can create single sub directory")]
+		public void TestCreateDirectory4()
+		{
+			var directory = _filesystem.Current;
+			var child = Await(directory.CreateSubdirectory("SomeStuff"));
+			child.Should().NotBeNull();
+			child.Name.Should().Be("SomeStuff");
+			child.FullName.Should().Be(Path.Combine(_filesystem.CurrentDirectory, "SomeStuff"));
+
+			Await(child.Exists).Should().BeTrue();
+			Await(_filesystem.DirectoryExists(child.FullName)).Should().BeTrue();
+		}
+
+		[Test]
+		[Description("Verifies that CreateSubdirectory can create multiple directories at the same time")]
+		public void TestCreateDirectory5()
+		{
+			var directory = _filesystem.Current;
+			var child = Await(directory.CreateSubdirectory("Some\\Stuff"));
+			child.Should().NotBeNull();
+			child.Name.Should().Be("Stuff");
+			child.FullName.Should().Be(Path.Combine(_filesystem.CurrentDirectory, "Some\\Stuff"));
+
+			Await(child.Exists).Should().BeTrue();
+			Await(_filesystem.DirectoryExists(child.FullName)).Should().BeTrue();
+		}
+
 		protected static T Await<T>(Task<T> task)
 		{
 			task.Should().NotBeNull();

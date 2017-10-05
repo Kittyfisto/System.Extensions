@@ -19,6 +19,11 @@ namespace System.IO
 		string CurrentDirectory { get; set; }
 
 		/// <summary>
+		///     An object representing the current directory.
+		/// </summary>
+		IDirectoryInfoAsync Current { get; }
+
+		/// <summary>
 		///     The current root directories (="drives") of this filesystem.
 		/// </summary>
 		Task<IEnumerable<IDirectoryInfoAsync>> Roots { get; }

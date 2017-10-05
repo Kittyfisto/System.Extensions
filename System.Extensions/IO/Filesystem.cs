@@ -287,6 +287,9 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
+		public IDirectoryInfoAsync Current => new DirectoryInfoAsync(this, CurrentDirectory);
+
+		/// <inheritdoc />
 		public Task<IEnumerable<IDirectoryInfoAsync>> Roots
 		{
 			get
@@ -306,8 +309,6 @@ namespace System.IO
 				throw new ArgumentNullException(nameof(path));
 
 			path = CaptureFullPath(path);
-			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
-				path += Path.DirectorySeparatorChar;
 
 			return _scheduler.StartNew<IDirectoryInfoAsync>(() =>
 			{

@@ -49,5 +49,14 @@ namespace System.IO
 		/// <paramref name="searchPattern" />
 		/// <paramref name="searchOption" />
 		Task<IEnumerable<IFileInfoAsync>> EnumerateFiles(string searchPattern, SearchOption searchOption);
+
+		/// <summary>
+		///     Creates a subdirectory or subdirectories on the specified path.
+		///     The specified path can be relative to this instance of the IDirectoryInfo
+		///     class.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		Task<IDirectoryInfoAsync> CreateSubdirectory(string path);
 	}
 }

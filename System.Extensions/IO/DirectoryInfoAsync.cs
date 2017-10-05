@@ -55,5 +55,13 @@ namespace System.IO
 			var fileNames = await _filesystem.EnumerateFiles(_fullName, searchPattern, searchOption);
 			return fileNames.Select(x => new FileInfoAsync(_filesystem, x)).ToList();
 		}
+
+		public Task<IDirectoryInfoAsync> CreateSubdirectory(string path)
+		{
+			if (!Path.IsPathRooted(path))
+				path = Path.Combine(_fullName, path);
+
+			return _filesystem.CreateDirectory(path);
+		}
 	}
 }
