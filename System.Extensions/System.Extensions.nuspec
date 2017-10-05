@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>System.Extensions</id>
+    <version>$version$</version>
+    <authors>Kittyfisto</authors>
+    <owners>Kittyfisto</owners>
+    <licenseUrl>https://github.com/Kittyfisto/System.Extensions/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/Kittyfisto/System.Extensions</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Threading library</description>
+    <releaseNotes>Release</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>.NET Tasks Timers Schedulers AsyncIO Folderwatch</tags>
+    <dependencies>
+      <dependency id="log4net" version="2.0.8" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\bin\Release\System.Extensions.XML" target="lib\net45\" />
+    <file src="..\bin\Release\System.Extensions.pdb" target="lib\net45\" />
+    <file src="..\bin\Release\System.Extensions.dll" target="lib\net45\" />
+  </files>
+</package>
