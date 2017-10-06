@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -248,6 +249,18 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that a newly created file can be found")]
+		public void TestEnumerateFiles3()
+		{
+			Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
+			using (Await(_filesystem.CreateFile("a"))) { }
+			var files = Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory));
+			files.Should().HaveCount(1);
+			var info = _filesystem.GetFileInfo(files.First());
+			Await(info.Exists).Should().BeTrue("because we've just created that file");
+		}
+
+		[Test]
 		public void TestFileExists1()
 		{
 			const string fileName = "stuff.txt";
@@ -304,8 +317,8 @@ namespace System.Extensions.Test.IO
 		public void TestCreateFile4()
 		{
 			const string fileName = "bar";
-			using (Await(_filesystem.CreateFile(fileName.ToLower()))) ;
-			using (Await(_filesystem.CreateFile(fileName.ToUpper()))) ;
+			using (Await(_filesystem.CreateFile(fileName.ToLower()))) { }
+			using (Await(_filesystem.CreateFile(fileName.ToUpper()))) { }
 
 			var files = Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory));
 			files.Should().HaveCount(1, "because only one file should've been created");

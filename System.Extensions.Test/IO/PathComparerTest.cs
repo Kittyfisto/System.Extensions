@@ -31,6 +31,7 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that two relative paths are equal, regardless of case")]
 		public void TestEquals3()
 		{
 			var comparer = new PathComparer();
@@ -38,6 +39,7 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that two relative paths are equal, regardless of case")]
 		public void TestEquals4()
 		{
 			var comparer = new PathComparer();

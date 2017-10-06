@@ -228,13 +228,16 @@ namespace System.IO
 		/// <inheritdoc />
 		public IFileInfoAsync GetFileInfo(string fileName)
 		{
-			if (fileName == null)
-				throw new ArgumentNullException(nameof(fileName));
+			Path2.ThrowIfPathIsInvalid(fileName);
 
-			if (!Path2.IsValidPath(fileName))
-				throw new ArgumentException(nameof(fileName));
+			var path = CaptureFullPath(fileName);
+			var directoryPath = Path.GetDirectoryName(path);
+			InMemoryDirectory directory;
+			if (!TryGetDirectory(directoryPath, out directory))
+				throw new NotImplementedException();
 
-			throw new NotImplementedException();
+			var fname = Path.GetFileName(path);
+			return directory.GetFileInfo(fname);
 		}
 
 		/// <inheritdoc />
@@ -409,12 +412,17 @@ namespace System.IO
 		private sealed class InMemoryFile
 			: IFileInfoAsync
 		{
+			private readonly InMemoryFilesystem _filesystem;
 			private readonly string _fullPath;
 			private readonly string _name;
 			private MemoryStream _content;
 
-			public InMemoryFile(string fullPath)
+			public InMemoryFile(InMemoryFilesystem filesystem, string fullPath)
 			{
+				if (filesystem == null)
+					throw new ArgumentNullException(nameof(filesystem));
+
+				_filesystem = filesystem;
 				_fullPath = fullPath;
 				_name = Path.GetFileName(fullPath);
 				_content = new MemoryStream();
@@ -444,10 +452,7 @@ namespace System.IO
 				get { throw new NotImplementedException(); }
 			}
 
-			public Task<bool> Exists
-			{
-				get { throw new NotImplementedException(); }
-			}
+			public Task<bool> Exists => _filesystem.FileExists(_fullPath);
 
 			public Task<Stream> Create()
 			{
@@ -650,7 +655,7 @@ namespace System.IO
 					else
 					{
 						var fullPath = Path.Combine(_fullName, fileName);
-						file = new InMemoryFile(fullPath);
+						file = new InMemoryFile(_filesystem, fullPath);
 						_files.Add(fileName, file);
 					}
 
@@ -667,6 +672,21 @@ namespace System.IO
 						throw new FileNotFoundException();
 
 					return file.Content;
+				}
+			}
+
+			public InMemoryFile GetFileInfo(string fname)
+			{
+				lock (_syncRoot)
+				{
+					InMemoryFile file;
+					if (!_files.TryGetValue(fname, out file))
+					{
+						var fullPath = Path.Combine(_fullName, fname);
+						file = new InMemoryFile(_filesystem, fullPath);
+					}
+
+					return file;
 				}
 			}
 		}
