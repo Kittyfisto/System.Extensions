@@ -31,6 +31,20 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestEquals3()
+		{
+			var comparer = new PathComparer();
+			comparer.Equals("FOO", "foo").Should().BeTrue();
+		}
+
+		[Test]
+		public void TestEquals4()
+		{
+			var comparer = new PathComparer();
+			comparer.Equals("FOO\\bar", "foo\\BAR").Should().BeTrue();
+		}
+
+		[Test]
 		public void TestGetHashCode1([ValueSource(nameof(InvalidPaths))] string path)
 		{
 			var comparer = new PathComparer();

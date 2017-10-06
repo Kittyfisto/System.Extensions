@@ -41,7 +41,9 @@ namespace System.IO
 
 			Uri uri;
 			if (!Uri.TryCreate(path, UriKind.Absolute, out uri))
-				return path;
+			{
+				return path.ToUpperInvariant();
+			}
 
 			return Path.GetFullPath(uri.LocalPath)
 				.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)

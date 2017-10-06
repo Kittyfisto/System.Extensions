@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -157,24 +158,41 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateFiles(string path)
 		{
-			throw new NotImplementedException();
+			Path2.ThrowIfPathIsInvalid(path);
+
+			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
+			{
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(path, out directory))
+					throw new DirectoryNotFoundException();
+
+				return directory.Files.Select(x => x.FullPath).ToList();
+			});
 		}
 
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern)
 		{
+			Path2.ThrowIfPathIsInvalid(path);
+			if (searchPattern == null)
+				throw new ArgumentNullException(nameof(searchPattern));
 			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
 		{
+			Path2.ThrowIfPathIsInvalid(path);
+			if (searchPattern == null)
+				throw new ArgumentNullException(nameof(searchPattern));
 			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path)
 		{
+			Path2.ThrowIfPathIsInvalid(path);
+
 			path = CaptureFullPath(path);
 			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
@@ -189,12 +207,21 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern)
 		{
-			throw new NotImplementedException();
+			var task = EnumerateDirectories(path);
+			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
+			{
+				var regex = CreateRegex(searchPattern);
+				var matches = task.Result.Where(x => regex.IsMatch(x)).ToList();
+				return matches;
+			});
 		}
 
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
 		{
+			Path2.ThrowIfPathIsInvalid(path);
+
+			path = CaptureFullPath(path);
 			throw new NotImplementedException();
 		}
 
@@ -219,7 +246,16 @@ namespace System.IO
 			if (!Path2.IsValidPath(fileName))
 				return Task.FromResult(false);
 
-			throw new NotImplementedException();
+			var path = CaptureFullPath(fileName);
+			return _taskScheduler.StartNew(() =>
+			{
+				var directoryPath = Path.GetDirectoryName(path);
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(directoryPath, out directory))
+					return false;
+
+				return directory.ContainsFile(Path.GetFileName(path));
+			});
 		}
 
 		/// <inheritdoc />
@@ -245,13 +281,35 @@ namespace System.IO
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
-			throw new NotImplementedException();
+			path = CaptureFullPath(path);
+			return _taskScheduler.StartNew(() =>
+			{
+				var directoryPath = Path.GetDirectoryName(path);
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(directoryPath, out directory))
+					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+
+				var fileName = Path.GetFileName(path);
+				return directory.CreateFile(fileName);
+			});
 		}
 
 		/// <inheritdoc />
 		public Task<Stream> OpenRead(string path)
 		{
-			throw new NotImplementedException();
+			Path2.ThrowIfPathIsInvalid(path);
+
+			path = CaptureFullPath(path);
+			return _taskScheduler.StartNew(() =>
+			{
+				var directoryPath = Path.GetDirectoryName(path);
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(directoryPath, out directory))
+					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+
+				var fileName = Path.GetFileName(path);
+				return directory.OpenReadSync(fileName);
+			});
 		}
 
 		/// <inheritdoc />
@@ -337,16 +395,29 @@ namespace System.IO
 			}
 		}
 
+		[Pure]
+		private static Regex CreateRegex(string searchPattern)
+		{
+			var regexPattern = "^" + Regex.Escape(searchPattern)
+				                   .Replace(@"\*", ".*")
+				                   .Replace(@"\?", ".")
+			                   + "$";
+			var regex = new Regex(regexPattern);
+			return regex;
+		}
+
 		private sealed class InMemoryFile
 			: IFileInfoAsync
 		{
 			private readonly string _fullPath;
 			private readonly string _name;
+			private MemoryStream _content;
 
 			public InMemoryFile(string fullPath)
 			{
 				_fullPath = fullPath;
 				_name = Path.GetFileName(fullPath);
+				_content = new MemoryStream();
 			}
 
 			public override string ToString()
@@ -382,6 +453,13 @@ namespace System.IO
 			{
 				throw new NotImplementedException();
 			}
+
+			public Stream Content => _content;
+
+			public void Clear()
+			{
+				_content = new MemoryStream();
+			}
 		}
 
 		private sealed class InMemoryDirectory
@@ -407,7 +485,7 @@ namespace System.IO
 				_fullName = parent != null ? Path.Combine(parent.FullName, name) : name;
 				_syncRoot = new object();
 				_subDirectories = new Dictionary<string, InMemoryDirectory>();
-				_files = new Dictionary<string, InMemoryFile>();
+				_files = new Dictionary<string, InMemoryFile>(new PathComparer());
 			}
 
 			public override string ToString()
@@ -432,6 +510,17 @@ namespace System.IO
 					lock (_syncRoot)
 					{
 						return _subDirectories.Values.ToList();
+					}
+				}
+			}
+
+			public IEnumerable<IFileInfoAsync> Files
+			{
+				get
+				{
+					lock (_syncRoot)
+					{
+						return _files.Values.ToList();
 					}
 				}
 			}
@@ -537,6 +626,47 @@ namespace System.IO
 					{
 						_subDirectories.Add(directory.Name, directory);
 					}
+				}
+			}
+
+			[Pure]
+			public bool ContainsFile(string fileName)
+			{
+				lock (_syncRoot)
+				{
+					return _files.ContainsKey(fileName);
+				}
+			}
+
+			public Stream CreateFile(string fileName)
+			{
+				lock (_syncRoot)
+				{
+					InMemoryFile file;
+					if (_files.TryGetValue(fileName, out file))
+					{
+						file.Clear();
+					}
+					else
+					{
+						var fullPath = Path.Combine(_fullName, fileName);
+						file = new InMemoryFile(fullPath);
+						_files.Add(fileName, file);
+					}
+
+					return file.Content;
+				}
+			}
+
+			public Stream OpenReadSync(string fileName)
+			{
+				lock (_syncRoot)
+				{
+					InMemoryFile file;
+					if (!_files.TryGetValue(fileName, out file))
+						throw new FileNotFoundException();
+
+					return file.Content;
 				}
 			}
 		}

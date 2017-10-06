@@ -95,9 +95,51 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestOpenReadInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.OpenRead(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
 		public void TestDeleteFileInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
 			new Action(() => Filesystem.DeleteFile(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestEnumerateDirectoriesInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.EnumerateDirectories(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestEnumerateDirectoriesInvalidPath2([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.EnumerateDirectories(path, "*.*")).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestEnumerateDirectoriesInvalidPath3([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestEnumerateFilesInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.EnumerateFiles(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestEnumerateFilesInvalidPath2([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.EnumerateFiles(path, "*.*")).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestEnumerateFilesInvalidPath3([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly)).ShouldThrow<ArgumentException>();
 		}
 
 		#endregion
@@ -188,6 +230,94 @@ namespace System.Extensions.Test.IO
 			childDirectories.Should().NotBeNull();
 			childDirectories.Should().HaveCount(1);
 			childDirectories[0].Should().Be(child.FullName);
+		}
+
+		[Test]
+		[Description("Verifies that an empty directory can be enumerated")]
+		public void TestEnumerateFiles1()
+		{
+			Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
+		}
+
+		[Test]
+		[Description("Verifies that a non-existing directory cannot be enumerated")]
+		public void TestEnumerateFiles2()
+		{
+			new Action(() => Await(_filesystem.EnumerateFiles("daawdw")))
+				.ShouldThrow<DirectoryNotFoundException>();
+		}
+
+		[Test]
+		public void TestFileExists1()
+		{
+			const string fileName = "stuff.txt";
+			Await(_filesystem.FileExists(fileName)).Should().BeFalse("because we haven't created any files yet");
+		}
+
+		[Test]
+		public void TestCreateFile1()
+		{
+			const string fileName = "stuff.txt";
+			Await(_filesystem.FileExists(fileName)).Should().BeFalse();
+
+			using (var stream = Await(_filesystem.CreateFile(fileName)))
+			{
+				stream.Should().NotBeNull();
+				stream.CanRead.Should().BeTrue("because the file should've been opened for writing");
+				stream.CanWrite.Should().BeTrue("because the file should've been opened for reading");
+				stream.Position.Should().Be(0, "because the stream should point towards the start of the file");
+				stream.Length.Should().Be(0, "because the file should be empty since it was just created");
+
+				Await(_filesystem.FileExists(fileName)).Should().BeTrue("because we've just created that file");
+			}
+		}
+
+		[Test]
+		[Description("Verifies that a previously created file is replaced")]
+		public void TestCreateFile2()
+		{
+			const string fileName = "stuff";
+			using (var stream = Await(_filesystem.CreateFile(fileName)))
+			{
+				stream.WriteByte(128);
+			}
+
+			using (var stream = Await(_filesystem.CreateFile(fileName)))
+			{
+				stream.CanRead.Should().BeTrue("because the file should've been opened for writing");
+				stream.CanWrite.Should().BeTrue("because the file should've been opened for reading");
+				stream.Position.Should().Be(0, "because the stream should point towards the start of the file");
+				stream.Length.Should().Be(0, "because the previously created file should've been replaced with an empty file");
+			}
+		}
+
+		[Test]
+		[Description("Verifies that CreateFile throws when the directory doesn't exist")]
+		public void TestCreateFile3()
+		{
+			const string fileName = "foo\\bar";
+			new Action(() => Await(_filesystem.CreateFile(fileName))).ShouldThrow<DirectoryNotFoundException>();
+		}
+
+		[Test]
+		[Description("Verifies that CreateFile is case insensitive")]
+		public void TestCreateFile4()
+		{
+			const string fileName = "bar";
+			using (Await(_filesystem.CreateFile(fileName.ToLower()))) ;
+			using (Await(_filesystem.CreateFile(fileName.ToUpper()))) ;
+
+			var files = Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory));
+			files.Should().HaveCount(1, "because only one file should've been created");
+		}
+
+		[Test]
+		[Description("Verifies that OpenRead throws when the file doesn't exist")]
+		public void TestOpenRead1()
+		{
+			const string fileName = "stuff";
+			new Action(() => Await(_filesystem.OpenRead(fileName))).ShouldThrow<FileNotFoundException>(
+				"because there's no such file");
 		}
 	}
 }
