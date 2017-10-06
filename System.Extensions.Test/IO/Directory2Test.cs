@@ -18,5 +18,53 @@ namespace System.Extensions.Test.IO
 					"Stuff"
 				});
 		}
+
+		[Test]
+		public void TestSplit2()
+		{
+			Directory2.Split(@"M:\Some\Stuff\")
+				.Should().Equal(new object[]
+				{
+					@"M:\",
+					"Some",
+					"Stuff\\"
+				});
+		}
+
+		[Test]
+		public void TestSplit3()
+		{
+			Directory2.Split(@"M:\Some\Stuff/")
+				.Should().Equal(new object[]
+				{
+					@"M:\",
+					"Some",
+					@"Stuff\"
+				});
+		}
+
+		[Test]
+		public void TestSplit4()
+		{
+			Directory2.Split(@"M:/Some\Stuff/")
+				.Should().Equal(new object[]
+				{
+					@"M:\",
+					"Some",
+					@"Stuff\"
+				});
+		}
+
+		[Test]
+		public void TestSplit5()
+		{
+			Directory2.Split(@"M:/Some/Stuff/")
+				.Should().Equal(new object[]
+				{
+					@"M:\",
+					"Some",
+					@"Stuff\"
+				});
+		}
 	}
 }

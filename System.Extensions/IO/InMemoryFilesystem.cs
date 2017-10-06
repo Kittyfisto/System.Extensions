@@ -363,6 +363,10 @@ namespace System.IO
 				return "{" + _fullName + "}";
 			}
 
+			public IDirectoryInfoAsync Root => _root;
+
+			public IDirectoryInfoAsync Parent => _parent;
+
 			public string Name => _name;
 
 			public string FullName => _fullName;
@@ -445,8 +449,8 @@ namespace System.IO
 			{
 				lock (_syncRoot)
 				{
-					directoryName = directoryName.Replace(Directory2.DirectorySeparatorChar, "");
-					directoryName = directoryName.Replace(Directory2.AltDirectorySeparatorChar, "");
+					directoryName = directoryName.Replace(Directory2.DirectorySeparatorString, "");
+					directoryName = directoryName.Replace(Directory2.AltDirectorySeparatorString, "");
 
 					InMemoryDirectory directory;
 					if (!_subDirectories.TryGetValue(directoryName, out directory))

@@ -48,6 +48,8 @@ namespace System.Extensions.Test.IO
 				root.Name.Should().NotBeNullOrEmpty();
 				root.FullName.Should().NotBeNullOrEmpty();
 				root.Name.Should().Be(root.FullName);
+				root.Parent.Should().BeNull("because root directories don't have a parent");
+				root.Root.Should().BeSameAs(root, "because root directories should point to themselves as their own root");
 			}
 		}
 
@@ -61,6 +63,23 @@ namespace System.Extensions.Test.IO
 		public void TestTestCurrentDirectory1()
 		{
 			Filesystem.CurrentDirectory.Should().NotBeNull();
+		}
+
+		[Test]
+		[Description("Verifies that the Current directory is linked correctly on its path towards its root")]
+		public void TestTestCurrent1()
+		{
+			var directory = Filesystem.Current;
+			directory.Should().NotBeNull();
+			directory.FullName.Should().Be(Filesystem.CurrentDirectory);
+			directory.Root.Should().NotBeNull("because every directory should point towards a root");
+			var root = directory.Root;
+
+			while (directory != null)
+			{
+				directory.Root.Should().BeSameAs(root, "because all directories in a path should point to the same root");
+				directory = directory.Parent;
+			}
 		}
 
 		[Test]

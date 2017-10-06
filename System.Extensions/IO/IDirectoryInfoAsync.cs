@@ -11,6 +11,20 @@ namespace System.IO
 	public interface IDirectoryInfoAsync
 	{
 		/// <summary>
+		///     Gets the root portion of the directory.
+		/// </summary>
+		IDirectoryInfoAsync Root { get; }
+
+		/// <summary>
+		///     Gets the parent directory of a specified subdirectory.
+		/// </summary>
+		/// <remarks>
+		///     The parent directory, or null if the path is null or if the file path denotes
+		///     a root (such as "\", "C:", or * "\\server\share").
+		/// </remarks>
+		IDirectoryInfoAsync Parent { get; }
+
+		/// <summary>
 		///     The name of the directory.
 		/// </summary>
 		string Name { get; }

@@ -137,7 +137,7 @@ namespace System.IO
 				throw new ArgumentNullException(nameof(directoryName));
 
 			directoryName = CaptureFullPath(directoryName);
-			return new DirectoryInfoAsync(this, directoryName);
+			return DirectoryInfoAsync.FromPath(this, directoryName);
 		}
 
 		/// <inheritdoc />
@@ -287,7 +287,14 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public IDirectoryInfoAsync Current => new DirectoryInfoAsync(this, CurrentDirectory);
+		public IDirectoryInfoAsync Current
+		{
+			get
+			{
+				
+				return DirectoryInfoAsync.FromPath(this, CurrentDirectory);
+			}
+		}
 
 		/// <inheritdoc />
 		public Task<IEnumerable<IDirectoryInfoAsync>> Roots
@@ -297,7 +304,7 @@ namespace System.IO
 				return _scheduler.StartNew<IEnumerable<IDirectoryInfoAsync>>(() =>
 				{
 					var drives = DriveInfo.GetDrives();
-					return drives.Select(x => new DirectoryInfoAsync(this, x.Name, x.Name)).ToList();
+					return drives.Select(x => DirectoryInfoAsync.FromRoot(this, x.Name)).ToList();
 				});
 			}
 		}
@@ -314,7 +321,7 @@ namespace System.IO
 			{
 				Log.DebugFormat("Creating directory '{0}'...", path);
 				var info = Directory.CreateDirectory(path);
-				return new DirectoryInfoAsync(this, info.FullName, info.Name);
+				return DirectoryInfoAsync.FromPath(this, info.FullName);
 			});
 		}
 

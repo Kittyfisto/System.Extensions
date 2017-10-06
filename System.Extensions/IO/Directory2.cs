@@ -5,8 +5,10 @@ namespace System.IO
 {
 	internal static class Directory2
 	{
-		public static readonly string DirectorySeparatorChar = Path.DirectorySeparatorChar.ToString();
-		public static readonly string AltDirectorySeparatorChar = Path.AltDirectorySeparatorChar.ToString();
+		private static readonly char[] DirectorySeparatorChars =
+			new[] {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar};
+		public static readonly string DirectorySeparatorString = Path.DirectorySeparatorChar.ToString();
+		public static readonly string AltDirectorySeparatorString = Path.AltDirectorySeparatorChar.ToString();
 
 		/// <summary>
 		///     Splits the given path into its individual components.
@@ -17,10 +19,10 @@ namespace System.IO
 		public static IReadOnlyList<string> Split(string path)
 		{
 			var components = new List<string>();
-			var separator = Path.DirectorySeparatorChar;
+			var separators = new[] {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar};
 			int next;
 			var start = 0;
-			while ((next = path.IndexOf(separator, start)) != -1)
+			while ((next = path.IndexOfAny(separators, start)) != -1)
 			{
 				var component = path.Substring(start, next - start);
 				components.Add(component);
@@ -28,10 +30,18 @@ namespace System.IO
 			}
 
 			if (Path.IsPathRooted(path))
-				components[index: 0] = components[index: 0] + DirectorySeparatorChar;
+				components[index: 0] = components[index: 0] + DirectorySeparatorString;
 
 			if (start < path.Length)
 				components.Add(path.Substring(start));
+
+			if (path.EndsWithAny(separators))
+			{
+				var last = components[components.Count - 1];
+				last += Path.DirectorySeparatorChar;
+				components[components.Count - 1] = last;
+			}
+
 			return components;
 		}
 
@@ -47,7 +57,7 @@ namespace System.IO
 			if (fullPath.Length > 3)
 			{
 				var s = fullPath;
-				if (fullPath.EndsWith(DirectorySeparatorChar))
+				if (fullPath.EndsWithAny(DirectorySeparatorChars))
 					s = fullPath.Substring(startIndex: 0, length: fullPath.Length - 1);
 				dirName = Path.GetFileName(s);
 			}
