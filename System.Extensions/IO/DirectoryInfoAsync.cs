@@ -10,6 +10,7 @@ namespace System.IO
 	{
 		private readonly Filesystem _filesystem;
 		private readonly string _name;
+		private readonly string _fullName;
 		private readonly IDirectoryInfoAsync _parent;
 
 		public DirectoryInfoAsync(Filesystem filesystem, IDirectoryInfoAsync root, IDirectoryInfoAsync parent,
@@ -19,7 +20,7 @@ namespace System.IO
 			Root = parent != null ? root : this;
 			_parent = parent;
 			_name = name;
-			FullName = fullName;
+			_fullName = fullName;
 		}
 
 		public DirectoryInfoAsync(Filesystem filesystem, IDirectoryInfoAsync root, IDirectoryInfoAsync parent,
@@ -34,7 +35,7 @@ namespace System.IO
 
 		public string Name => _name;
 
-		public string FullName { get; }
+		public string FullName => _fullName;
 
 		public Task<bool> Exists => _filesystem.DirectoryExists(FullName);
 
@@ -59,6 +60,11 @@ namespace System.IO
 		{
 			var fileNames = await _filesystem.EnumerateFiles(FullName, searchPattern, searchOption);
 			return fileNames.Select(x => new FileInfoAsync(_filesystem, x)).ToList();
+		}
+
+		public Task Create()
+		{
+			return _filesystem.CreateDirectory(_name);
 		}
 
 		public Task<IDirectoryInfoAsync> CreateSubdirectory(string path)

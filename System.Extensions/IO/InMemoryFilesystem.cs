@@ -37,6 +37,9 @@ namespace System.IO
 		/// <param name="taskScheduler"></param>
 		public InMemoryFilesystem(ISerialTaskScheduler taskScheduler)
 		{
+			if (taskScheduler == null)
+				throw new ArgumentNullException(nameof(taskScheduler));
+
 			_syncRoot = new object();
 			_taskScheduler = taskScheduler;
 			_roots = new Dictionary<string, InMemoryDirectory>(new PathComparer());
@@ -54,15 +57,7 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public IDirectoryInfoAsync Current
-		{
-			get
-			{
-				InMemoryDirectory directory;
-				TryGetDirectory(CurrentDirectory, out directory);
-				return directory;
-			}
-		}
+		public IDirectoryInfoAsync Current => GetDirectoryInfo(CurrentDirectory);
 
 		/// <inheritdoc />
 		public Task<IEnumerable<IDirectoryInfoAsync>> Roots
@@ -126,9 +121,37 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public IDirectoryInfoAsync GetDirectoryInfo(string directoryName)
+		public IDirectoryInfoAsync GetDirectoryInfo(string path)
 		{
-			throw new NotImplementedException();
+			if (path == null)
+				throw new ArgumentNullException(nameof(path));
+
+			if (!Path2.IsValidPath(path))
+				throw new ArgumentException(nameof(path));
+
+			path = CaptureFullPath(path);
+			var components = Directory2.Split(path);
+			InMemoryDirectory root;
+			if (!TryGetRoot(components[0], out root))
+			{
+				throw new NotImplementedException();
+			}
+
+			InMemoryDirectory directory = root;
+			for (int i = 1; i < components.Count; ++i)
+			{
+				var directoryName = components[i];
+				InMemoryDirectory next;
+				if (!directory.TryGetDirectory(directoryName, out next))
+				{
+					next = new InMemoryDirectory(this, _taskScheduler,
+						root, directory, directoryName);
+				}
+
+				directory = next;
+			}
+
+			return directory;
 		}
 
 		/// <inheritdoc />
@@ -178,12 +201,24 @@ namespace System.IO
 		/// <inheritdoc />
 		public IFileInfoAsync GetFileInfo(string fileName)
 		{
+			if (fileName == null)
+				throw new ArgumentNullException(nameof(fileName));
+
+			if (!Path2.IsValidPath(fileName))
+				throw new ArgumentException(nameof(fileName));
+
 			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc />
-		public Task<bool> FileExists(string path)
+		public Task<bool> FileExists(string fileName)
 		{
+			if (fileName == null)
+				return Task.FromResult(false);
+
+			if (!Path2.IsValidPath(fileName))
+				return Task.FromResult(false);
+
 			throw new NotImplementedException();
 		}
 
@@ -202,6 +237,14 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task WriteAllBytes(string path, byte[] bytes)
 		{
+			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc />
+		public Task<Stream> CreateFile(string path)
+		{
+			Path2.ThrowIfPathIsInvalid(path);
+
 			throw new NotImplementedException();
 		}
 
@@ -226,6 +269,8 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task DeleteFile(string path)
 		{
+			Path2.ThrowIfPathIsInvalid(path);
+
 			throw new NotImplementedException();
 		}
 
@@ -237,7 +282,7 @@ namespace System.IO
 		{
 			lock (_syncRoot)
 			{
-				_roots.Add(name, new InMemoryDirectory(_taskScheduler, root: null, parent: null, name: name));
+				_roots.Add(name, new InMemoryDirectory(this, _taskScheduler, root: null, parent: null, name: name));
 			}
 		}
 
@@ -332,11 +377,17 @@ namespace System.IO
 			{
 				get { throw new NotImplementedException(); }
 			}
+
+			public Task<Stream> Create()
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 		private sealed class InMemoryDirectory
 			: IDirectoryInfoAsync
 		{
+			private readonly InMemoryFilesystem _filesystem;
 			private readonly ISerialTaskScheduler _taskScheduler;
 			private readonly Dictionary<string, InMemoryFile> _files;
 			private readonly string _fullName;
@@ -346,8 +397,9 @@ namespace System.IO
 			private readonly Dictionary<string, InMemoryDirectory> _subDirectories;
 			private readonly object _syncRoot;
 
-			public InMemoryDirectory(ISerialTaskScheduler taskScheduler, InMemoryDirectory root, InMemoryDirectory parent, string name)
+			public InMemoryDirectory(InMemoryFilesystem filesystem, ISerialTaskScheduler taskScheduler, InMemoryDirectory root, InMemoryDirectory parent, string name)
 			{
+				_filesystem = filesystem;
 				_taskScheduler = taskScheduler;
 				_root = parent != null ? root : this;
 				_parent = parent;
@@ -371,7 +423,7 @@ namespace System.IO
 
 			public string FullName => _fullName;
 
-			public Task<bool> Exists => Task.FromResult(true);
+			public Task<bool> Exists => _filesystem.DirectoryExists(_fullName);
 
 			public IEnumerable<IDirectoryInfoAsync> Subdirectories
 			{
@@ -402,6 +454,15 @@ namespace System.IO
 			public Task<IEnumerable<IFileInfoAsync>> EnumerateFiles(string searchPattern, SearchOption searchOption)
 			{
 				throw new NotImplementedException();
+			}
+
+			/// <inheritdoc />
+			public Task Create()
+			{
+				return _taskScheduler.StartNew(() =>
+				{
+					_parent.AddChildDirectory(this);
+				});
 			}
 
 			public Task<IDirectoryInfoAsync> CreateSubdirectory(string path)
@@ -455,10 +516,27 @@ namespace System.IO
 					InMemoryDirectory directory;
 					if (!_subDirectories.TryGetValue(directoryName, out directory))
 					{
-						directory = new InMemoryDirectory(_taskScheduler, _root, this, directoryName);
-						_subDirectories.Add(directoryName, directory);
+						directory = new InMemoryDirectory(_filesystem, _taskScheduler, _root, this, directoryName);
+						AddChildDirectory(directory);
 					}
 					return directory;
+				}
+			}
+
+			private void AddChildDirectory(InMemoryDirectory directory)
+			{
+				lock (_syncRoot)
+				{
+					InMemoryDirectory tmp;
+					if (_subDirectories.TryGetValue(directory.Name, out tmp))
+					{
+						if (!ReferenceEquals(tmp, directory))
+							throw new Exception("This shouldn't happen");
+					}
+					else
+					{
+						_subDirectories.Add(directory.Name, directory);
+					}
 				}
 			}
 		}

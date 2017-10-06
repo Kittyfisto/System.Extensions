@@ -65,6 +65,12 @@ namespace System.IO
 		Task<IEnumerable<IFileInfoAsync>> EnumerateFiles(string searchPattern, SearchOption searchOption);
 
 		/// <summary>
+		///     Creates this directory.
+		/// </summary>
+		/// <returns></returns>
+		Task Create();
+
+		/// <summary>
 		///     Creates a subdirectory or subdirectories on the specified path.
 		///     The specified path can be relative to this instance of the IDirectoryInfo
 		///     class.

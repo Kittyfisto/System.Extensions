@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+﻿using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -8,6 +7,7 @@ namespace System.Extensions.Test.IO
 {
 	[TestFixture]
 	public abstract class AbstractFilesystemTest
+		: AbstractFileTest
 	{
 		private IFilesystem _filesystem;
 
@@ -20,21 +20,6 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem = Create();
 		}
-
-		public static IEnumerable<string> InvalidPaths => new[]
-		{
-			null,
-			"",
-			" ",
-			"  ",
-			"\t",
-			"\r",
-			"\n",
-			" \t ",
-			":",
-			"?",
-			"C\\?"
-		};
 
 		[Test]
 		public void TestRoots1()
@@ -51,12 +36,6 @@ namespace System.Extensions.Test.IO
 				root.Parent.Should().BeNull("because root directories don't have a parent");
 				root.Root.Should().BeSameAs(root, "because root directories should point to themselves as their own root");
 			}
-		}
-
-		[Test]
-		public void TestDirectoryExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
-		{
-			Await(Filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
 		}
 
 		[Test]
@@ -81,6 +60,48 @@ namespace System.Extensions.Test.IO
 				directory = directory.Parent;
 			}
 		}
+
+		#region Invalid Paths
+
+		[Test]
+		[Description("Verifies that the filesystem implementation behaves just like File.Exists when given invalid paths")]
+		public void TestFileExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
+		{
+			File.Exists(invalidPath).Should().BeFalse();
+			Await(Filesystem.FileExists(invalidPath)).Should().BeFalse();
+		}
+
+		[Test]
+		public void TestDirectoryExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
+		{
+			Await(Filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
+		}
+
+		[Test]
+		public void TestGetDirectoryInfoInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.GetDirectoryInfo(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestGetFileInfoInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.GetFileInfo(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestCreateFileInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.CreateFile(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestDeleteFileInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.DeleteFile(path)).ShouldThrow<ArgumentException>();
+		}
+
+		#endregion
 
 		[Test]
 		[Description("Verifies that creating a directory works with a relative path")]
@@ -121,6 +142,16 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestCreateDirectory4()
+		{
+			var dir = _filesystem.GetDirectoryInfo("SomeDirectory");
+			Await(dir.Exists).Should().BeFalse("because there's no such directory yet");
+			Await(dir.Create());
+			Await(dir.Exists).Should().BeTrue("because we've just created this directory");
+			Await(_filesystem.DirectoryExists("SomeDirectory")).Should().BeTrue();
+		}
+
+		[Test]
 		[Description("Verifies that CreateSubdirectory can create single sub directory")]
 		public void TestCreateSubdirectory1()
 		{
@@ -158,15 +189,6 @@ namespace System.Extensions.Test.IO
 			childDirectories.Should().NotBeNull();
 			childDirectories.Should().HaveCount(1);
 			childDirectories[0].Should().Be(child.FullName);
-		}
-
-		protected static T Await<T>(Task<T> task)
-		{
-			task.Should().NotBeNull();
-
-			var waitTime = TimeSpan.FromSeconds(2);
-			task.Wait(waitTime).Should().BeTrue("because the task should've been finished after {0} seconds", waitTime.TotalSeconds);
-			return task.Result;
 		}
 	}
 }

@@ -36,8 +36,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateFiles(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
@@ -50,8 +49,9 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
+			if (searchPattern == null)
+				throw new ArgumentNullException(nameof(searchPattern));
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
@@ -64,9 +64,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
-
+			Path2.ThrowIfPathIsInvalid(path);
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
@@ -78,8 +76,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
@@ -92,8 +89,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
@@ -106,8 +102,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
@@ -123,7 +118,7 @@ namespace System.IO
 			if (fileName == null)
 				throw new ArgumentNullException(nameof(fileName));
 
-			if (string.IsNullOrWhiteSpace(fileName))
+			if (!Path2.IsValidPath(fileName))
 				throw new ArgumentException(nameof(fileName));
 
 			fileName = CaptureFullPath(fileName);
@@ -131,19 +126,22 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public IDirectoryInfoAsync GetDirectoryInfo(string directoryName)
+		public IDirectoryInfoAsync GetDirectoryInfo(string path)
 		{
-			if (directoryName == null)
-				throw new ArgumentNullException(nameof(directoryName));
+			if (path == null)
+				throw new ArgumentNullException(nameof(path));
 
-			directoryName = CaptureFullPath(directoryName);
-			return DirectoryInfoAsync.FromPath(this, directoryName);
+			if (!Path2.IsValidPath(path))
+				throw new ArgumentException(nameof(path));
+
+			path = CaptureFullPath(path);
+			return DirectoryInfoAsync.FromPath(this, path);
 		}
 
 		/// <inheritdoc />
 		public Task<bool> FileExists(string path)
 		{
-			if (string.IsNullOrWhiteSpace(path))
+			if (!Path2.IsValidPath(path))
 				return Task.FromResult(false);
 
 			path = CaptureFullPath(path);
@@ -157,8 +155,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<long> FileLength(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew(() =>
@@ -171,8 +168,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<bool> IsFileReadOnly(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew(() =>
@@ -185,8 +181,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task WriteAllBytes(string path, byte[] bytes)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 			if (bytes == null)
 				throw new ArgumentNullException(nameof(bytes));
 
@@ -207,8 +202,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<Stream> OpenRead(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew<Stream>(() =>
@@ -221,8 +215,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<Stream> OpenWrite(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew<Stream>(() =>
@@ -235,8 +228,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task Write(string path, Stream stream)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 			if (stream == null)
 				throw new ArgumentNullException(nameof(stream));
 
@@ -268,8 +260,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task DeleteFile(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew(() =>
@@ -279,7 +270,10 @@ namespace System.IO
 			});
 		}
 
-		/// <inheritdoc />
+		/// <summary>
+		///     **Always** equals <see cref="Directory.GetCurrentDirectory" />.
+		///     Changing this property changes <see cref="Directory.SetCurrentDirectory" />.
+		/// </summary>
 		public string CurrentDirectory
 		{
 			get { return Directory.GetCurrentDirectory(); }
@@ -312,8 +306,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IDirectoryInfoAsync> CreateDirectory(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 
@@ -328,8 +321,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task DeleteDirectory(string path)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew(() =>
@@ -342,8 +334,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task DeleteDirectory(string path, bool recursive)
 		{
-			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
 			return _scheduler.StartNew(() =>
@@ -356,7 +347,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<bool> DirectoryExists(string path)
 		{
-			if (string.IsNullOrWhiteSpace(path))
+			if (!Path2.IsValidPath(path))
 				return Task.FromResult(false);
 
 			path = CaptureFullPath(path);
@@ -365,6 +356,16 @@ namespace System.IO
 				Log.DebugFormat("Testing if directory '{0}' exists...", path);
 				return Directory.Exists(path);
 			});
+		}
+
+		/// <inheritdoc />
+		public Task<Stream> CreateFile(string path)
+		{
+			Path2.ThrowIfPathIsInvalid(path);
+
+			return _scheduler.StartNew<Stream>(() => new FileStream(path, FileMode.Create,
+				FileAccess.Read | FileAccess.Write,
+				FileShare.None));
 		}
 
 		[Pure]

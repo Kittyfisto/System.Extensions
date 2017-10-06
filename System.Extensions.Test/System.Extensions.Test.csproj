@@ -66,9 +66,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IO\AbstractFilesystemTest.cs" />
+    <Compile Include="IO\AbstractFileTest.cs" />
     <Compile Include="IO\Directory2Test.cs" />
+    <Compile Include="IO\DirectoryInfoAsyncCompatibilityTest.cs" />
+    <Compile Include="IO\FilesystemCompatibilityTest.cs" />
     <Compile Include="IO\FilesystemTest.cs" />
     <Compile Include="IO\InMemoryFilesystemTest.cs" />
+    <Compile Include="IO\Path2Test.cs" />
     <Compile Include="IO\PathComparerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Threading\AbstractSerialTaskSchedulerTest.cs" />

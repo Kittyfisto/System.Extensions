@@ -35,5 +35,10 @@ namespace System.IO
 		public Task<bool> IsReadOnly => _filesystem.IsFileReadOnly(_fullPath);
 
 		public Task<bool> Exists => _filesystem.FileExists(_fullPath);
+
+		public Task<Stream> Create()
+		{
+			return _filesystem.CreateFile(_fullPath);
+		}
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
@@ -68,13 +67,6 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		public void TestFileExists3([ValueSource(nameof(InvalidPaths))] string invalidPath)
-		{
-			File.Exists(invalidPath).Should().BeFalse();
-			Await(Filesystem.FileExists(invalidPath)).Should().BeFalse();
-		}
-
-		[Test]
 		public void TestDirectoryExists1()
 		{
 			Await(Filesystem.DirectoryExists("dawwadwadadwawd"))
@@ -86,14 +78,6 @@ namespace System.Extensions.Test.IO
 		{
 			Await(Filesystem.DirectoryExists(AssemblyDirectory))
 				.Should().BeTrue("because that directory most certainly exists");
-		}
-
-		[Test]
-		[Description("Verifies that the filesystem implementation behaves just like Directory.Exists when given invalid paths")]
-		public void TestDirectoryExists3([ValueSource(nameof(InvalidPaths))] string invalidPath)
-		{
-			Directory.Exists(invalidPath).Should().BeFalse();
-			Await(Filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
 		}
 
 		[Test]
@@ -120,39 +104,6 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		[Description("Verifies that both IFilesystem.EnumerateFiles and Directory.EnumerateFiles throw identical exceptions")]
-		public void TestEnumerateFiles3()
-		{
-			new Action(() => Directory.EnumerateFiles(null)).ShouldThrow<ArgumentNullException>();
-			new Action(() => Await(Filesystem.EnumerateFiles(null))).ShouldThrow<ArgumentNullException>();
-		}
-
-		[Test]
-		[Description("Verifies that both IFilesystem.EnumerateFiles and Directory.EnumerateFiles throw identical exceptions")]
-		public void TestEnumerateFiles4()
-		{
-			const string searchPattern = "*.*";
-			new Action(() => Directory.EnumerateFiles(null, searchPattern)).ShouldThrow<ArgumentNullException>();
-			new Action(() => Await(Filesystem.EnumerateFiles(null, searchPattern))).ShouldThrow<ArgumentNullException>();
-		}
-
-		[Test]
-		[Description("Verifies that both IFilesystem.EnumerateFiles and Directory.EnumerateFiles throw identical exceptions")]
-		public void TestEnumerateFiles5()
-		{
-			new Action(() => Directory.EnumerateFiles(AssemblyDirectory, null)).ShouldThrow<ArgumentNullException>();
-			new Action(() => Await(Filesystem.EnumerateFiles(AssemblyDirectory, null))).ShouldThrow<ArgumentNullException>();
-		}
-
-		[Test]
-		[Description("Verifies that both IFilesystem.EnumerateFiles and Directory.EnumerateFiles throw identical exceptions")]
-		public void TestEnumerateFiles6()
-		{
-			new Action(() => Directory.EnumerateFiles(AssemblyFilePath)).ShouldThrow<IOException>();
-			new Action(() => Await(Filesystem.EnumerateFiles(AssemblyFilePath))).ShouldThrow<IOException>();
-		}
-
-		[Test]
 		public void TestGetFileInfo1()
 		{
 			var expected = new FileInfo(AssemblyFilePath);
@@ -163,14 +114,6 @@ namespace System.Extensions.Test.IO
 			Await(actual.Length).Should().Be(expected.Length, "because both methods should find the same file size");
 			Await(actual.Exists).Should().BeTrue("because the file most certainly exists");
 			Await(actual.IsReadOnly).Should().Be(expected.IsReadOnly, "because both methods should find the same attribute");
-		}
-
-		[Test]
-		[Ignore("Not fully implemented")]
-		public void TestGetFileInfo2([ValueSource(nameof(InvalidPaths))] string path)
-		{
-			new Action(() => new FileInfo(path)).ShouldThrow<ArgumentException>();
-			new Action(() => Filesystem.GetFileInfo(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
@@ -290,18 +233,46 @@ namespace System.Extensions.Test.IO
 			actualInfo2.FullName.Should().Be(expectedInfo2.FullName);
 		}
 
-		private static string AssemblyFilePath
+		[Test]
+		[Description("Verifies that Create() actually creates a directory on the filesystem")]
+		public void TestCreateDirectory10()
 		{
-			get
+			const string directoryName = "Stuff";
+			var actualDirectory = Filesystem.GetDirectoryInfo(directoryName);
+			Directory.Exists(directoryName).Should().BeFalse("because the directory does not exist yet");
+
+			Await(actualDirectory.Create());
+			Directory.Exists(directoryName).Should().BeTrue("because we've just created this directory");
+		}
+
+		[Test]
+		[Description("Verifies that Create() actually creates a file on the filesystem")]
+		public void TestCreateFile10()
+		{
+			const string fileName = "Stuff";
+			var file = Filesystem.GetFileInfo(fileName);
+			File.Exists(fileName).Should().BeFalse("because the file does not exist yet");
+
+			using (Await(file.Create()))
 			{
-				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-				UriBuilder uri = new UriBuilder(codeBase);
-				string path = Uri.UnescapeDataString(uri.Path);
-				return path;
+				File.Exists(fileName).Should().BeTrue("because we've just created this file");
 			}
 		}
 
-		private static string AssemblyDirectory => Path.GetDirectoryName(AssemblyFilePath);
+		[Test]
+		[Description("Verifies that Create() actually creates a file on the filesystem")]
+		public void TestCreateFile11()
+		{
+			const string fileName = "Stuff";
+			var file = Filesystem.GetFileInfo(fileName);
+
+			using (var stream = Await(file.Create()))
+			{
+				stream.WriteByte(42);
+			}
+
+			File.ReadAllBytes(fileName).Should().Equal(new object[] {(byte) 42});
+		}
 
 		protected override IFilesystem Create()
 		{

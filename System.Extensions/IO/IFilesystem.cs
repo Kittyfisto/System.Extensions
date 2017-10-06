@@ -13,9 +13,6 @@ namespace System.IO
 		/// <summary>
 		///     The current directory, used when relative paths are given to any of these methods.
 		/// </summary>
-		/// <remarks>
-		///     **Always** equals <see cref="Directory.GetCurrentDirectory" />.
-		/// </remarks>
 		string CurrentDirectory { get; set; }
 
 		/// <summary>
@@ -64,10 +61,10 @@ namespace System.IO
 		/// <summary>
 		///     Obtains information about the given directory.
 		/// </summary>
-		/// <param name="directoryName"></param>
+		/// <param name="path"></param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="directoryName" /> is null</exception>
-		IDirectoryInfoAsync GetDirectoryInfo(string directoryName);
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
+		IDirectoryInfoAsync GetDirectoryInfo(string path);
 
 		/// <summary>
 		///     Returns an enumerable collection of file names in a specified path.
@@ -170,6 +167,18 @@ namespace System.IO
 		Task WriteAllBytes(string path, byte[] bytes);
 
 		/// <summary>
+		///     Creates a file in a particular path.  If the file exists, it is replaced.
+		///     The file is opened with ReadWrite accessand cannot be opened by another
+		///     application until it has been closed.  An IOException is thrown if the
+		///     directory specified doesn't exist.
+		///     Your application must have Create, Read, and Write permissions to
+		///     the file.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		Task<Stream> CreateFile(string path);
+
+		/// <summary>
 		///     Opens the given file for reading.
 		/// </summary>
 		/// <param name="path"></param>
@@ -197,6 +206,8 @@ namespace System.IO
 
 		/// <summary>
 		///     Deletes the specified file.
+		///     If the file does not exist, Delete succeeds without throwing
+		///     an exception.
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>

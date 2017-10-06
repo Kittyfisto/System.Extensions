@@ -1,4 +1,6 @@
-﻿namespace System.IO
+﻿using System.Security;
+
+namespace System.IO
 {
 	internal static class Path2
 	{
@@ -19,6 +21,50 @@
 		public static bool HasIllegalCharacters(string path, bool checkAdditional = false)
 		{
 			return AnyPathHasIllegalCharacters(path, checkAdditional);
+		}
+
+		/// <summary>
+		///     Tests if the given path is well formed and MIGHT point to a directory / file.
+		///     Does not check for the presence of any dirve and/or directory.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		public static bool IsValidPath(string path)
+		{
+			try
+			{
+				Path.GetFullPath(path);
+				return true;
+			}
+			catch (ArgumentException)
+			{
+				return false;
+			}
+			catch (SecurityException)
+			{
+				return false;
+			}
+			catch (NotSupportedException)
+			{
+				return false;
+			}
+			catch (PathTooLongException)
+			{
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Throws an <see cref="ArgumentException"/> if the given path is invalid
+		/// </summary>
+		/// <param name="path"></param>
+		public static void ThrowIfPathIsInvalid(string path)
+		{
+			if (path == null)
+				throw new ArgumentNullException(nameof(path));
+
+			if (!IsValidPath(path))
+				throw new ArgumentException(string.Format("The path '{0}' is invalid", path), nameof(path));
 		}
 
 		/// <summary>
