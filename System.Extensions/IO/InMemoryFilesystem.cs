@@ -95,7 +95,26 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task DeleteDirectory(string path)
 		{
-			throw new NotImplementedException();
+			Path2.ThrowIfPathIsInvalid(path);
+
+			path = CaptureFullPath(path);
+			return _taskScheduler.StartNew(() =>
+			{
+				var parent = Path.GetDirectoryName(path);
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(parent, out directory))
+					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+
+				var directoryName = Directory2.GetDirName(path);
+				bool isEmpty;
+				if (!directory.DeleteSubdirectory(directoryName, out isEmpty))
+				{
+					if (!isEmpty)
+						throw new IOException(string.Format("The directory '{0}' is not empty", path));
+
+					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+				}
+			});
 		}
 
 		/// <inheritdoc />
@@ -614,6 +633,29 @@ namespace System.IO
 						AddChildDirectory(directory);
 					}
 					return directory;
+				}
+			}
+
+			public bool DeleteSubdirectory(string directoryName, out bool isEmpty)
+			{
+				lock (_syncRoot)
+				{
+					InMemoryDirectory directory;
+					if (_subDirectories.TryGetValue(directoryName, out directory))
+					{
+						if (directory.Files.Any() || directory.Subdirectories.Any())
+						{
+							isEmpty = false;
+							return false;
+						}
+
+						_subDirectories.Remove(directoryName);
+						isEmpty = true;
+						return true;
+					}
+
+					isEmpty = true;
+					return false;
 				}
 			}
 

@@ -108,6 +108,12 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestDeleteDirectoryInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => Filesystem.DeleteDirectory(path)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
 		public void TestEnumerateDirectoriesInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
 		{
 			new Action(() => Filesystem.EnumerateDirectories(path)).ShouldThrow<ArgumentException>();
@@ -194,6 +200,50 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that deleting a non-existant directory throws")]
+		public void TestDeleteDirectory1()
+		{
+			const string path = "foobar";
+			Await(_filesystem.DirectoryExists(path)).Should().BeFalse();
+			new Action(() => Await(_filesystem.DeleteDirectory(path))).ShouldThrow<DirectoryNotFoundException>();
+		}
+
+		[Test]
+		[Description("Verifies that deleting a non-existant directory throws")]
+		public void TestDeleteDirectory2()
+		{
+			const string path = "foo\\bar";
+			Await(_filesystem.DirectoryExists(path)).Should().BeFalse();
+			new Action(() => Await(_filesystem.DeleteDirectory(path))).ShouldThrow<DirectoryNotFoundException>();
+		}
+
+		[Test]
+		[Description("Verifies that deleting a previously existing and empty directory works")]
+		public void TestDeleteDirectory3()
+		{
+			const string path = "foobar";
+			Await(_filesystem.CreateDirectory(path));
+			Await(_filesystem.DirectoryExists(path)).Should().BeTrue();
+			Await(_filesystem.DeleteDirectory(path));
+			Await(_filesystem.DirectoryExists(path)).Should().BeFalse("because the directory should've been deleted");
+		}
+
+		[Test]
+		[Description("Verifies that deleting a non-empty directory is not allowed")]
+		public void TestDeleteDirectory4()
+		{
+			const string directory = "foobar";
+			string filePath = Path.Combine(directory, "stuff.txt");
+			_filesystem.CreateDirectory(directory);
+			_filesystem.CreateFile(filePath);
+			Await(_filesystem.FileExists(filePath)).Should().BeTrue();
+
+			new Action(() => Await(_filesystem.DeleteDirectory(directory))).ShouldThrow<IOException>();
+			Await(_filesystem.DirectoryExists(directory)).Should().BeTrue("because the directory shouldn't have been deleted");
+			Await(_filesystem.FileExists(filePath)).Should().BeTrue("because the directory's contents shouldn't have been deleted");
+		}
+
+		[Test]
 		[Description("Verifies that CreateSubdirectory can create single sub directory")]
 		public void TestCreateSubdirectory1()
 		{
@@ -265,6 +315,13 @@ namespace System.Extensions.Test.IO
 		{
 			const string fileName = "stuff.txt";
 			Await(_filesystem.FileExists(fileName)).Should().BeFalse("because we haven't created any files yet");
+		}
+
+		[Test]
+		public void TestFileExists2()
+		{
+			const string fileName = "foobar\\stuff.txt";
+			Await(_filesystem.FileExists(fileName)).Should().BeFalse("because the directory doesn't even exist");
 		}
 
 		[Test]
