@@ -70,14 +70,6 @@ namespace System.Extensions.Test.IO
 		[Description("Verifies that both IFilesystem.EnumerateFiles and Directory.EnumerateFiles throw identical exceptions")]
 		public void TestEnumerateFiles6()
 		{
-			new Action(() => Directory.EnumerateFiles(AssemblyDirectory, null)).ShouldThrow<ArgumentNullException>();
-			new Action(() => _filesystem.EnumerateFiles(AssemblyDirectory, null)).ShouldThrow<ArgumentNullException>();
-		}
-
-		[Test]
-		[Description("Verifies that both IFilesystem.EnumerateFiles and Directory.EnumerateFiles throw identical exceptions")]
-		public void TestEnumerateFiles7()
-		{
 			new Action(() => Directory.EnumerateFiles(AssemblyFilePath)).ShouldThrow<IOException>();
 			new Action(() => Await(_filesystem.EnumerateFiles(AssemblyFilePath))).ShouldThrow<IOException>();
 		}

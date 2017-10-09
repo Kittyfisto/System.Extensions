@@ -34,7 +34,10 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateFiles(string path)
+		public Task<IReadOnlyList<string>> EnumerateFiles(string path,
+			string searchPattern = null,
+			SearchOption searchOption = SearchOption.TopDirectoryOnly,
+			bool tolerateNonExistantPath = false)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
@@ -42,33 +45,26 @@ namespace System.IO
 			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
 				Log.DebugFormat("Enumerating files of directory '{0}'...", path);
-				return Directory.EnumerateFiles(path).ToList();
-			});
-		}
+				if (searchPattern == null)
+				{
+					searchPattern = "*";
+				}
 
-		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern)
-		{
-			Path2.ThrowIfPathIsInvalid(path);
-			if (searchPattern == null)
-				throw new ArgumentNullException(nameof(searchPattern));
+				if (tolerateNonExistantPath)
+				{
+					if (!Directory.Exists(path))
+						return new string[0];
 
-			path = CaptureFullPath(path);
-			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
-			{
-				Log.DebugFormat("Enumerating files of directory '{0}'...", path);
-				return Directory.EnumerateFiles(path, searchPattern).ToList();
-			});
-		}
+					try
+					{
+						return Directory.EnumerateFiles(path, searchPattern, searchOption).ToList();
+					}
+					catch (DirectoryNotFoundException)
+					{
+						return new string[0];
+					}
+				}
 
-		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
-		{
-			Path2.ThrowIfPathIsInvalid(path);
-			path = CaptureFullPath(path);
-			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
-			{
-				Log.DebugFormat("Enumerating files of directory '{0}'...", path);
 				return Directory.EnumerateFiles(path, searchPattern, searchOption).ToList();
 			});
 		}
@@ -100,7 +96,9 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
+		public Task<IReadOnlyList<string>> EnumerateDirectories(string path,
+			string searchPattern,
+			SearchOption searchOption)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 

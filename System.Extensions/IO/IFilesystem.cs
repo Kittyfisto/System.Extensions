@@ -67,31 +67,22 @@ namespace System.IO
 		IDirectoryInfoAsync GetDirectoryInfo(string path);
 
 		/// <summary>
-		///     Returns an enumerable collection of file names in a specified path.
-		/// </summary>
-		/// <param name="path"></param>
-		/// <returns></returns>
-		/// <exception cref="ArgumentNullException"></exception>
-		Task<IReadOnlyList<string>> EnumerateFiles(string path);
-
-		/// <summary>
-		///     Returns an enumerable collection of file names in a specified path.
-		/// </summary>
-		/// <param name="path"></param>
-		/// <param name="searchPattern"></param>
-		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern);
-
-		/// <summary>
-		///     Returns an enumerable collection of file names in a specified path.
+		///     Returns an enumerable collection of file names in a specified path which match
+		///     the specified pattern (if a pattern is specified).
 		/// </summary>
 		/// <param name="path"></param>
 		/// <param name="searchPattern"></param>
 		/// <param name="searchOption"></param>
+		/// <param name="tolerateNonExistantPath">
+		///     When set to true, then this method will never throw a
+		///     <see cref="DirectoryNotFoundException" /> exception and instead return an empty enumeration
+		/// </param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern, SearchOption searchOption);
+		Task<IReadOnlyList<string>> EnumerateFiles(string path,
+			string searchPattern = null,
+			SearchOption searchOption = SearchOption.TopDirectoryOnly,
+			bool tolerateNonExistantPath = false);
 
 		/// <summary>
 		///     Returns an enumerable collection of directory names in a specified path.

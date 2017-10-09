@@ -53,14 +53,14 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		public void TestFileExists2()
+		public void TestFileExists3()
 		{
 			Await(Filesystem.FileExists("wdawaddwawadoknfawonafw"))
 				.Should().BeFalse("because the file doesn't exist");
 		}
 
 		[Test]
-		public void TestFileExists3()
+		public void TestFileExists4()
 		{
 			Await(Filesystem.FileExists(AssemblyFilePath))
 				.Should().BeTrue("because that assembly most certainly exists");

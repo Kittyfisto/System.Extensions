@@ -311,6 +311,20 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that only files matching the search pattern are returned")]
+		public void TestEnumerateFiles4()
+		{
+			Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
+			using (Await(_filesystem.CreateFile("a"))) { }
+			using (Await(_filesystem.CreateFile("b"))) { }
+
+			Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*a")).Should().HaveCount(1);
+			Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*b")).Should().HaveCount(1);
+			Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*")).Should().HaveCount(2);
+			Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*c")).Should().HaveCount(0);
+		}
+
+		[Test]
 		public void TestFileExists1()
 		{
 			const string fileName = "stuff.txt";

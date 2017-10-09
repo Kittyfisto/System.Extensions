@@ -151,10 +151,11 @@ namespace System.IO
 
 			path = CaptureFullPath(path);
 			var components = Directory2.Split(path);
+			var rootName = components[0];
 			InMemoryDirectory root;
-			if (!TryGetRoot(components[0], out root))
+			if (!TryGetRoot(rootName, out root))
 			{
-				throw new NotImplementedException();
+				throw new IOException(string.Format("No such drive '{0}'", rootName));
 			}
 
 			InMemoryDirectory directory = root;
@@ -175,36 +176,38 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateFiles(string path)
+		public Task<IReadOnlyList<string>> EnumerateFiles(string path,
+			string searchPattern = null,
+			SearchOption searchOption = SearchOption.TopDirectoryOnly,
+			bool tolerateNonExistantPath = false)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
+			if (searchOption == SearchOption.AllDirectories)
+				throw new NotImplementedException();
+
+			path = CaptureFullPath(path);
 			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
 				InMemoryDirectory directory;
 				if (!TryGetDirectory(path, out directory))
-					throw new DirectoryNotFoundException();
+				{
+					if (tolerateNonExistantPath)
+						return new List<string>();
 
-				return directory.Files.Select(x => x.FullPath).ToList();
+					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+				}
+
+				var files = directory.Files.Select(x => x.FullPath);
+
+				if (searchPattern != null)
+				{
+					var regex = CreateRegex(searchPattern);
+					files = files.Where(x => regex.IsMatch(x));
+				}
+
+				return files.ToList();
 			});
-		}
-
-		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern)
-		{
-			Path2.ThrowIfPathIsInvalid(path);
-			if (searchPattern == null)
-				throw new ArgumentNullException(nameof(searchPattern));
-			throw new NotImplementedException();
-		}
-
-		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateFiles(string path, string searchPattern, SearchOption searchOption)
-		{
-			Path2.ThrowIfPathIsInvalid(path);
-			if (searchPattern == null)
-				throw new ArgumentNullException(nameof(searchPattern));
-			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc />
