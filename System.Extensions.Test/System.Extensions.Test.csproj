@@ -74,6 +74,7 @@
     <Compile Include="IO\InMemoryFilesystemTest.cs" />
     <Compile Include="IO\Path2Test.cs" />
     <Compile Include="IO\PathComparerTest.cs" />
+    <Compile Include="IO\StreamProxyTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Threading\AbstractSerialTaskSchedulerTest.cs" />
     <Compile Include="Threading\DefaultTaskSchedulerTest.cs" />

@@ -177,7 +177,7 @@ namespace System.IO
 		Task<Stream> OpenRead(string path);
 
 		/// <summary>
-		///     Opens the given file for writing.
+		///     Opens an existing file or creates a new file for writing.
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>

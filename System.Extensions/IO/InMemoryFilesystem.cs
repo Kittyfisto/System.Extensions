@@ -340,7 +340,23 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<Stream> OpenWrite(string path)
 		{
-			throw new NotImplementedException();
+			Path2.ThrowIfPathIsInvalid(path);
+
+			path = CaptureFullPath(path);
+			return _taskScheduler.StartNew(() =>
+			{
+				var directoryPath = Path.GetDirectoryName(path);
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(directoryPath, out directory))
+					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+
+				var fileName = Path.GetFileName(path);
+				var stream = directory.OpenWriteSync(fileName);
+				if (stream != null)
+					return stream;
+
+				return directory.CreateFile(fileName);
+			});
 		}
 
 		/// <inheritdoc />
@@ -704,7 +720,7 @@ namespace System.IO
 						_files.Add(fileName, file);
 					}
 
-					return file.Content;
+					return new StreamProxy(file.Content);
 				}
 			}
 
@@ -716,7 +732,25 @@ namespace System.IO
 					if (!_files.TryGetValue(fileName, out file))
 						throw new FileNotFoundException();
 
-					return file.Content;
+					var stream = new StreamProxy(file.Content);
+					stream.Position = 0;
+					return stream;
+				}
+			}
+
+			public Stream OpenWriteSync(string fileName)
+			{
+				lock (_syncRoot)
+				{
+					InMemoryFile file;
+					if (!_files.TryGetValue(fileName, out file))
+					{
+						return null;
+					}
+
+					file.Clear();
+					var stream = new StreamProxy(file.Content) {Position = 0};
+					return stream;
 				}
 			}
 

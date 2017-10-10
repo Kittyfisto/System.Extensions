@@ -64,6 +64,7 @@
     <Compile Include="IO\IFilesystemWatchdog.cs" />
     <Compile Include="IO\Path2.cs" />
     <Compile Include="IO\PathComparer.cs" />
+    <Compile Include="IO\StreamProxy.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Threading\DefaultTaskScheduler.cs" />

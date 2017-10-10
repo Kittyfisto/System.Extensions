@@ -403,5 +403,46 @@ namespace System.Extensions.Test.IO
 			new Action(() => Await(_filesystem.OpenRead(fileName))).ShouldThrow<FileNotFoundException>(
 				"because there's no such file");
 		}
+
+		[Test]
+		[Description("Verifies that OpenWrite actually allows writing data to a file")]
+		public void TestOpenWrite1()
+		{
+			const string fileName = "stuff";
+			using (var stream = Await(_filesystem.OpenWrite(fileName)))
+			{
+				stream.WriteByte(128);
+			}
+
+			using (var stream = Await(_filesystem.OpenRead(fileName)))
+			{
+				stream.Length.Should().Be(1);
+				stream.Position.Should().Be(0);
+				stream.ReadByte().Should().Be(128);
+			}
+		}
+
+		[Test]
+		[Description("Verifies that OpenWrite actually overwrites any previously existing file")]
+		public void TestOpenWrite2()
+		{
+			const string fileName = "stuff";
+			using (var stream = Await(_filesystem.OpenWrite(fileName)))
+			{
+				stream.WriteByte(255);
+			}
+
+			using (var stream = Await(_filesystem.OpenWrite(fileName)))
+			{
+				stream.WriteByte(42);
+			}
+
+			using (var stream = Await(_filesystem.OpenRead(fileName)))
+			{
+				stream.Position.Should().Be(0);
+				stream.Length.Should().Be(1);
+				stream.ReadByte().Should().Be(42);
+			}
+		}
 	}
 }
