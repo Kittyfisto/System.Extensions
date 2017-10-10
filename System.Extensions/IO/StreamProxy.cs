@@ -49,7 +49,7 @@
 		/// <inheritdoc />
 		public override long Position
 		{
-			get => _inner.Position;
+			get { return _inner.Position; }
 			set
 			{
 				if (_isDisposed)
