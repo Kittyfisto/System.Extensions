@@ -190,7 +190,19 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that CreateDirectory is able to create a full directory path")]
 		public void TestCreateDirectory4()
+		{
+			var path = Path.Combine(_filesystem.CurrentDirectory, "a", "b", "c");
+			Await(_filesystem.CreateDirectory(path));
+
+			Await(_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a"))).Should().BeTrue();
+			Await(_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a", "b"))).Should().BeTrue();
+			Await(_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a", "b", "c"))).Should().BeTrue();
+		}
+
+		[Test]
+		public void TestDirectoryCreate1()
 		{
 			var dir = _filesystem.GetDirectoryInfo("SomeDirectory");
 			Await(dir.Exists).Should().BeFalse("because there's no such directory yet");

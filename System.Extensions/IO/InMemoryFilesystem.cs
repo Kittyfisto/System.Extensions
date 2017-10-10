@@ -81,13 +81,15 @@ namespace System.IO
 			path = CaptureFullPath(path);
 			return _taskScheduler.StartNew<IDirectoryInfoAsync>(() =>
 			{
-				var parentPath = Path.GetDirectoryName(path);
-				InMemoryDirectory parentDirectory;
-				if (!TryGetDirectory(parentPath, out parentDirectory))
+				var components = Directory2.Split(path);
+				InMemoryDirectory directory;
+				if (!TryGetRoot(components[0], out directory))
 					throw new DirectoryNotFoundException();
 
-				var directoryName = path.Substring(parentPath.Length);
-				var directory = parentDirectory.CreateChildDirectory(directoryName);
+				for (int i = 1; i < components.Count; ++i)
+				{
+					directory = directory.CreateChildDirectory(components[i]);
+				}
 				return directory;
 			});
 		}
