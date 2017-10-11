@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,6 @@ namespace System.IO
 		private readonly Dictionary<string, InMemoryDirectory> _roots;
 		private readonly object _syncRoot;
 		private readonly ISerialTaskScheduler _taskScheduler;
-		private string _currentDirectory;
 
 		/// <summary>
 		///     Initializes this object.
@@ -47,15 +47,11 @@ namespace System.IO
 
 			const string root = @"M:\";
 			AddRoot(root);
-			_currentDirectory = root;
+			CurrentDirectory = root;
 		}
 
 		/// <inheritdoc />
-		public string CurrentDirectory
-		{
-			get { return _currentDirectory; }
-			set { _currentDirectory = value; }
-		}
+		public string CurrentDirectory { get; set; }
 
 		/// <inheritdoc />
 		public IDirectoryInfoAsync Current => GetDirectoryInfo(CurrentDirectory);
@@ -83,13 +79,11 @@ namespace System.IO
 			{
 				var components = Directory2.Split(path);
 				InMemoryDirectory directory;
-				if (!TryGetRoot(components[0], out directory))
+				if (!TryGetRoot(components[index: 0], out directory))
 					throw new DirectoryNotFoundException();
 
-				for (int i = 1; i < components.Count; ++i)
-				{
+				for (var i = 1; i < components.Count; ++i)
 					directory = directory.CreateChildDirectory(components[i]);
-				}
 				return directory;
 			});
 		}
@@ -129,10 +123,10 @@ namespace System.IO
 		public Task<bool> DirectoryExists(string path)
 		{
 			if (string.IsNullOrWhiteSpace(path))
-				return Task.FromResult(false);
+				return Task.FromResult(result: false);
 
 			if (Path2.HasIllegalCharacters(path))
-				return Task.FromResult(false);
+				return Task.FromResult(result: false);
 
 			path = CaptureFullPath(path);
 			return _taskScheduler.StartNew(() =>
@@ -153,23 +147,19 @@ namespace System.IO
 
 			path = CaptureFullPath(path);
 			var components = Directory2.Split(path);
-			var rootName = components[0];
+			var rootName = components[index: 0];
 			InMemoryDirectory root;
 			if (!TryGetRoot(rootName, out root))
-			{
 				throw new IOException(string.Format("No such drive '{0}'", rootName));
-			}
 
-			InMemoryDirectory directory = root;
-			for (int i = 1; i < components.Count; ++i)
+			var directory = root;
+			for (var i = 1; i < components.Count; ++i)
 			{
 				var directoryName = components[i];
 				InMemoryDirectory next;
 				if (!directory.TryGetDirectory(directoryName, out next))
-				{
 					next = new InMemoryDirectory(this, _taskScheduler,
 						root, directory, directoryName);
-				}
 
 				directory = next;
 			}
@@ -268,10 +258,10 @@ namespace System.IO
 		public Task<bool> FileExists(string fileName)
 		{
 			if (fileName == null)
-				return Task.FromResult(false);
+				return Task.FromResult(result: false);
 
 			if (!Path2.IsValidPath(fileName))
-				return Task.FromResult(false);
+				return Task.FromResult(result: false);
 
 			var path = CaptureFullPath(fileName);
 			return _taskScheduler.StartNew(() =>
@@ -408,7 +398,7 @@ namespace System.IO
 
 			if (!Path.IsPathRooted(path))
 			{
-				var current = _currentDirectory;
+				var current = CurrentDirectory;
 				var abs = Path.Combine(current, path);
 				return abs;
 			}
@@ -419,12 +409,10 @@ namespace System.IO
 		private bool TryGetDirectory(string path, out InMemoryDirectory directory)
 		{
 			var components = Directory2.Split(path);
-			if (!TryGetRoot(components[0], out directory))
-			{
+			if (!TryGetRoot(components[index: 0], out directory))
 				return false;
-			}
 
-			for(int i = 1; i < components.Count; ++i)
+			for (var i = 1; i < components.Count; ++i)
 			{
 				var directoryName = components[i];
 				if (!directory.TryGetDirectory(directoryName, out directory))
@@ -459,11 +447,27 @@ namespace System.IO
 			return regex;
 		}
 
+		/// <summary>
+		///     Creates a string which represents every file and directory in this filesystem.
+		/// </summary>
+		/// <returns></returns>
+		public Task<string> Print()
+		{
+			return _taskScheduler.StartNew(() =>
+			{
+				var builder = new StringBuilder();
+				foreach (var root in _roots.Values.OrderBy(x => x.Name))
+				{
+					root.PrintSync(builder);
+				}
+				return builder.ToString();
+			});
+		}
+
 		private sealed class InMemoryFile
 			: IFileInfoAsync
 		{
 			private readonly InMemoryFilesystem _filesystem;
-			private readonly string _fullPath;
 			private readonly string _name;
 			private MemoryStream _content;
 
@@ -473,19 +477,16 @@ namespace System.IO
 					throw new ArgumentNullException(nameof(filesystem));
 
 				_filesystem = filesystem;
-				_fullPath = fullPath;
+				FullPath = fullPath;
 				_name = Path.GetFileName(fullPath);
 				_content = new MemoryStream();
 			}
 
-			public override string ToString()
-			{
-				return "{" + _fullPath + "}";
-			}
+			public Stream Content => _content;
 
 			public string Name => _name;
 
-			public string FullPath => _fullPath;
+			public string FullPath { get; }
 
 			public Task<IFileInfo> Capture()
 			{
@@ -502,61 +503,54 @@ namespace System.IO
 				get { throw new NotImplementedException(); }
 			}
 
-			public Task<bool> Exists => _filesystem.FileExists(_fullPath);
+			public Task<bool> Exists => _filesystem.FileExists(FullPath);
 
 			public Task<Stream> Create()
 			{
 				throw new NotImplementedException();
 			}
 
-			public Stream Content => _content;
+			public override string ToString()
+			{
+				return "{" + FullPath + "}";
+			}
 
 			public void Clear()
 			{
 				_content = new MemoryStream();
+			}
+
+			public void PrintSync(StringBuilder builder)
+			{
+				builder.AppendFormat("{0} [File]", FullPath);
 			}
 		}
 
 		private sealed class InMemoryDirectory
 			: IDirectoryInfoAsync
 		{
-			private readonly InMemoryFilesystem _filesystem;
-			private readonly ISerialTaskScheduler _taskScheduler;
 			private readonly Dictionary<string, InMemoryFile> _files;
-			private readonly string _fullName;
+			private readonly InMemoryFilesystem _filesystem;
 			private readonly string _name;
 			private readonly InMemoryDirectory _parent;
 			private readonly InMemoryDirectory _root;
 			private readonly Dictionary<string, InMemoryDirectory> _subDirectories;
 			private readonly object _syncRoot;
+			private readonly ISerialTaskScheduler _taskScheduler;
 
-			public InMemoryDirectory(InMemoryFilesystem filesystem, ISerialTaskScheduler taskScheduler, InMemoryDirectory root, InMemoryDirectory parent, string name)
+			public InMemoryDirectory(InMemoryFilesystem filesystem, ISerialTaskScheduler taskScheduler, InMemoryDirectory root,
+				InMemoryDirectory parent, string name)
 			{
 				_filesystem = filesystem;
 				_taskScheduler = taskScheduler;
 				_root = parent != null ? root : this;
 				_parent = parent;
 				_name = name;
-				_fullName = parent != null ? Path.Combine(parent.FullName, name) : name;
+				FullName = parent != null ? Path.Combine(parent.FullName, name) : name;
 				_syncRoot = new object();
 				_subDirectories = new Dictionary<string, InMemoryDirectory>();
 				_files = new Dictionary<string, InMemoryFile>(new PathComparer());
 			}
-
-			public override string ToString()
-			{
-				return "{" + _fullName + "}";
-			}
-
-			public IDirectoryInfoAsync Root => _root;
-
-			public IDirectoryInfoAsync Parent => _parent;
-
-			public string Name => _name;
-
-			public string FullName => _fullName;
-
-			public Task<bool> Exists => _filesystem.DirectoryExists(_fullName);
 
 			public IEnumerable<IDirectoryInfoAsync> Subdirectories
 			{
@@ -579,6 +573,16 @@ namespace System.IO
 					}
 				}
 			}
+
+			public IDirectoryInfoAsync Root => _root;
+
+			public IDirectoryInfoAsync Parent => _parent;
+
+			public string Name => _name;
+
+			public string FullName { get; }
+
+			public Task<bool> Exists => _filesystem.DirectoryExists(FullName);
 
 			public Task<IDirectoryInfo> Capture()
 			{
@@ -603,29 +607,27 @@ namespace System.IO
 			/// <inheritdoc />
 			public Task Create()
 			{
-				return _taskScheduler.StartNew(() =>
-				{
-					_parent.AddChildDirectory(this);
-				});
+				return _taskScheduler.StartNew(() => { _parent.AddChildDirectory(this); });
 			}
 
 			public Task<IDirectoryInfoAsync> CreateSubdirectory(string path)
 			{
 				if (!Path.IsPathRooted(path))
-				{
 					return _taskScheduler.StartNew<IDirectoryInfoAsync>(() =>
 					{
 						var components = Directory2.Split(path);
 						var directory = this;
 						foreach (var directoryName in components)
-						{
 							directory = directory.CreateChildDirectory(directoryName);
-						}
 						return directory;
 					});
-				}
 
 				throw new NotImplementedException();
+			}
+
+			public override string ToString()
+			{
+				return "{" + FullName + "}";
 			}
 
 			public bool TryGetDirectoryFromPath(string path, out InMemoryDirectory directory)
@@ -727,7 +729,7 @@ namespace System.IO
 					}
 					else
 					{
-						var fullPath = Path.Combine(_fullName, fileName);
+						var fullPath = Path.Combine(FullName, fileName);
 						file = new InMemoryFile(_filesystem, fullPath);
 						_files.Add(fileName, file);
 					}
@@ -756,9 +758,7 @@ namespace System.IO
 				{
 					InMemoryFile file;
 					if (!_files.TryGetValue(fileName, out file))
-					{
 						return null;
-					}
 
 					file.Clear();
 					var stream = new StreamProxy(file.Content) {Position = 0};
@@ -773,7 +773,7 @@ namespace System.IO
 					InMemoryFile file;
 					if (!_files.TryGetValue(fname, out file))
 					{
-						var fullPath = Path.Combine(_fullName, fname);
+						var fullPath = Path.Combine(FullName, fname);
 						file = new InMemoryFile(_filesystem, fullPath);
 					}
 
@@ -786,6 +786,25 @@ namespace System.IO
 				lock (_syncRoot)
 				{
 					return _files.Remove(fileName);
+				}
+			}
+
+			public void PrintSync(StringBuilder builder)
+			{
+				lock (_syncRoot)
+				{
+					builder.AppendFormat("{0} [Drive]", FullName);
+					builder.AppendLine();
+					foreach (var directory in _subDirectories.Values.OrderBy(x => x.Name))
+					{
+						directory.PrintSync(builder);
+						builder.AppendLine();
+					}
+					foreach (var file in _files.Values.OrderBy(x => x.Name))
+					{
+						file.PrintSync(builder);
+						builder.AppendLine();
+					}
 				}
 			}
 		}
