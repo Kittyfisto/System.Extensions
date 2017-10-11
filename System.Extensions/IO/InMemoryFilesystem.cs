@@ -372,7 +372,17 @@ namespace System.IO
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
-			throw new NotImplementedException();
+			path = CaptureFullPath(path);
+			return _taskScheduler.StartNew(() =>
+			{
+				var directoryPath = Path.GetDirectoryName(path);
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(directoryPath, out directory))
+					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+
+				var fileName = Path.GetFileName(path);
+				directory.TryDeleteFileSync(fileName);
+			});
 		}
 
 		/// <summary>
@@ -768,6 +778,14 @@ namespace System.IO
 					}
 
 					return file;
+				}
+			}
+
+			public bool TryDeleteFileSync(string fileName)
+			{
+				lock (_syncRoot)
+				{
+					return _files.Remove(fileName);
 				}
 			}
 		}

@@ -256,6 +256,40 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that deleting a non-existant file is allowed and doesn't throw")]
+		public void TestDeleteFile1()
+		{
+			const string filename = "some file.dat";
+			Await(_filesystem.FileExists(filename)).Should().BeFalse("because there is no such file");
+			Await(_filesystem.DeleteFile(filename));
+			Await(_filesystem.FileExists(filename)).Should().BeFalse("because there is still no such file");
+		}
+
+		[Test]
+		[Description("Verifies that deleting a file from a non-existant folder is not allowed and throws")]
+		public void TestDeleteFile2()
+		{
+			const string filename = "foo\\bar\\file.dat";
+			Await(_filesystem.FileExists(filename)).Should().BeFalse("because there is no such file");
+			new Action(() => Await(_filesystem.DeleteFile(filename))).ShouldThrow<DirectoryNotFoundException>(
+				"because IFilesystem implementations must mimic their .NET counterparts as far as throwing exceptions is concerned");
+			Await(_filesystem.FileExists(filename)).Should().BeFalse("because there is still no such file");
+		}
+
+		[Test]
+		[Description("Verifies that deleting a file actually removes it")]
+		public void TestDeleteFile3()
+		{
+			const string filename = "some file.dat";
+			using (Await(_filesystem.CreateFile(filename))) { }
+			Await(_filesystem.FileExists(filename)).Should().BeTrue();
+
+			Await(_filesystem.DeleteFile(filename));
+			Await(_filesystem.FileExists(filename)).Should().BeFalse("because we've just deleted the file");
+			new Action(() => Await(_filesystem.OpenRead(filename))).ShouldThrow<FileNotFoundException>();
+		}
+
+		[Test]
 		[Description("Verifies that CreateSubdirectory can create single sub directory")]
 		public void TestCreateSubdirectory1()
 		{
