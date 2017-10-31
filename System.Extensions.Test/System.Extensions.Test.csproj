@@ -71,6 +71,7 @@
     <Compile Include="IO\DirectoryInfoAsyncCompatibilityTest.cs" />
     <Compile Include="IO\FilesystemCompatibilityTest.cs" />
     <Compile Include="IO\FilesystemTest.cs" />
+    <Compile Include="IO\GZipTest.cs" />
     <Compile Include="IO\InMemoryFilesystemTest.cs" />
     <Compile Include="IO\Path2Test.cs" />
     <Compile Include="IO\PathComparerTest.cs" />
