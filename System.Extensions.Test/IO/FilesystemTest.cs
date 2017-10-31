@@ -81,7 +81,7 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		public void TestEnumerateFiles4()
+		public void TestEnumerateFiles5()
 		{
 			var expected = Directory.EnumerateFiles(AssemblyDirectory).ToList();
 			var actual = Await(Filesystem.EnumerateFiles(AssemblyDirectory));
@@ -92,7 +92,7 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		public void TestEnumerateFiles5()
+		public void TestEnumerateFiles6()
 		{
 			const string filter = "*.pdb";
 			var expected = Directory.EnumerateFiles(AssemblyDirectory, filter).ToList();
