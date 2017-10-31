@@ -22,6 +22,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\bin\Debug\System.Extensions.XML</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +33,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\bin\Release\System.Extensions.XML</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
@@ -47,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ByteArrayExtensions.cs" />
     <Compile Include="IO\Directory2.cs" />
     <Compile Include="IO\DirectoryInfo2.cs" />
     <Compile Include="IO\DirectoryInfoAsync.cs" />
@@ -63,6 +68,8 @@
     <Compile Include="IO\IFilesystem.cs" />
     <Compile Include="IO\IFilesystemWatcher.cs" />
     <Compile Include="IO\IFilesystemWatchdog.cs" />
+    <Compile Include="IO\IntHelpers.cs" />
+    <Compile Include="IO\MurMurHash3.cs" />
     <Compile Include="IO\Path2.cs" />
     <Compile Include="IO\PathComparer.cs" />
     <Compile Include="IO\StreamExtensions.cs" />
