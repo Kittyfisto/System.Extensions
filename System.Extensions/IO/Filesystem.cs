@@ -279,14 +279,7 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public IDirectoryInfoAsync Current
-		{
-			get
-			{
-				
-				return DirectoryInfoAsync.FromPath(this, CurrentDirectory);
-			}
-		}
+		public IDirectoryInfoAsync Current => DirectoryInfoAsync.FromPath(this, CurrentDirectory);
 
 		/// <inheritdoc />
 		public Task<IEnumerable<IDirectoryInfoAsync>> Roots

@@ -26,10 +26,7 @@ namespace System.Threading
 			_started = DateTime.Now;
 		}
 
-		public string Name
-		{
-			get { return _name; }
-		}
+		public string Name => _name;
 
 		/// <summary>
 		///     Executes this task.
@@ -48,15 +45,9 @@ namespace System.Threading
 			}
 		}
 
-		public bool IsFinished
-		{
-			get { return _isFinished; }
-		}
+		public bool IsFinished => _isFinished;
 
-		public bool IsFaulted
-		{
-			get { return _isFaulted; }
-		}
+		public bool IsFaulted => _isFaulted;
 
 		public TimeSpan RemainingTimeUntilInvocation
 		{

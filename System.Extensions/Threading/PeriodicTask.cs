@@ -31,7 +31,7 @@ namespace System.Threading
 				}, name)
 		{
 			if (callback == null)
-				throw new ArgumentNullException("callback");
+				throw new ArgumentNullException(nameof(callback));
 
 			_defaultWaitTime = minimumWaitTime;
 		}
@@ -39,7 +39,7 @@ namespace System.Threading
 		public PeriodicTask(long id, Func<TimeSpan> callback, string name = null)
 		{
 			if (callback == null)
-				throw new ArgumentNullException("callback");
+				throw new ArgumentNullException(nameof(callback));
 
 			_id = id;
 			_callback = callback;
@@ -49,24 +49,15 @@ namespace System.Threading
 			_stopwatch.Start();
 		}
 
-		public DateTime LastInvocation
-		{
-			get { return _lastInvocation; }
-		}
+		public DateTime LastInvocation => _lastInvocation;
 
 		/// <summary>
 		/// </summary>
 		public bool IsRemoved { get; set; }
 
-		public long Id
-		{
-			get { return _id; }
-		}
+		public long Id => _id;
 
-		public int NumFailures
-		{
-			get { return _numFailures; }
-		}
+		public int NumFailures => _numFailures;
 
 		public TimeSpan RemainingTimeUntilNextInvocation
 		{
@@ -80,10 +71,7 @@ namespace System.Threading
 			}
 		}
 
-		public string Name
-		{
-			get { return _name; }
-		}
+		public string Name => _name;
 
 		public override string ToString()
 		{

@@ -84,10 +84,9 @@ namespace System.IO
 		/// </summary>
 		private static bool AnyPathHasWildCardCharacters(string path, int startIndex = 0)
 		{
-			char currentChar;
 			for (var i = startIndex; i < path.Length; i++)
 			{
-				currentChar = path[i];
+				var currentChar = path[i];
 				if (currentChar == '*' || currentChar == '?') return true;
 			}
 			return false;

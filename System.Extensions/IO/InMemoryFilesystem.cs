@@ -746,8 +746,7 @@ namespace System.IO
 					if (!_files.TryGetValue(fileName, out file))
 						throw new FileNotFoundException();
 
-					var stream = new StreamProxy(file.Content);
-					stream.Position = 0;
+					var stream = new StreamProxy(file.Content) {Position = 0};
 					return stream;
 				}
 			}

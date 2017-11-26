@@ -20,20 +20,11 @@
 			_syncRoot = new object();
 		}
 
-		public bool IsCompleted
-		{
-			get { return _isCompleted; }
-		}
+		public bool IsCompleted => _isCompleted;
 
-		public bool IsCanceled
-		{
-			get { return _isCanceled; }
-		}
+		public bool IsCanceled => _isCanceled;
 
-		public bool IsFaulted
-		{
-			get { return _isFaulted; }
-		}
+		public bool IsFaulted => _isFaulted;
 
 		public void Wait()
 		{
@@ -104,20 +95,11 @@
 			_syncRoot = new object();
 		}
 
-		public bool IsCompleted
-		{
-			get { return _isCompleted; }
-		}
+		public bool IsCompleted => _isCompleted;
 
-		public bool IsCanceled
-		{
-			get { return _isCanceled; }
-		}
+		public bool IsCanceled => _isCanceled;
 
-		public bool IsFaulted
-		{
-			get { return _isFaulted; }
-		}
+		public bool IsFaulted => _isFaulted;
 
 		public void Wait()
 		{
