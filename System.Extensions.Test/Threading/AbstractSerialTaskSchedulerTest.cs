@@ -77,6 +77,164 @@ namespace System.Extensions.Test.Threading
 		}
 
 		[Test]
+		public void TestStartNew5()
+		{
+			using (var scheduler = Create())
+			{
+				var cancellationTokenSource = new CancellationTokenSource();
+
+				bool executed = false;
+				var task = scheduler.StartNew(() =>
+				{
+					executed = true;
+				}, cancellationTokenSource.Token);
+
+				task.Should().NotBeNull();
+				task.Wait(TimeSpan.FromSeconds(1)).Should().BeTrue();
+				executed.Should().BeTrue();
+			}
+		}
+
+		[Test]
+		public void TestStartNew6()
+		{
+			using (var scheduler = Create())
+			{
+				var cancellationTokenSource = new CancellationTokenSource();
+
+				CancellationToken? actualToken = null;
+				var task = scheduler.StartNew(token =>
+				{
+					actualToken = token;
+				}, cancellationTokenSource.Token);
+				task.Wait(TimeSpan.FromSeconds(1)).Should().BeTrue();
+
+				actualToken.Should().Be(cancellationTokenSource.Token);
+			}
+		}
+
+		[Test]
+		public void TestStartNew7([Values(0, 42, 9001)] int result)
+		{
+			using (var scheduler = Create())
+			{
+				var cancellationTokenSource = new CancellationTokenSource();
+
+				var task = scheduler.StartNew(() => result, cancellationTokenSource.Token);
+
+				task.Should().NotBeNull();
+				task.Wait(TimeSpan.FromSeconds(1)).Should().BeTrue();
+				task.Result.Should().Be(result);
+			}
+		}
+
+		[Test]
+		public void TestStartNew8([Values(0, 42, 9001)] int result)
+		{
+			using (var scheduler = Create())
+			{
+				var cancellationTokenSource = new CancellationTokenSource();
+
+				CancellationToken? actualToken = null;
+				var task = scheduler.StartNew(token =>
+				{
+					actualToken = token;
+					return result;
+				}, cancellationTokenSource.Token);
+				task.Wait(TimeSpan.FromSeconds(1)).Should().BeTrue();
+
+				actualToken.Should().Be(cancellationTokenSource.Token);
+				task.Result.Should().Be(result);
+			}
+		}
+
+		[Test]
+		[Description("Verifies that the task isn't executed and is immediately cancelled if the given token is cancelled")]
+		public void TestCancelBeforeStart1()
+		{
+			using (var scheduler = Create())
+			{
+				var cancellationTokenSource = new CancellationTokenSource();
+				cancellationTokenSource.Cancel();
+
+				bool executed = false;
+				var task = scheduler.StartNew(() =>
+				{
+					executed = true;
+				}, cancellationTokenSource.Token);
+				task.Should().NotBeNull();
+				task.IsCompleted.Should().BeTrue();
+				task.IsCanceled.Should().BeTrue();
+				executed.Should().BeFalse();
+			}
+		}
+
+		[Test]
+		[Description("Verifies that the task isn't executed and is immediately cancelled if the given token is cancelled")]
+		public void TestCancelBeforeStart2()
+		{
+			using (var scheduler = Create())
+			{
+				var cancellationTokenSource = new CancellationTokenSource();
+				cancellationTokenSource.Cancel();
+
+				bool executed = false;
+				var task = scheduler.StartNew(unused =>
+				{
+					executed = true;
+				}, cancellationTokenSource.Token);
+				task.Should().NotBeNull();
+				task.IsCompleted.Should().BeTrue();
+				task.IsCanceled.Should().BeTrue();
+				executed.Should().BeFalse();
+			}
+		}
+
+		[Test]
+		[Description("Verifies that the task isn't executed and is immediately cancelled if the given token is cancelled")]
+		public void TestCancelBeforeStart3()
+		{
+			using (var scheduler = Create())
+			{
+				var cancellationTokenSource = new CancellationTokenSource();
+				cancellationTokenSource.Cancel();
+
+				bool executed = false;
+				var task = scheduler.StartNew(() =>
+				{
+					executed = true;
+					return 42;
+				}, cancellationTokenSource.Token);
+				task.Should().NotBeNull();
+				task.IsCompleted.Should().BeTrue();
+				task.IsCanceled.Should().BeTrue();
+				executed.Should().BeFalse();
+			}
+		}
+
+		[Test]
+		[Description("Verifies that the task isn't executed and is immediately cancelled if the given token is cancelled")]
+		public void TestCancelBeforeStart4()
+		{
+			using (var scheduler = Create())
+			{
+				var cancellationTokenSource = new CancellationTokenSource();
+				cancellationTokenSource.Cancel();
+
+				bool executed = false;
+				var task = scheduler.StartNew(unused =>
+				{
+					executed = true;
+					return 42;
+				}, cancellationTokenSource.Token);
+				task.Should().NotBeNull();
+				task.IsCompleted.Should().BeTrue();
+				task.IsCanceled.Should().BeTrue();
+				executed.Should().BeFalse();
+			}
+		}
+
+		[Test]
 		[Description("Verifies that tasks are indeed executed in the order they are started in")]
 		public void TestStartInOrder()
 		{
@@ -103,7 +261,7 @@ namespace System.Extensions.Test.Threading
 
 		[Test]
 		[Description("Verifies that dispose may be called multiple times")]
-		public void TestDispose2()
+		public void TestDispose()
 		{
 			using (var scheduler = Create())
 			{

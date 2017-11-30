@@ -71,38 +71,46 @@ namespace System.Threading
 			}
 		}
 
-		/// <summary>
-		///     Starts a new task which will execute the given action of a background thread.
-		///     The action will execute as soon as all previously started tasks have finished or faulted.
-		/// </summary>
-		/// <remarks>
-		///     Returns an already cancelled task when <see cref="Dispose" /> has been called of.
-		/// </remarks>
-		/// <param name="fn"></param>
-		/// <returns></returns>
+		/// <inheritdoc />
 		public Task StartNew(Action fn)
 		{
+			return StartNew(fn, new CancellationToken(false));
+		}
+
+		/// <inheritdoc />
+		public Task StartNew(Action fn, CancellationToken cancellationToken)
+		{
+			return StartNew(unused => fn(), cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task StartNew(Action<CancellationToken> fn, CancellationToken cancellationToken)
+		{
 			var id = Interlocked.Increment(ref _lastTaskId);
-			var info = new TaskInfo(id, fn);
+			var info = new TaskInfo(id, fn, cancellationToken);
 
 			TryEnqueue(info);
 
 			return info.Task;
 		}
 
-		/// <summary>
-		///     Starts a new task which will execute the given action of a background thread.
-		///     The action will execute as soon as all previously started tasks have finished or faulted.
-		/// </summary>
-		/// <remarks>
-		///     Returns an already cancelled task when <see cref="Dispose" /> has been called of.
-		/// </remarks>
-		/// <param name="fn"></param>
-		/// <returns></returns>
+		/// <inheritdoc />
 		public Task<T> StartNew<T>(Func<T> fn)
 		{
+			return StartNew(fn, new CancellationToken(false));
+		}
+
+		/// <inheritdoc />
+		public Task<T> StartNew<T>(Func<T> fn, CancellationToken cancellationToken)
+		{
+			return StartNew(unused => fn(), cancellationToken);
+		}
+
+		/// <inheritdoc />
+		public Task<T> StartNew<T>(Func<CancellationToken, T> fn, CancellationToken cancellationToken)
+		{
 			var id = Interlocked.Increment(ref _lastTaskId);
-			var info = new TaskInfo<T>(id, fn);
+			var info = new TaskInfo<T>(id, fn, cancellationToken);
 
 			TryEnqueue(info);
 
@@ -156,7 +164,7 @@ namespace System.Threading
 				// If we're already disposed of, then we immediately cancel the task
 				// without enqueueing anything...
 
-				if (_disposed.IsCancellationRequested)
+				if (_disposed.IsCancellationRequested || info.IsCancellationRequest)
 				{
 					info.Cancel();
 					return;
@@ -223,6 +231,7 @@ namespace System.Threading
 		private interface ITaskInfo
 		{
 			long Id { get; }
+			bool IsCancellationRequest { get; }
 
 			void Execute();
 			void Cancel();
@@ -231,28 +240,39 @@ namespace System.Threading
 		private sealed class TaskInfo
 			: ITaskInfo
 		{
-			private readonly Action _fn;
+			private readonly Action<CancellationToken> _fn;
 			private readonly long _id;
 			private readonly TaskCompletionSource<int> _source;
+			private readonly CancellationToken _cancellationToken;
 
-			public TaskInfo(long id, Action fn)
+			public TaskInfo(long id, Action<CancellationToken> fn, CancellationToken cancellationToken)
 			{
 				_id = id;
 				_fn = fn;
 				_source = new TaskCompletionSource<int>();
+				_cancellationToken = cancellationToken;
 			}
 
 			public Task Task => _source.Task;
 
 			public long Id => _id;
 
+			public bool IsCancellationRequest => _cancellationToken.IsCancellationRequested;
+
 			public void Execute()
 			{
 				try
 				{
-					_fn();
-					// Somebody might have cancelled the task already
-					_source.TrySetResult(result: 42);
+					if (_cancellationToken.IsCancellationRequested)
+					{
+						_source.TrySetCanceled();
+					}
+					else
+					{
+						_fn(_cancellationToken);
+						// Somebody might have cancelled the task already
+						_source.TrySetResult(result: 42);
+					}
 				}
 				catch (Exception e)
 				{
@@ -275,14 +295,16 @@ namespace System.Threading
 		private sealed class TaskInfo<T>
 			: ITaskInfo
 		{
-			private readonly Func<T> _fn;
+			private readonly Func<CancellationToken, T> _fn;
+			private readonly CancellationToken _cancellationToken;
 			private readonly long _id;
 			private readonly TaskCompletionSource<T> _source;
 
-			public TaskInfo(long id, Func<T> fn)
+			public TaskInfo(long id, Func<CancellationToken, T> fn, CancellationToken cancellationToken)
 			{
 				_id = id;
 				_fn = fn;
+				_cancellationToken = cancellationToken;
 				_source = new TaskCompletionSource<T>();
 			}
 
@@ -290,13 +312,22 @@ namespace System.Threading
 
 			public long Id => _id;
 
+			public bool IsCancellationRequest => _cancellationToken.IsCancellationRequested;
+
 			public void Execute()
 			{
 				try
 				{
-					var result = _fn();
-					// Somebody might have cancelled the task already
-					_source.TrySetResult(result);
+					if (_cancellationToken.IsCancellationRequested)
+					{
+						_source.TrySetCanceled();
+					}
+					else
+					{
+						var result = _fn(_cancellationToken);
+						// Somebody might have cancelled the task already
+						_source.TrySetResult(result);
+					}
 				}
 				catch (Exception e)
 				{

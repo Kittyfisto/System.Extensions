@@ -31,7 +31,55 @@ namespace System.Threading
 		///     Returns an already cancelled task when <see cref="IDisposable.Dispose" /> has been called of.
 		/// </remarks>
 		/// <param name="fn"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task StartNew(Action fn, CancellationToken cancellationToken);
+
+		/// <summary>
+		///     Starts a new task which will execute the given action of a background thread.
+		///     The action will execute as soon as all previously started tasks have finished or faulted.
+		/// </summary>
+		/// <remarks>
+		///     Returns an already cancelled task when <see cref="IDisposable.Dispose" /> has been called of.
+		/// </remarks>
+		/// <param name="fn"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task StartNew(Action<CancellationToken> fn, CancellationToken cancellationToken);
+
+		/// <summary>
+		///     Starts a new task which will execute the given action of a background thread.
+		///     The action will execute as soon as all previously started tasks have finished or faulted.
+		/// </summary>
+		/// <remarks>
+		///     Returns an already cancelled task when <see cref="IDisposable.Dispose" /> has been called of.
+		/// </remarks>
+		/// <param name="fn"></param>
 		/// <returns></returns>
 		Task<T> StartNew<T>(Func<T> fn);
+
+		/// <summary>
+		///     Starts a new task which will execute the given action of a background thread.
+		///     The action will execute as soon as all previously started tasks have finished or faulted.
+		/// </summary>
+		/// <remarks>
+		///     Returns an already cancelled task when <see cref="IDisposable.Dispose" /> has been called of.
+		/// </remarks>
+		/// <param name="fn"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task<T> StartNew<T>(Func<T> fn, CancellationToken cancellationToken);
+
+		/// <summary>
+		///     Starts a new task which will execute the given action of a background thread.
+		///     The action will execute as soon as all previously started tasks have finished or faulted.
+		/// </summary>
+		/// <remarks>
+		///     Returns an already cancelled task when <see cref="IDisposable.Dispose" /> has been called of.
+		/// </remarks>
+		/// <param name="fn"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task<T> StartNew<T>(Func<CancellationToken, T> fn, CancellationToken cancellationToken);
 	}
 }
