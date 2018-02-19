@@ -210,6 +210,15 @@ namespace System.IO
 		/// <param name="sourceFileName"></param>
 		/// <param name="destFileName"></param>
 		/// <returns></returns>
+		/// <exception cref="UnauthorizedAccessException">The caller does not have the required permission.</exception>
+		/// <exception cref="ArgumentException"><paramref name="sourceFileName"/> or <paramref name="destFileName"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.
+		/// -or-
+		/// <paramref name="sourceFileName"/> or <paramref name="destFileName"/> specifies a directory.</exception>
+		/// <exception cref="PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="DirectoryNotFoundException">The path specified in <paramref name="sourceFileName"/> or <paramref name="destFileName"/> is invalid (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="FileNotFoundException"><paramref name="sourceFileName"/> was not found.</exception>
+		/// <exception cref="IOException"><paramref name="destFileName"/> exists</exception>
+		/// <exception cref="NotSupportedException"><paramref name="sourceFileName"/> or <paramref name="destFileName"/> is in an invalid format.</exception>
 		Task CopyFile(string sourceFileName, string destFileName);
 
 		/// <summary>

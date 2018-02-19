@@ -688,6 +688,29 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that copying from a non-existing directory is not allowed")]
+		public void TestCopyFile4()
+		{
+			new Action(() => Wait(_filesystem.CopyFile("foo\\a.dat", "b.dat"))).ShouldThrow<DirectoryNotFoundException>();
+		}
+		
+		[Test]
+		[Description("Verifies that copying to a non-existing directory is not allowed")]
+		public void TestCopyFile5()
+		{
+			using (Wait(_filesystem.CreateFile("a.dat")))
+			{ }
+			new Action(() => Wait(_filesystem.CopyFile("a.dat", "blub\\b.dat"))).ShouldThrow<DirectoryNotFoundException>();
+		}
+
+		[Test]
+		[Description("Verifies that copying from a non-existing file is not allowed")]
+		public void TestCopyFile6()
+		{
+			new Action(() => Wait(_filesystem.CopyFile("a.dat", "b.dat"))).ShouldThrow<FileNotFoundException>();
+		}
+
+		[Test]
 		public void TestCreateFile1()
 		{
 			const string fileName = "stuff.txt";
