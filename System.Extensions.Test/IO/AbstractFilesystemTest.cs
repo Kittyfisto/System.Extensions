@@ -83,6 +83,15 @@ namespace System.Extensions.Test.IO
 		#region Invalid Paths
 
 		[Test]
+		[Description("Verifies that the filesystem implementation behaves just like File.Write when given invalid paths")]
+		public void TestWriteAllBytesInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
+		{
+			new Action(() => File.WriteAllBytes(invalidPath, new byte[0])).ShouldThrow<ArgumentException>();
+			new Action(() => Wait(Filesystem.WriteAllBytes(invalidPath, new byte[0]))).ShouldThrow<ArgumentException>();
+			new Action(() => Wait(Filesystem.Write(invalidPath, new MemoryStream()))).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
 		[Description("Verifies that the filesystem implementation behaves just like File.Exists when given invalid paths")]
 		public void TestFileExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
@@ -784,6 +793,37 @@ namespace System.Extensions.Test.IO
 			new Action(() => Wait(_filesystem.FileLength(fileName)))
 				.ShouldThrow<AggregateException>()
 				.WithInnerException<FileNotFoundException>();
+		}
+
+		[Test]
+		public void TestWrite1()
+		{
+			new Action(() => _filesystem.Write("foo.dat", null))
+				.ShouldThrow<ArgumentNullException>();
+		}
+
+		[Test]
+		public void TestWrite2()
+		{
+			var data = new byte[] {1, 2, 3, 4};
+			var stream = new MemoryStream(data);
+			Wait(_filesystem.Write("foo.dat", stream));
+			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(data);
+		}
+
+		[Test]
+		public void TestWriteAllBytes1()
+		{
+			new Action(() => _filesystem.WriteAllBytes("foo.dat", null))
+				.ShouldThrow<ArgumentNullException>();
+		}
+
+		[Test]
+		public void TestWriteAllBytes2()
+		{
+			var data = new byte[] {1, 2, 3, 4};
+			Wait(_filesystem.WriteAllBytes("foo.dat", data));
+			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(data);
 		}
 	}
 }

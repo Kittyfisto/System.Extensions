@@ -198,6 +198,19 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
+		public Task<byte[]> ReadAllBytes(string path)
+		{
+			return OpenRead(path)
+				.ContinueWith(task =>
+				{
+					using (var stream = task.Result)
+					{
+						return stream.ReadToEnd();
+					}
+				});
+		}
+
+		/// <inheritdoc />
 		public Task<Stream> OpenRead(string path)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
@@ -234,17 +247,10 @@ namespace System.IO
 
 			int capacity = stream.CanSeek ? (int)(stream.Length - stream.Position) : 0;
 
-			// We'll copy up to 4k at a time, but we don't want to create a 4k
-			// buffer for 1 byte of data...
-			byte[] buffer = new byte[Math.Min(capacity, 4096)];
 			byte[] copy;
 			using (MemoryStream ms = new MemoryStream(capacity))
 			{
-				int read;
-				while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
-				{
-					ms.Write(buffer, 0, read);
-				}
+				stream.CopyTo(ms);
 				copy = ms.ToArray();
 			}
 

@@ -85,6 +85,20 @@ namespace System.IO
 
 			return _filesystem.CreateDirectory(path);
 		}
+		
+		public override int GetHashCode()
+		{
+			return new PathComparer().GetHashCode(_fullName);
+		}
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as DirectoryInfoAsync;
+			if (other == null)
+				return false;
+
+			return new PathComparer().Equals(_fullName, other._fullName);
+		}
 
 		public override string ToString()
 		{

@@ -50,15 +50,6 @@ namespace System.IO
 			}
 		}
 
-		[Pure]
-		public bool ContainsFile(string fileName)
-		{
-			lock (_syncRoot)
-			{
-				return _files.ContainsKey(fileName);
-			}
-		}
-
 		public IReadOnlyList<string> EnumerateFiles(string searchPattern,
 		                                            SearchOption searchOption)
 		{

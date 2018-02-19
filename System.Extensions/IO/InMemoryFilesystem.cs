@@ -266,9 +266,16 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public Task WriteAllBytes(string path, byte[] bytes)
+		public Task<byte[]> ReadAllBytes(string path)
 		{
-			throw new NotImplementedException();
+			return OpenRead(path)
+				.ContinueWith(task =>
+				{
+					using (var stream = task.Result)
+					{
+						return stream.ReadToEnd();
+					}
+				}, TaskContinuationOptions.ExecuteSynchronously);
 		}
 
 		/// <inheritdoc />
@@ -323,7 +330,37 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task Write(string path, Stream stream)
 		{
-			throw new NotImplementedException();
+			if (path == null)
+				throw new ArgumentNullException(nameof(path));
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
+
+			return OpenWrite(path)
+				.ContinueWith(task =>
+				{
+					using (var targetStream = task.Result)
+					{
+						stream.CopyTo(targetStream);
+					}
+				}, TaskContinuationOptions.ExecuteSynchronously);
+		}
+
+		/// <inheritdoc />
+		public Task WriteAllBytes(string path, byte[] bytes)
+		{
+			if (path == null)
+				throw new ArgumentNullException(nameof(path));
+			if (bytes == null)
+				throw new ArgumentNullException(nameof(bytes));
+
+			return OpenWrite(path)
+				.ContinueWith(task =>
+				{
+					using (var targetStream = task.Result)
+					{
+						targetStream.Write(bytes, 0, bytes.Length);
+					}
+				}, TaskContinuationOptions.ExecuteSynchronously);
 		}
 
 		/// <inheritdoc />

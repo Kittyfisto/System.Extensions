@@ -16,6 +16,20 @@ namespace System.IO
 			_name = Path.GetFileName(fullPath);
 		}
 
+		public override int GetHashCode()
+		{
+			return new PathComparer().GetHashCode(_fullPath);
+		}
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as FileInfoAsync;
+			if (other == null)
+				return false;
+
+			return new PathComparer().Equals(_fullPath, other._fullPath);
+		}
+
 		public override string ToString()
 		{
 			return "{" + _fullPath + "}";

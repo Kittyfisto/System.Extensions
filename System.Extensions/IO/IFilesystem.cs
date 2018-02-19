@@ -158,6 +158,15 @@ namespace System.IO
 		Task WriteAllBytes(string path, byte[] bytes);
 
 		/// <summary>
+		///     Opens a binary file, reads the contents of the file into a byte array,
+		///     and then closes the file.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
+		Task<byte[]> ReadAllBytes(string path);
+
+		/// <summary>
 		///     Creates a file in a particular path.  If the file exists, it is replaced.
 		///     The file is opened with ReadWrite accessand cannot be opened by another
 		///     application until it has been closed.  An IOException is thrown if the
