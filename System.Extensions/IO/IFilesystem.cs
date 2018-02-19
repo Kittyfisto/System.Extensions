@@ -193,10 +193,10 @@ namespace System.IO
 		Task<Stream> OpenWrite(string path);
 
 		/// <summary>
-		///     Reads the given stream (FROM ITS CURRENT POSITION) to its end and writes the content to a file.
+		///     Creates a new file, writes the specified stream from its current position, and then closes the file. If the target file already exists, it is overwritten.
 		/// </summary>
 		/// <remarks>
-		///     This method copies the given buffer before writing to the file on the I/O thread.
+		///     The given buffer may not be modified until the task has finished.
 		/// </remarks>
 		/// <param name="path"></param>
 		/// <param name="stream"></param>

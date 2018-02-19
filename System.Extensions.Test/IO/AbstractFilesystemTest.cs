@@ -775,7 +775,6 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		[Ignore("Not yet implemented")]
 		[Description("Verifies that writing data to the file updates its length")]
 		public void TestFileLength3()
 		{
@@ -812,6 +811,17 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[Description("Verifies that Write overwrites previous content")]
+		public void TestWrite3()
+		{
+			_filesystem.Write("foo.dat", new MemoryStream(new byte[] {1, 2, 3, 4}));
+			_filesystem.Write("foo.dat", new MemoryStream(new byte[] {2, 3, 4}));
+			_filesystem.Write("foo.dat", new MemoryStream(new byte[] {3, 4}));
+			_filesystem.Write("foo.dat", new MemoryStream(new byte[] {4}));
+			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(new byte[] {4}, "because every Write() operation should overwrite previous content");
+		}
+
+		[Test]
 		public void TestWriteAllBytes1()
 		{
 			new Action(() => _filesystem.WriteAllBytes("foo.dat", null))
@@ -824,6 +834,17 @@ namespace System.Extensions.Test.IO
 			var data = new byte[] {1, 2, 3, 4};
 			Wait(_filesystem.WriteAllBytes("foo.dat", data));
 			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(data);
+		}
+		
+		[Test]
+		[Description("Verifies that Write overwrites previous content, but keeps its filesize")]
+		public void TestWriteAllBytes3()
+		{
+			_filesystem.WriteAllBytes("foo.dat", new byte[] {1, 2, 3, 4});
+			_filesystem.WriteAllBytes("foo.dat", new byte[] {2, 3, 4});
+			_filesystem.WriteAllBytes("foo.dat", new byte[] {3, 4});
+			_filesystem.WriteAllBytes("foo.dat", new byte[] {4});
+			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(new byte[] {4}, "because every WriteAllBytes() operation should overwrite previous content");
 		}
 	}
 }

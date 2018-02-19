@@ -244,20 +244,14 @@ namespace System.IO
 				throw new ArgumentNullException(nameof(stream));
 
 			path = CaptureFullPath(path);
-
-			int capacity = stream.CanSeek ? (int)(stream.Length - stream.Position) : 0;
-
-			byte[] copy;
-			using (MemoryStream ms = new MemoryStream(capacity))
-			{
-				stream.CopyTo(ms);
-				copy = ms.ToArray();
-			}
-
 			return _scheduler.StartNew(() =>
 			{
-				Log.DebugFormat("Writing {0} bytes to {1}", copy, path);
-				File.WriteAllBytes(path, copy);
+				Log.DebugFormat("Writing data to {0}", path);
+				using (var targetStream = File.OpenWrite(path))
+				{
+					stream.CopyTo(targetStream);
+					targetStream.SetLength(targetStream.Position);
+				}
 			});
 		}
 
