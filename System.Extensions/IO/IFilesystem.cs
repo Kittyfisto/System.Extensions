@@ -53,9 +53,9 @@ namespace System.IO
 		Task DeleteDirectory(string path, bool recursive);
 
 		/// <summary>
-		///     Tests if a directory with the given path exists.
+		///     Determines whether the given path refers to an existing directory on disk.
 		/// </summary>
-		/// <param name="path"></param>
+		/// <param name="path">The path to test.</param>
 		/// <returns></returns>
 		Task<bool> DirectoryExists(string path);
 
@@ -121,12 +121,15 @@ namespace System.IO
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
+		/// <exception cref="ArgumentException"><paramref name="fileName"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="fileName"/> is null.</exception>
+		/// <exception cref="PathTooLongException">The specified <paramref name="fileName"/> exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
 		IFileInfoAsync GetFileInfo(string fileName);
 
 		/// <summary>
-		///     Tests if a file with the given path exists.
+		///     Determines whether the specified file exists.
 		/// </summary>
-		/// <param name="path"></param>
+		/// <param name="path">The file to check.</param>
 		/// <returns></returns>
 		Task<bool> FileExists(string path);
 
