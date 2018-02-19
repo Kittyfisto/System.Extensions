@@ -83,7 +83,8 @@ namespace System.IO
 
 		public Task<bool> FileExists(string filename)
 		{
-			throw new NotImplementedException();
+			var path = CaptureFullPath(filename);
+			return _filesystem.FileExists(path);
 		}
 
 		public Task<IDirectoryInfo> Capture()
@@ -93,17 +94,26 @@ namespace System.IO
 
 		public Task<IEnumerable<IFileInfoAsync>> EnumerateFiles()
 		{
-			throw new NotImplementedException();
+			return EnumerateFiles("*", SearchOption.TopDirectoryOnly);
 		}
 
 		public Task<IEnumerable<IFileInfoAsync>> EnumerateFiles(string searchPattern)
 		{
-			throw new NotImplementedException();
+			return EnumerateFiles(searchPattern, SearchOption.TopDirectoryOnly);
 		}
 
 		public Task<IEnumerable<IFileInfoAsync>> EnumerateFiles(string searchPattern, SearchOption searchOption)
 		{
-			throw new NotImplementedException();
+			return _taskScheduler.StartNew<IEnumerable<IFileInfoAsync>>(() =>
+			{
+				var directory = _filesystem.GetDirectory(_fullName);
+				var files = new List<InMemoryFileInfo>();
+				foreach (var fileName in directory.EnumerateFiles(searchPattern, searchOption))
+				{
+					files.Add(new InMemoryFileInfo(_filesystem, _taskScheduler, fileName));
+				}
+				return files;
+			});
 		}
 
 		/// <inheritdoc />
@@ -114,7 +124,7 @@ namespace System.IO
 
 		public Task Delete()
 		{
-			throw new NotImplementedException();
+			return _filesystem.DeleteDirectory(_fullName);
 		}
 
 		public Task<IDirectoryInfoAsync> CreateSubdirectory(string path)
@@ -130,12 +140,6 @@ namespace System.IO
 		public override string ToString()
 		{
 			return "{" + FullName + "}";
-		}
-
-		public InMemoryFileInfo GetFileInfo(string fname)
-		{
-			var path = Path.Combine(_fullName, fname);
-			return new InMemoryFileInfo(_filesystem, _taskScheduler, path);
 		}
 
 		[Pure]

@@ -42,6 +42,22 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestDirectoryToString()
+		{
+			var path = Path.Combine(_filesystem.CurrentDirectory, "Foo", "Bar");
+			var directory = _filesystem.GetDirectoryInfo(path);
+			directory.ToString().Should().Be("{" + path + "}");
+		}
+		
+		[Test]
+		public void TestFileToString()
+		{
+			var path = Path.Combine(_filesystem.CurrentDirectory, "Foo", "Bar");
+			var directory = _filesystem.GetFileInfo(path);
+			directory.ToString().Should().Be("{" + path + "}");
+		}
+
+		[Test]
 		public void TestTestCurrentDirectory1()
 		{
 			Filesystem.CurrentDirectory.Should().NotBeNull();
@@ -265,6 +281,8 @@ namespace System.Extensions.Test.IO
 			Wait(_filesystem.FileExists(filePath)).Should().BeTrue();
 
 			new Action(() => Wait(_filesystem.DeleteDirectory(directory))).ShouldThrow<IOException>();
+			new Action(() => Wait(_filesystem.GetDirectoryInfo(directory).Delete())).ShouldThrow<IOException>();
+
 			Wait(_filesystem.DirectoryExists(directory)).Should().BeTrue("because the directory shouldn't have been deleted");
 			Wait(_filesystem.FileExists(filePath)).Should().BeTrue("because the directory's contents shouldn't have been deleted");
 		}
@@ -287,6 +305,30 @@ namespace System.Extensions.Test.IO
 			Wait(_filesystem.DeleteDirectory(directory, true));
 			Wait(directoryInfo.Exists).Should().BeFalse();
 			Wait(subDirectoryInfo.Exists).Should().BeFalse();
+		}
+
+		[Test]
+		public void TestGetDirectoryCaseInsensitive()
+		{
+			var actual = Wait(_filesystem.CreateDirectory("FoO"));
+
+			const string reason = "because we should retrieve an equal IDirectoryInfo object, regardless of the case";
+			_filesystem.GetDirectoryInfo("foo").Should().Be(actual, reason);
+			_filesystem.GetDirectoryInfo("FOO").Should().Be(actual, reason);
+			_filesystem.GetDirectoryInfo("fOo").Should().Be(actual, reason);
+		}
+		
+		[Test]
+		public void TestGetFileCaseInsensitive()
+		{
+			var actual = _filesystem.GetFileInfo("FoO");
+			using (Wait(_filesystem.CreateFile("FoO")))
+			{ }
+
+			const string reason = "because we should retrieve an equal IDirectoryInfo object, regardless of the case";
+			_filesystem.GetFileInfo("foo").Should().Be(actual, reason);
+			_filesystem.GetFileInfo("FOO").Should().Be(actual, reason);
+			_filesystem.GetFileInfo("fOo").Should().Be(actual, reason);
 		}
 
 		[Test]
@@ -393,18 +435,31 @@ namespace System.Extensions.Test.IO
 		{
 			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
 		}
+		
+		[Test]
+		[Description("Verifies that an empty directory can be enumerated")]
+		public void TestEnumerateFiles2()
+		{
+			Wait(_filesystem.Current.EnumerateFiles()).Should().BeEmpty();
+		}
 
 		[Test]
 		[Description("Verifies that a non-existing directory cannot be enumerated")]
-		public void TestEnumerateFiles2()
+		public void TestEnumerateFiles3()
 		{
-			new Action(() => Wait(_filesystem.EnumerateFiles("daawdw")))
-				.ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => Wait(_filesystem.EnumerateFiles("daawdw"))).ShouldThrow<DirectoryNotFoundException>();
+		}
+		
+		[Test]
+		[Description("Verifies that a non-existing directory cannot be enumerated")]
+		public void TestEnumerateFiles4()
+		{
+			new Action(() => Wait(_filesystem.GetDirectoryInfo("daawdw").EnumerateFiles())).ShouldThrow<DirectoryNotFoundException>();
 		}
 
 		[Test]
 		[Description("Verifies that a newly created file can be found")]
-		public void TestEnumerateFiles3()
+		public void TestEnumerateFiles5()
 		{
 			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
 			using (Wait(_filesystem.CreateFile("a"))) { }
@@ -416,7 +471,7 @@ namespace System.Extensions.Test.IO
 
 		[Test]
 		[Description("Verifies that only files matching the search pattern are returned")]
-		public void TestEnumerateFiles4()
+		public void TestEnumerateFiles6()
 		{
 			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
 			using (Wait(_filesystem.CreateFile("a"))) { }
@@ -426,6 +481,21 @@ namespace System.Extensions.Test.IO
 			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*b")).Should().HaveCount(1);
 			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*")).Should().HaveCount(2);
 			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*c")).Should().HaveCount(0);
+		}
+		
+		[Test]
+		[Description("Verifies that only files matching the search pattern are returned")]
+		public void TestEnumerateFiles7()
+		{
+			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
+			using (Wait(_filesystem.CreateFile("a"))) { }
+			using (Wait(_filesystem.CreateFile("b"))) { }
+
+			var directory = _filesystem.Current;
+			Wait(directory.EnumerateFiles("*a")).Should().HaveCount(1);
+			Wait(directory.EnumerateFiles("*b")).Should().HaveCount(1);
+			Wait(directory.EnumerateFiles("*")).Should().HaveCount(2);
+			Wait(directory.EnumerateFiles("*c")).Should().HaveCount(0);
 		}
 
 		[Test]
@@ -444,9 +514,28 @@ namespace System.Extensions.Test.IO
 				Path.Combine(_filesystem.CurrentDirectory, "B\\b.txt")
 			});
 		}
-		
+
 		[Test]
 		public void TestEnumerateFilesAllDirectories2()
+		{
+			_filesystem.CreateDirectory("A");
+			_filesystem.CreateDirectory("B");
+			_filesystem.CreateFile("A\\a.txt");
+			_filesystem.CreateFile("B\\b.txt");
+
+			var directory = _filesystem.Current;
+			var files = Wait(directory.EnumerateFiles("*", SearchOption.AllDirectories));
+			files.Should().HaveCount(2);
+			var file = files.FirstOrDefault(x => x.Name.EndsWith("a.txt"));
+			file.Should().NotBeNull();
+			file.FullPath.Should().Be(Path.Combine(_filesystem.CurrentDirectory, "A\\a.txt"));
+			file = files.FirstOrDefault(x => x.Name.EndsWith("b.txt"));
+			file.Should().NotBeNull();
+			file.FullPath.Should().Be(Path.Combine(_filesystem.CurrentDirectory, "B\\b.txt"));
+		}
+
+		[Test]
+		public void TestEnumerateFilesAllDirectories3()
 		{
 			_filesystem.CreateDirectory("A");
 			_filesystem.CreateDirectory("B");
@@ -460,16 +549,81 @@ namespace System.Extensions.Test.IO
 				Path.Combine(_filesystem.CurrentDirectory, "B\\b.txt")
 			});
 		}
+		
+		[Test]
+		public void TestEnumerateFilesAllDirectories4()
+		{
+			_filesystem.CreateDirectory("A");
+			_filesystem.CreateDirectory("B");
+			_filesystem.CreateFile("A\\a.txt");
+			_filesystem.CreateFile("B\\b.txt");
+			
+			var directory = _filesystem.GetDirectoryInfo("B");
+			var files = Wait(directory.EnumerateFiles("*", SearchOption.AllDirectories));
+			files.Should().HaveCount(1);
+			files.First().FullPath.Should().Be(Path.Combine(_filesystem.CurrentDirectory, "B\\b.txt"));
+		}
+
+		[Test]
+		public void TestFileCreate1()
+		{
+			var file = _filesystem.GetFileInfo("foo.txt");
+			Wait(file.Exists).Should().BeFalse();
+			using (var stream = Wait(file.Create()))
+			{
+				stream.WriteByte(42);
+			}
+			Wait(file.Exists).Should().BeTrue();
+		}
+
+		[Test]
+		[Description("Verifies that deleting a non existing file is allowed and essentially a NOP")]
+		public void TestFileDelete1()
+		{
+			var file = _filesystem.GetFileInfo("foo.txt");
+			new Action(() => Wait(file.Delete())).ShouldNotThrow();
+		}
+
+		[Test]
+		[Description("Verifies that deleting a newly created file is possible")]
+		public void TestFileDelete2()
+		{
+			var file = _filesystem.GetFileInfo("foo.txt");
+			using (Wait(file.Create()))
+			{ }
+			Wait(file.Exists).Should().BeTrue();
+
+			Wait(file.Delete());
+			Wait(file.Exists).Should().BeFalse();
+			Wait(_filesystem.FileExists("foo.txt")).Should().BeFalse();
+		}
 
 		[Test]
 		public void TestFileExists1()
 		{
 			const string fileName = "stuff.txt";
+
 			Wait(_filesystem.FileExists(fileName)).Should().BeFalse("because we haven't created any files yet");
+		}
+		
+		[Test]
+		public void TestFileExists2()
+		{
+			const string fileName = "stuff.txt";
+
+			Wait(_filesystem.GetFileInfo(fileName).Exists).Should().BeFalse("because we haven't created any files yet");
 		}
 
 		[Test]
-		public void TestFileExists2()
+		public void TestFileExists3()
+		{
+			var fileName = Path.Combine(_filesystem.CurrentDirectory, "stuff.txt");
+
+			Wait(_filesystem.GetDirectoryInfo(_filesystem.CurrentDirectory).FileExists(fileName)).Should().BeFalse("because we haven't created any files yet");
+		}
+
+		[Test]
+		public void TestFileExists4()
 		{
 			const string fileName = "foobar\\stuff.txt";
 			Wait(_filesystem.FileExists(fileName)).Should().BeFalse("because the directory doesn't even exist");

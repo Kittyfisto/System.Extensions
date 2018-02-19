@@ -59,8 +59,8 @@ namespace System.IO
 			}
 		}
 
-		public IReadOnlyList<string> EnumerateFiles(string searchPattern = null,
-		                                            SearchOption searchOption = SearchOption.TopDirectoryOnly)
+		public IReadOnlyList<string> EnumerateFiles(string searchPattern,
+		                                            SearchOption searchOption)
 		{
 			var directories = new Stack<InMemoryDirectory>();
 			var files = new List<string>();

@@ -53,14 +53,14 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		public void TestFileExists3()
+		public void TestFileExists5()
 		{
 			Wait(Filesystem.FileExists("wdawaddwawadoknfawonafw"))
 				.Should().BeFalse("because the file doesn't exist");
 		}
 
 		[Test]
-		public void TestFileExists4()
+		public void TestFileExists6()
 		{
 			Wait(Filesystem.FileExists(AssemblyFilePath))
 				.Should().BeTrue("because that assembly most certainly exists");
@@ -81,7 +81,7 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		public void TestEnumerateFiles5()
+		public void TestEnumerateFiles8()
 		{
 			var expected = Directory.EnumerateFiles(AssemblyDirectory).ToList();
 			var actual = Wait(Filesystem.EnumerateFiles(AssemblyDirectory));
@@ -92,7 +92,7 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		public void TestEnumerateFiles6()
+		public void TestEnumerateFiles9()
 		{
 			const string filter = "*.pdb";
 			var expected = Directory.EnumerateFiles(AssemblyDirectory, filter).ToList();

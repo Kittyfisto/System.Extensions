@@ -110,9 +110,7 @@ namespace System.IO
 			return _taskScheduler.StartNew(() =>
 			{
 				var parent = Path.GetDirectoryName(path);
-				InMemoryDirectory directory;
-				if (!TryGetDirectory(parent, out directory))
-					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+				InMemoryDirectory directory = GetDirectory(parent);
 
 				var directoryName = Directory2.GetDirName(path);
 				bool isEmpty;
@@ -282,10 +280,7 @@ namespace System.IO
 			return _taskScheduler.StartNew(() =>
 			{
 				var directoryPath = Path.GetDirectoryName(path);
-				InMemoryDirectory directory;
-				if (!TryGetDirectory(directoryPath, out directory))
-					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
-
+				var directory = GetDirectory(directoryPath);
 				var fileName = Path.GetFileName(path);
 				return directory.CreateFile(fileName);
 			});
@@ -300,10 +295,7 @@ namespace System.IO
 			return _taskScheduler.StartNew(() =>
 			{
 				var directoryPath = Path.GetDirectoryName(path);
-				InMemoryDirectory directory;
-				if (!TryGetDirectory(directoryPath, out directory))
-					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
-
+				var directory = GetDirectory(directoryPath);
 				var fileName = Path.GetFileName(path);
 				return directory.OpenReadSync(fileName);
 			});
@@ -318,10 +310,7 @@ namespace System.IO
 			return _taskScheduler.StartNew(() =>
 			{
 				var directoryPath = Path.GetDirectoryName(path);
-				InMemoryDirectory directory;
-				if (!TryGetDirectory(directoryPath, out directory))
-					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
-
+				var directory = GetDirectory(directoryPath);
 				var fileName = Path.GetFileName(path);
 				var stream = directory.OpenWriteSync(fileName);
 				if (stream != null)
@@ -346,10 +335,7 @@ namespace System.IO
 			return _taskScheduler.StartNew(() =>
 			{
 				var directoryPath = Path.GetDirectoryName(path);
-				InMemoryDirectory directory;
-				if (!TryGetDirectory(directoryPath, out directory))
-					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
-
+				InMemoryDirectory directory = GetDirectory(directoryPath);
 				var fileName = Path.GetFileName(path);
 				directory.TryDeleteFile(fileName);
 			});
@@ -403,6 +389,15 @@ namespace System.IO
 			}
 
 			return path;
+		}
+
+		internal InMemoryDirectory GetDirectory(string path)
+		{
+			InMemoryDirectory directory;
+			if (!TryGetDirectory(path, out directory))
+				throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+
+			return directory;
 		}
 
 		internal bool TryGetDirectory(string path, out InMemoryDirectory directory)

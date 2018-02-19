@@ -97,10 +97,7 @@ namespace System.IO
 		{
 			return _taskScheduler.StartNew(() =>
 			{
-				InMemoryDirectory directory;
-				if (!_filesystem.TryGetDirectory(_directoryPath, out directory))
-					throw new DirectoryNotFoundException();
-
+				InMemoryDirectory directory = _filesystem.GetDirectory(_directoryPath);
 				return directory.CreateFile(_name);
 			});
 		}
