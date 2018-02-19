@@ -126,7 +126,9 @@ namespace System.IO
 			{
 				InMemoryFile file;
 				if (!_files.TryGetValue(fileName, out file))
-					return null;
+				{
+					return CreateFile(fileName);
+				}
 
 				file.Clear();
 				var stream = new StreamProxy(file.Content) {Position = 0};

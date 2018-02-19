@@ -87,8 +87,8 @@ namespace System.Extensions.Test.IO
 		public void TestWriteAllBytesInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			new Action(() => File.WriteAllBytes(invalidPath, new byte[0])).ShouldThrow<ArgumentException>();
-			new Action(() => Wait(Filesystem.WriteAllBytes(invalidPath, new byte[0]))).ShouldThrow<ArgumentException>();
-			new Action(() => Wait(Filesystem.Write(invalidPath, new MemoryStream()))).ShouldThrow<ArgumentException>();
+			new Action(() => Wait(_filesystem.WriteAllBytes(invalidPath, new byte[0]))).ShouldThrow<ArgumentException>();
+			new Action(() => Wait(_filesystem.Write(invalidPath, new MemoryStream()))).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
@@ -96,85 +96,99 @@ namespace System.Extensions.Test.IO
 		public void TestFileExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			File.Exists(invalidPath).Should().BeFalse();
-			Wait(Filesystem.FileExists(invalidPath)).Should().BeFalse();
+			Wait(_filesystem.FileExists(invalidPath)).Should().BeFalse();
 		}
 
 		[Test]
 		public void TestDirectoryExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
-			Wait(Filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
+			Wait(_filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
 		}
 
 		[Test]
 		public void TestGetDirectoryInfoInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.GetDirectoryInfo(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.GetDirectoryInfo(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestGetFileInfoInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.GetFileInfo(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.GetFileInfo(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestCreateFileInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.CreateFile(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.CreateFile(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestOpenReadInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.OpenRead(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.OpenRead(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestDeleteFileInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.DeleteFile(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.DeleteFile(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestDeleteDirectoryInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.DeleteDirectory(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.DeleteDirectory(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateDirectoriesInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.EnumerateDirectories(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateDirectories(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateDirectoriesInvalidPath2([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.EnumerateDirectories(path, "*.*")).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateDirectories(path, "*.*")).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateDirectoriesInvalidPath3([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateFilesInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.EnumerateFiles(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateFiles(path)).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateFilesInvalidPath2([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.EnumerateFiles(path, "*.*")).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateFiles(path, "*.*")).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateFilesInvalidPath3([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => Filesystem.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly)).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestCopyFileInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => File.Copy(path, "foo.dat")).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.CopyFile(path, "foo.dat")).ShouldThrow<ArgumentException>();
+		}
+
+		[Test]
+		public void TestCopyFileInvalidPath2([ValueSource(nameof(InvalidPaths))] string path)
+		{
+			new Action(() => File.Copy("foo.dat", path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.CopyFile("foo.dat", path)).ShouldThrow<ArgumentException>();
 		}
 
 		#endregion
@@ -636,6 +650,41 @@ namespace System.Extensions.Test.IO
 		{
 			const string fileName = "foobar\\stuff.txt";
 			Wait(_filesystem.FileExists(fileName)).Should().BeFalse("because the directory doesn't even exist");
+		}
+		
+		[Test]
+		[Description("Verifies that copying an empty file is allowed")]
+		public void TestCopyFile1()
+		{
+			_filesystem.WriteAllBytes("a.dat", new byte[0]);
+			Wait(_filesystem.FileExists("b.txt")).Should().BeFalse();
+
+			_filesystem.CopyFile("a.dat", "b.txt");
+			Wait(_filesystem.ReadAllBytes("b.txt")).Should().BeEmpty();
+			Wait(_filesystem.FileExists("b.txt")).Should().BeTrue("because now that the file has been copied, it should exist");
+		}
+
+		[Test]
+		[Description("Verifies that copying a file copies all of its data")]
+		public void TestCopyFile2()
+		{
+			_filesystem.WriteAllBytes("a.dat", new byte[] {4, 3, 2, 1});
+			_filesystem.CreateDirectory("foo");
+			Wait(_filesystem.FileExists("foo\\b.blub")).Should().BeFalse();
+
+			_filesystem.CopyFile("a.dat", "foo\\b.blub");
+			Wait(_filesystem.ReadAllBytes("foo\\b.blub")).Should().Equal(new byte[] {4, 3, 2, 1});
+			Wait(_filesystem.FileExists("foo\\b.blub")).Should().BeTrue("because now that the file has been copied, it should exist");
+		}
+
+		[Test]
+		[Description("Verifies that copying over an existing file is not allowed")]
+		public void TestCopyFile3()
+		{
+			_filesystem.WriteAllBytes("a.dat", new byte[] {4, 3, 2, 1});
+			_filesystem.WriteAllBytes("b.dat", new byte[] {1, 2, 3});
+			new Action(() => Wait(_filesystem.CopyFile("a.dat", "b.dat"))).ShouldThrow<IOException>();
+			Wait(_filesystem.ReadAllBytes("b.dat")).Should().Equal(new byte[] {1, 2, 3}, "because the previous data should not have been overwritten");
 		}
 
 		[Test]

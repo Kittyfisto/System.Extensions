@@ -205,6 +205,14 @@ namespace System.IO
 		Task Write(string path, Stream stream);
 
 		/// <summary>
+		///     Copies an existing file to a new file. Overwriting a file of the same name is not allowed.
+		/// </summary>
+		/// <param name="sourceFileName"></param>
+		/// <param name="destFileName"></param>
+		/// <returns></returns>
+		Task CopyFile(string sourceFileName, string destFileName);
+
+		/// <summary>
 		///     Deletes the specified file.
 		///     If the file does not exist, Delete succeeds without throwing
 		///     an exception.

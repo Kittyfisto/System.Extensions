@@ -58,13 +58,14 @@ namespace System.IO
 		/// Throws an <see cref="ArgumentException"/> if the given path is invalid
 		/// </summary>
 		/// <param name="path"></param>
-		public static void ThrowIfPathIsInvalid(string path)
+		/// <param name="argumentName"></param>
+		public static void ThrowIfPathIsInvalid(string path, string argumentName = "path")
 		{
 			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+				throw new ArgumentNullException(argumentName);
 
 			if (!IsValidPath(path))
-				throw new ArgumentException(string.Format("The path '{0}' is invalid", path), nameof(path));
+				throw new ArgumentException(string.Format("The path '{0}' is invalid", path), argumentName);
 		}
 
 		/// <summary>

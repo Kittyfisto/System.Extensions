@@ -231,7 +231,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public IFileInfoAsync GetFileInfo(string fileName)
 		{
-			Path2.ThrowIfPathIsInvalid(fileName);
+			Path2.ThrowIfPathIsInvalid(fileName, nameof(fileName));
 
 			var path = CaptureFullPath(fileName);
 			return new InMemoryFileInfo(this, _taskScheduler, path);
@@ -253,7 +253,7 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<long> FileLength(string fileName)
 		{
-			Path2.ThrowIfPathIsInvalid(fileName);
+			Path2.ThrowIfPathIsInvalid(fileName, nameof(fileName));
 
 			var path = CaptureFullPath(fileName);
 			return new InMemoryFileInfo(this, _taskScheduler, path).Length;
@@ -320,10 +320,7 @@ namespace System.IO
 				var directory = GetDirectory(directoryPath);
 				var fileName = Path.GetFileName(path);
 				var stream = directory.OpenWriteSync(fileName);
-				if (stream != null)
-					return stream;
-
-				return directory.CreateFile(fileName);
+				return stream;
 			});
 		}
 
@@ -341,6 +338,32 @@ namespace System.IO
 					using (var targetStream = task.Result)
 					{
 						stream.CopyTo(targetStream);
+					}
+				}, TaskContinuationOptions.ExecuteSynchronously);
+		}
+
+		/// <inheritdoc />
+		public Task CopyFile(string sourceFileName, string destFileName)
+		{
+			Path2.ThrowIfPathIsInvalid(sourceFileName, nameof(sourceFileName));
+			Path2.ThrowIfPathIsInvalid(destFileName, nameof(destFileName));
+
+			var sourceFilePath = CaptureFullPath(sourceFileName);
+			var destFilePath = CaptureFullPath(destFileName);
+			var destFileDirectory = Path.GetDirectoryName(destFilePath);
+			var destFile = Path.GetFileName(destFileName);
+
+			return OpenRead(sourceFilePath)
+			       .ContinueWith(task =>
+				{
+					var destDirectory = GetDirectory(destFileDirectory);
+					InMemoryFile file;
+					if (destDirectory.TryGetFile(destFile, out file))
+						throw new IOException(string.Format("The file '{0}' already exists", destFilePath));
+
+					using (var targetStream = destDirectory.OpenWriteSync(destFile))
+					{
+						task.Result.CopyTo(targetStream);
 					}
 				}, TaskContinuationOptions.ExecuteSynchronously);
 		}

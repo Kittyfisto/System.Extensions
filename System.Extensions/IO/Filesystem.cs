@@ -256,6 +256,21 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
+		public Task CopyFile(string sourceFileName, string destFileName)
+		{
+			Path2.ThrowIfPathIsInvalid(sourceFileName, nameof(sourceFileName));
+			Path2.ThrowIfPathIsInvalid(destFileName, nameof(destFileName));
+
+			var sourceFilePath = CaptureFullPath(sourceFileName);
+			var destFilePath = CaptureFullPath(destFileName);
+			return _scheduler.StartNew(() =>
+			{
+				Log.DebugFormat("Copying '{0}' to '{1}'", sourceFilePath, destFilePath);
+				File.Copy(sourceFilePath, destFilePath);
+			});
+		}
+
+		/// <inheritdoc />
 		public Task DeleteFile(string path)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
