@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
@@ -14,6 +15,8 @@ namespace System.Extensions.Test.IO
 		protected abstract IFilesystem Create();
 
 		public IFilesystem Filesystem => _filesystem;
+
+		public static IEnumerable<SearchOption> SearchOptions => new[] {SearchOption.AllDirectories, SearchOption.TopDirectoryOnly};
 
 		[SetUp]
 		public void Setup()
@@ -202,6 +205,17 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		[SetCulture("en-US")]
+		[Description("Verifies that creating a directory for a non-existant root doesn't work")]
+		public void TestCreateDirectory5()
+		{
+			const string directory = "Z:\\foo\\bar";
+			new Action(() => Wait(_filesystem.CreateDirectory(directory)))
+				.ShouldThrow<DirectoryNotFoundException>()
+				.WithMessage("Could not find a part of the path 'Z:\\foo\\bar'.");
+		}
+
+		[Test]
 		public void TestDirectoryCreate1()
 		{
 			var dir = _filesystem.GetDirectoryInfo("SomeDirectory");
@@ -347,6 +361,30 @@ namespace System.Extensions.Test.IO
 			childDirectories.Should().NotBeNull();
 			childDirectories.Should().HaveCount(1);
 			childDirectories[0].Should().Be(child.FullName);
+		}
+
+		[Test]
+		[Description("")]
+		public void TestEnumerateDirectories1()
+		{
+			var path = _filesystem.CurrentDirectory;
+			Wait(_filesystem.EnumerateDirectories(path)).Should().BeEmpty("because we haven't created any additional directories");
+		}
+
+		[Test]
+		[Description("")]
+		public void TestEnumerateDirectories2()
+		{
+			var path = _filesystem.CurrentDirectory;
+			Wait(_filesystem.EnumerateDirectories(path, "*")).Should().BeEmpty("because we haven't created any additional directories");
+		}
+
+		[Test]
+		[Description("")]
+		public void TestEnumerateDirectories3([ValueSource(nameof(SearchOptions))] SearchOption searchOption)
+		{
+			var path = _filesystem.CurrentDirectory;
+			Wait(_filesystem.EnumerateDirectories(path, "*", searchOption)).Should().BeEmpty("because we haven't created any additional directories");
 		}
 
 		[Test]

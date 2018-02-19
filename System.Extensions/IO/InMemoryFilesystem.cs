@@ -88,10 +88,11 @@ namespace System.IO
 		public Task<IDirectoryInfoAsync> CreateDirectory(string path)
 		{
 			path = CaptureFullPath(path);
-			var directoryInfo = new InMemoryDirectoryInfo(this, _taskScheduler, path);
-			return directoryInfo
-			       .Create()
-			       .ContinueWith(unused => (IDirectoryInfoAsync) directoryInfo, TaskContinuationOptions.ExecuteSynchronously);
+			return _taskScheduler.StartNew<IDirectoryInfoAsync>(() =>
+			{
+				CreateDirectorySync(path);
+				return new InMemoryDirectoryInfo(this, _taskScheduler, path);
+			});
 		}
 
 		/// <inheritdoc />
@@ -182,29 +183,13 @@ namespace System.IO
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path)
 		{
-			Path2.ThrowIfPathIsInvalid(path);
-
-			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
-			{
-				InMemoryDirectory directory;
-				if (!TryGetDirectory(path, out directory))
-					return new string[0];
-
-				return directory.Subdirectories.Select(x => x.FullName).ToList();
-			});
+			return EnumerateDirectories(path, "*");
 		}
 
 		/// <inheritdoc />
 		public Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern)
 		{
-			var task = EnumerateDirectories(path);
-			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
-			{
-				var regex = CreateRegex(searchPattern);
-				var matches = task.Result.Where(x => regex.IsMatch(x)).ToList();
-				return matches;
-			});
+			return EnumerateDirectories(path, searchPattern, SearchOption.TopDirectoryOnly);
 		}
 
 		/// <inheritdoc />
@@ -213,7 +198,36 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			throw new NotImplementedException();
+			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
+			{
+				InMemoryDirectory rootDirectory;
+				if (!TryGetDirectory(path, out rootDirectory))
+					return new string[0];
+
+				var regex = CreateRegex(searchPattern);
+				var directories = new Stack<InMemoryDirectory>();
+				var result = new List<string>();
+
+				directories.Push(rootDirectory);
+
+				while (directories.Count > 0)
+				{
+					var directory = directories.Pop();
+					foreach (var subDirectory in directory.Subdirectories)
+					{
+						if (regex.IsMatch(subDirectory.Name))
+						{
+							if (searchOption == SearchOption.AllDirectories)
+							{
+								directories.Push(subDirectory);
+							}
+							result.Add(subDirectory.FullName);
+						}
+					}
+				}
+
+				return result;
+			});
 		}
 
 		/// <inheritdoc />
@@ -432,7 +446,7 @@ namespace System.IO
 				var components = Directory2.Split(path);
 				InMemoryDirectory directory;
 				if (!TryGetRoot(components[index: 0], out directory))
-					throw new NotImplementedException();
+					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'.", path));
 
 				for (var i = 1; i < components.Count; ++i)
 				{
