@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Security;
 using System.Threading.Tasks;
 
 namespace System.IO
@@ -146,27 +147,6 @@ namespace System.IO
 		Task<bool> IsFileReadOnly(string path);
 
 		/// <summary>
-		///     Writes the given data to the given file.
-		/// </summary>
-		/// <remarks>
-		///     This method copies the given buffer before writing to the file on the I/O thread.
-		/// </remarks>
-		/// <param name="path"></param>
-		/// <param name="bytes"></param>
-		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path" /> or <paramref name="bytes" /> is null</exception>
-		Task WriteAllBytes(string path, byte[] bytes);
-
-		/// <summary>
-		///     Opens a binary file, reads the contents of the file into a byte array,
-		///     and then closes the file.
-		/// </summary>
-		/// <param name="path"></param>
-		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<byte[]> ReadAllBytes(string path);
-
-		/// <summary>
 		///     Creates a file in a particular path.  If the file exists, it is replaced.
 		///     The file is opened with ReadWrite accessand cannot be opened by another
 		///     application until it has been closed.  An IOException is thrown if the
@@ -176,6 +156,15 @@ namespace System.IO
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
+		/// <exception cref="UnauthorizedAccessException">The caller does not have the required permission.
+		/// -or-
+		/// <paramref name="path"/> specified a file that is read-only.</exception>
+		/// <exception cref="ArgumentException"><paramref name="path"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="path"/> is null.</exception>
+		/// <exception cref="PathTooLongException">The specified <paramref name="path"/> exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="DirectoryNotFoundException">The specified <paramref name="path"/> is invalid, (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="IOException">An I/O error occurred while creating the file.</exception>
+		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
 		Task<Stream> CreateFile(string path);
 
 		/// <summary>
@@ -183,6 +172,16 @@ namespace System.IO
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
+		/// <exception cref="ArgumentException"><paramref name="path"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="path"/> is null.</exception>
+		/// <exception cref="PathTooLongException">The specified <paramref name="path"/> exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="DirectoryNotFoundException">The specified <paramref name="path"/> is invalid, (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="UnauthorizedAccessException"><paramref name="path"/> specified a directory.
+		/// -or-
+		/// The caller does not have the required permission.</exception>
+		/// <exception cref="FileNotFoundException">The file specified in <paramref name="path"/> was not found.</exception>
+		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
+		/// <exception cref="IOException">An I/O error occurred while opening the file.</exception>
 		Task<Stream> OpenRead(string path);
 
 		/// <summary>
@@ -190,6 +189,15 @@ namespace System.IO
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
+		/// <exception cref="UnauthorizedAccessException">The caller does not have the required permission.
+		/// -or-
+		/// path specified a read-only file or directory.
+		/// </exception>
+		/// <exception cref="ArgumentException"><paramref name="path"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="path"/> is null.</exception>
+		/// <exception cref="PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="DirectoryNotFoundException">The specified path is invalid, (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
 		Task<Stream> OpenWrite(string path);
 
 		/// <summary>
@@ -201,14 +209,71 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <param name="stream"></param>
 		/// <returns></returns>
+		/// <exception cref="ArgumentException"><paramref name="path"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> or <paramref name="stream" /> is null</exception>
+		/// <exception cref="PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="IOException">An I/O error occurred while opening the file.</exception>
+		/// <exception cref="UnauthorizedAccessException"><paramref name="path"/> specified a file that is read-only.
+		/// -or-
+		/// This operation is not supported on the current platform.
+		/// -or-
+		/// path specified a directory.
+		/// -or-
+		/// The caller does not have the required permission.</exception>
+		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
+		/// <exception cref="SecurityException">The caller does not have the required permission.</exception>
 		Task Write(string path, Stream stream);
+
+		/// <summary>
+		///     Writes the given data to the given file.
+		/// </summary>
+		/// <remarks>
+		///     This method copies the given buffer before writing to the file on the I/O thread.
+		/// </remarks>
+		/// <param name="path"></param>
+		/// <param name="bytes"></param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentException"><paramref name="path"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> or <paramref name="bytes" /> is null</exception>
+		/// <exception cref="PathTooLongException">The specified <paramref name="path"/> exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="DirectoryNotFoundException">The specified <paramref name="path"/> is invalid (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="IOException">An I/O error occurred while opening the file.</exception>
+		/// <exception cref="UnauthorizedAccessException"><paramref name="path"/> specified a file that is read-only.
+		/// -or-
+		/// This operation is not supported on the current platform.
+		/// -or-
+		/// path specified a directory.
+		/// -or-
+		/// The caller does not have the required permission.</exception>
+		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
+		/// <exception cref="SecurityException">The caller does not have the required permission.</exception>
+		Task WriteAllBytes(string path, byte[] bytes);
+
+		/// <summary>
+		///     Opens a binary file, reads the contents of the file into a byte array,
+		///     and then closes the file.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentException">path is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
+		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
+		/// <exception cref="PathTooLongException">The specified <paramref name="path"/> exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="DirectoryNotFoundException">The specified <paramref name="path"/> is invalid (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="IOException">An I/O error occurred while opening the file.</exception>
+		/// <exception cref="UnauthorizedAccessException"><paramref name="path"/> specified a directory.
+		/// -or-
+		/// The caller does not have the required permission.</exception>
+		/// <exception cref="FileNotFoundException">The file specified in <paramref name="path"/> was not found.</exception>
+		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
+		/// <exception cref="SecurityException">The caller does not have the required permission.</exception>
+		Task<byte[]> ReadAllBytes(string path);
 
 		/// <summary>
 		///     Copies an existing file to a new file. Overwriting a file of the same name is not allowed.
 		/// </summary>
-		/// <param name="sourceFileName"></param>
-		/// <param name="destFileName"></param>
+		/// <param name="sourceFileName">The file to copy.</param>
+		/// <param name="destFileName">The name of the destination file. This cannot be a directory or an existing file.</param>
 		/// <returns></returns>
 		/// <exception cref="UnauthorizedAccessException">The caller does not have the required permission.</exception>
 		/// <exception cref="ArgumentException"><paramref name="sourceFileName"/> or <paramref name="destFileName"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.
@@ -226,8 +291,23 @@ namespace System.IO
 		///     If the file does not exist, Delete succeeds without throwing
 		///     an exception.
 		/// </summary>
-		/// <param name="path"></param>
+		/// <param name="path">The name of the file to be deleted. Wildcard characters are not supported.</param>
 		/// <returns></returns>
+		/// <exception cref="ArgumentException"><paramref name="path"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="path"/> is null.</exception>
+		/// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="IOException">The specified file is in use.
+		/// -or-
+		/// There is an open handle on the file, and the operating system is Windows XP or earlier. This open handle can result from enumerating directories and files. For more information, see How to: Enumerate Directories and Files.</exception>
+		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
+		/// <exception cref="PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="UnauthorizedAccessException">The caller does not have the required permission.
+		/// -or-
+		/// The file is an executable file that is in use.
+		/// -or-
+		/// path is a directory.
+		/// -or-
+		/// path specified a read-only file.</exception>
 		Task DeleteFile(string path);
 
 		#endregion
