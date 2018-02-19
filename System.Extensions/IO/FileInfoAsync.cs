@@ -40,5 +40,10 @@ namespace System.IO
 		{
 			return _filesystem.CreateFile(_fullPath);
 		}
+
+		public Task Delete()
+		{
+			return _filesystem.DeleteFile(_fullPath);
+		}
 	}
 }

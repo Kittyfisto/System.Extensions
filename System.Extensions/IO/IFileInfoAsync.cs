@@ -51,5 +51,12 @@ namespace System.IO
 		/// </summary>
 		/// <returns></returns>
 		Task<Stream> Create();
+
+		/// <summary>
+		///     Deletes this file if it exists.
+		///     Does nothing if the file doesn't exist.
+		/// </summary>
+		/// <returns></returns>
+		Task Delete();
 	}
 }

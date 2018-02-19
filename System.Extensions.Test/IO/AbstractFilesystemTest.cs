@@ -371,6 +371,39 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestEnumerateFilesAllDirectories1()
+		{
+			_filesystem.CreateDirectory("A");
+			_filesystem.CreateDirectory("B");
+			_filesystem.CreateFile("A\\a.txt");
+			_filesystem.CreateFile("B\\b.txt");
+
+			var files = Await(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*", SearchOption.AllDirectories));
+			files.Should().HaveCount(2);
+			files.Should().BeEquivalentTo(new object[]
+			{
+				Path.Combine(_filesystem.CurrentDirectory, "A\\a.txt"),
+				Path.Combine(_filesystem.CurrentDirectory, "B\\b.txt")
+			});
+		}
+		
+		[Test]
+		public void TestEnumerateFilesAllDirectories2()
+		{
+			_filesystem.CreateDirectory("A");
+			_filesystem.CreateDirectory("B");
+			_filesystem.CreateFile("A\\a.txt");
+			_filesystem.CreateFile("B\\b.txt");
+
+			var files = Await(_filesystem.EnumerateFiles("B", "*", SearchOption.AllDirectories));
+			files.Should().HaveCount(1);
+			files.Should().BeEquivalentTo(new object[]
+			{
+				Path.Combine(_filesystem.CurrentDirectory, "B\\b.txt")
+			});
+		}
+
+		[Test]
 		public void TestFileExists1()
 		{
 			const string fileName = "stuff.txt";
@@ -489,6 +522,56 @@ namespace System.Extensions.Test.IO
 				stream.Length.Should().Be(1);
 				stream.ReadByte().Should().Be(42);
 			}
+		}
+
+		[Test]
+		[Description("Verifies that the length of a newly written file is 0")]
+		public void TestFileLength1()
+		{
+			const string fileName = "stuff";
+			using (var stream = Await(_filesystem.OpenWrite(fileName)))
+			{
+			}
+
+			const string reason = "because we've written nothing to the file so far";
+			Await(_filesystem.FileLength(fileName)).Should().Be(0, reason);
+			Await(_filesystem.GetFileInfo(fileName).Length).Should().Be(0, reason);
+		}
+
+		[Test]
+		[Description("Verifies that writing data to the file updates its length")]
+		public void TestFileLength2()
+		{
+			const string fileName = "stuff";
+			using (var stream = Await(_filesystem.OpenWrite(fileName)))
+			{
+				stream.Write(new byte[42], 0, 42);
+			}
+
+			const string reason = "because we've written 42 bytes to the file";
+			Await(_filesystem.FileLength(fileName)).Should().Be(42, reason);
+			Await(_filesystem.GetFileInfo(fileName).Length).Should().Be(42, reason);
+		}
+
+		[Test]
+		[Ignore("Not yet implemented")]
+		[Description("Verifies that writing data to the file updates its length")]
+		public void TestFileLength3()
+		{
+			const string fileName = "stuff";
+			using (var stream = Await(_filesystem.OpenWrite(fileName)))
+			{
+				stream.Write(new byte[42], 0, 42);
+			}
+
+			var fileInfo = _filesystem.GetFileInfo(fileName);
+			Await(fileInfo.Delete());
+			new Action(() => Await(fileInfo.Length))
+				.ShouldThrow<AggregateException>()
+				.WithInnerException<FileNotFoundException>();
+			new Action(() => Await(_filesystem.FileLength(fileName)))
+				.ShouldThrow<AggregateException>()
+				.WithInnerException<FileNotFoundException>();
 		}
 	}
 }

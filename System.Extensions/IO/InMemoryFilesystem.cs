@@ -174,15 +174,15 @@ namespace System.IO
 			bool tolerateNonExistantPath = false)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
-
-			if (searchOption == SearchOption.AllDirectories)
-				throw new NotImplementedException();
-
+			
 			path = CaptureFullPath(path);
 			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
-				InMemoryDirectory directory;
-				if (!TryGetDirectory(path, out directory))
+				var directories = new Stack<InMemoryDirectory>();
+				var files = new List<string>();
+
+				InMemoryDirectory rootDirectory;
+				if (!TryGetDirectory(path, out rootDirectory))
 				{
 					if (tolerateNonExistantPath)
 						return new List<string>();
@@ -190,15 +190,39 @@ namespace System.IO
 					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
 				}
 
-				var files = directory.Files.Select(x => x.FullPath);
-
+				Predicate<string> isMatch;
 				if (searchPattern != null)
 				{
 					var regex = CreateRegex(searchPattern);
-					files = files.Where(x => regex.IsMatch(x));
+					isMatch = regex.IsMatch;
+				}
+				else
+				{
+					isMatch = x => true;
 				}
 
-				return files.ToList();
+				directories.Push(rootDirectory);
+				while (directories.Count > 0)
+				{
+					var directory = directories.Pop();
+					
+					foreach (var file in directory.Files)
+					{
+						var fileName = file.FullPath;
+						if (isMatch(fileName))
+							files.Add(fileName);
+					}
+
+					if (searchOption == SearchOption.AllDirectories)
+					{
+						foreach (var subDirectory in directory.Subdirectories)
+						{
+							directories.Push(subDirectory);
+						}
+					}
+				}
+				
+				return files;
 			});
 		}
 
@@ -276,9 +300,21 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
-		public Task<long> FileLength(string path)
+		public Task<long> FileLength(string fileName)
 		{
-			throw new NotImplementedException();
+			Path2.ThrowIfPathIsInvalid(fileName);
+
+			var path = CaptureFullPath(fileName);
+			return _taskScheduler.StartNew(() =>
+			{
+				var directoryPath = Path.GetDirectoryName(path);
+				InMemoryDirectory directory;
+				if (!TryGetDirectory(directoryPath, out directory))
+					throw new DirectoryNotFoundException();
+
+				var fileInfo = directory.GetFileInfo(Path.GetFileName(path));
+				return fileInfo.Content.Length;
+			});
 		}
 
 		/// <inheritdoc />
@@ -468,15 +504,21 @@ namespace System.IO
 			: IFileInfoAsync
 		{
 			private readonly InMemoryFilesystem _filesystem;
+			private readonly ISerialTaskScheduler _taskScheduler;
 			private readonly string _name;
 			private MemoryStream _content;
 
-			public InMemoryFile(InMemoryFilesystem filesystem, string fullPath)
+			public InMemoryFile(InMemoryFilesystem filesystem,
+				ISerialTaskScheduler taskScheduler,
+				string fullPath)
 			{
 				if (filesystem == null)
 					throw new ArgumentNullException(nameof(filesystem));
+				if (taskScheduler == null)
+					throw new ArgumentNullException("taskScheduler");
 
 				_filesystem = filesystem;
+				_taskScheduler = taskScheduler;
 				FullPath = fullPath;
 				_name = Path.GetFileName(fullPath);
 				_content = new MemoryStream();
@@ -495,17 +537,22 @@ namespace System.IO
 
 			public Task<long> Length
 			{
-				get { throw new NotImplementedException(); }
+				get { return _taskScheduler.StartNew(() => _content.Length); }
 			}
 
 			public Task<bool> IsReadOnly
 			{
-				get { throw new NotImplementedException(); }
+				get { return Task.FromResult(false); }
 			}
 
 			public Task<bool> Exists => _filesystem.FileExists(FullPath);
 
 			public Task<Stream> Create()
+			{
+				throw new NotImplementedException();
+			}
+
+			public Task Delete()
 			{
 				throw new NotImplementedException();
 			}
@@ -552,7 +599,7 @@ namespace System.IO
 				_files = new Dictionary<string, InMemoryFile>(new PathComparer());
 			}
 
-			public IEnumerable<IDirectoryInfoAsync> Subdirectories
+			public IEnumerable<InMemoryDirectory> Subdirectories
 			{
 				get
 				{
@@ -563,7 +610,7 @@ namespace System.IO
 				}
 			}
 
-			public IEnumerable<IFileInfoAsync> Files
+			public IEnumerable<InMemoryFile> Files
 			{
 				get
 				{
@@ -730,7 +777,7 @@ namespace System.IO
 					else
 					{
 						var fullPath = Path.Combine(FullName, fileName);
-						file = new InMemoryFile(_filesystem, fullPath);
+						file = new InMemoryFile(_filesystem, _taskScheduler, fullPath);
 						_files.Add(fileName, file);
 					}
 
@@ -773,7 +820,7 @@ namespace System.IO
 					if (!_files.TryGetValue(fname, out file))
 					{
 						var fullPath = Path.Combine(FullName, fname);
-						file = new InMemoryFile(_filesystem, fullPath);
+						file = new InMemoryFile(_filesystem, _taskScheduler, fullPath);
 					}
 
 					return file;
