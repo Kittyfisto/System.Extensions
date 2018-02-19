@@ -38,7 +38,7 @@ namespace System.Extensions.Test.IO
 
 		protected static string AssemblyDirectory => Path.GetDirectoryName(AssemblyFilePath);
 
-		protected static void Await(Task task)
+		protected static void Wait(Task task)
 		{
 			task.Should().NotBeNull();
 
@@ -46,7 +46,7 @@ namespace System.Extensions.Test.IO
 			task.Wait(waitTime).Should().BeTrue("because the task should've been finished after {0} seconds", waitTime.TotalSeconds);
 		}
 
-		protected static T Await<T>(Task<T> task)
+		protected static T Wait<T>(Task<T> task)
 		{
 			task.Should().NotBeNull();
 

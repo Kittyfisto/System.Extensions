@@ -39,6 +39,12 @@ namespace System.IO
 
 		public Task<bool> Exists => _filesystem.DirectoryExists(FullName);
 
+		public Task<bool> FileExists(string filename)
+		{
+			filename = CaptureFullPath(filename);
+			return _filesystem.FileExists(filename);
+		}
+
 		public Task<IDirectoryInfo> Capture()
 		{
 			return _filesystem.CaptureDirectory(FullName);
@@ -65,6 +71,11 @@ namespace System.IO
 		public Task Create()
 		{
 			return _filesystem.CreateDirectory(_name);
+		}
+
+		public Task Delete()
+		{
+			return _filesystem.DeleteDirectory(_fullName);
 		}
 
 		public Task<IDirectoryInfoAsync> CreateSubdirectory(string path)
@@ -125,6 +136,14 @@ namespace System.IO
 				directory = RelativeTo(directory, directoryName);
 			}
 			return directory;
+		}
+
+		[Pure]
+		private string CaptureFullPath(string path)
+		{
+			if (!Path.IsPathRooted(path))
+				path = Path.Combine(_fullName, path);
+			return path;
 		}
 	}
 }

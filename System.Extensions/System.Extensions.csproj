@@ -59,6 +59,10 @@
     <Compile Include="IO\FileInfoAsync.cs" />
     <Compile Include="IO\Filesystem.cs" />
     <Compile Include="IO\GZip.cs" />
+    <Compile Include="IO\InMemoryDirectory.cs" />
+    <Compile Include="IO\InMemoryDirectoryInfo.cs" />
+    <Compile Include="IO\InMemoryFile.cs" />
+    <Compile Include="IO\InMemoryFileInfo.cs" />
     <Compile Include="IO\InMemoryFilesystem.cs" />
     <Compile Include="IO\IDirectoryChangeListener.cs" />
     <Compile Include="IO\IDirectoryInfo.cs" />

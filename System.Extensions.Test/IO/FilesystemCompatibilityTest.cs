@@ -54,7 +54,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateFiles4()
 		{
 			new Action(() => Directory.EnumerateFiles(null)).ShouldThrow<ArgumentNullException>();
-			new Action(() => Await(_filesystem.EnumerateFiles(null))).ShouldThrow<ArgumentNullException>();
+			new Action(() => Wait(_filesystem.EnumerateFiles(null))).ShouldThrow<ArgumentNullException>();
 		}
 
 		[Test]
@@ -71,7 +71,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateFiles6()
 		{
 			new Action(() => Directory.EnumerateFiles(AssemblyFilePath)).ShouldThrow<IOException>();
-			new Action(() => Await(_filesystem.EnumerateFiles(AssemblyFilePath))).ShouldThrow<IOException>();
+			new Action(() => Wait(_filesystem.EnumerateFiles(AssemblyFilePath))).ShouldThrow<IOException>();
 		}
 
 		[Test]
@@ -159,7 +159,7 @@ namespace System.Extensions.Test.IO
 		public void TestDirectoryExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			Directory.Exists(invalidPath).Should().BeFalse();
-			Await(_filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
+			Wait(_filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
 		}
 
 		[Test]
@@ -216,7 +216,7 @@ namespace System.Extensions.Test.IO
 		public void TestFileExists([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			File.Exists(invalidPath).Should().BeFalse();
-			Await(_filesystem.FileExists(invalidPath)).Should().BeFalse();
+			Wait(_filesystem.FileExists(invalidPath)).Should().BeFalse();
 		}
 
 		[Test]

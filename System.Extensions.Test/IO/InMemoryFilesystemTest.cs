@@ -18,7 +18,7 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestPrint1()
 		{
-			var print = Await(Filesystem.Print());
+			var print = Wait(Filesystem.Print());
 			Console.WriteLine(print);
 			print.Should().Be("M:\\ [Drive]\r\n");
 		}
@@ -27,7 +27,7 @@ namespace System.Extensions.Test.IO
 		public void TestPrint2()
 		{
 			Filesystem.AddRoot("D:\\");
-			var print = Await(Filesystem.Print());
+			var print = Wait(Filesystem.Print());
 			Console.WriteLine(print);
 			print.Should().Be("D:\\ [Drive]\r\nM:\\ [Drive]\r\n");
 		}

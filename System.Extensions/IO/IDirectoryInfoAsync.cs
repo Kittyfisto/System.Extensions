@@ -40,6 +40,13 @@ namespace System.IO
 		Task<bool> Exists { get; }
 
 		/// <summary>
+		///     Whether or not the given file exists.
+		/// </summary>
+		/// <param name="filename"></param>
+		/// <returns></returns>
+		Task<bool> FileExists(string filename);
+
+		/// <summary>
 		///     Captures and returns the current state/attributes of this directory.
 		/// </summary>
 		/// <returns></returns>
@@ -69,6 +76,12 @@ namespace System.IO
 		/// </summary>
 		/// <returns></returns>
 		Task Create();
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		Task Delete();
 
 		/// <summary>
 		///     Creates a subdirectory or subdirectories on the specified path.
