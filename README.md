@@ -19,7 +19,7 @@ void SomeMethod(ITaskScheduler scheduler)
 
 ## Credits
 
-Simon Mießler 2017
+Simon Mießler 2018
 
 ## License
 
