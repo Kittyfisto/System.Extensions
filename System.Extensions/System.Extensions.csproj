@@ -52,6 +52,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteArrayExtensions.cs" />
+    <Compile Include="Collections\Bimap.cs" />
+    <Compile Include="Collections\IBimap.cs" />
+    <Compile Include="Collections\IReadOnlyBimap.cs" />
     <Compile Include="IO\Directory2.cs" />
     <Compile Include="IO\DirectoryInfo2.cs" />
     <Compile Include="IO\DirectoryInfoAsync.cs" />
