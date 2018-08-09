@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteArrayExtensionsTest.cs" />
+    <Compile Include="Collections\BimapTest.cs" />
     <Compile Include="IO\AbstractFilesystemTest.cs" />
     <Compile Include="IO\AbstractFileTest.cs" />
     <Compile Include="IO\MurmurHash3Test.cs" />

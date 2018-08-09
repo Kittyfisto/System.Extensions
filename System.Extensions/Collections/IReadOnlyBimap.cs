@@ -8,6 +8,7 @@ namespace System.Collections
 	/// <typeparam name="T1"></typeparam>
 	/// <typeparam name="T2"></typeparam>
 	public interface IReadOnlyBimap<T1, T2>
+		: IEnumerable<KeyValuePair<T1, T2>>
 	{
 		/// <summary>
 		/// 

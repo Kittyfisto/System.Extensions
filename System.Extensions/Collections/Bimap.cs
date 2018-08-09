@@ -49,5 +49,20 @@ namespace System.Collections
 		}
 
 		#endregion
+
+		#region Implementation of IEnumerable
+
+		/// <inheritdoc />
+		public IEnumerator<KeyValuePair<T1, T2>> GetEnumerator()
+		{
+			return _forward.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		#endregion
 	}
 }
