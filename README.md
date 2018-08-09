@@ -10,14 +10,16 @@ This library features an ITaskScheduler interface that allows the creation of pe
 Periodic tasks are meant to be used as a replacement for timers. Using periodic tasks allows for far better unit testing
 compared to regular timers, thanks to the ManualTaskScheduler implementation.
 
+```csharp
 void SomeMethod(ITaskScheduler scheduler)
 {
 	scheduler.StartPeriodic(() => Console.WriteLine("Hello World!"), TimeSpan.FromSeconds(1));
 }
+```
 
 ## Credits
 
-Simon Mießler 2017
+Simon Mießler 2018
 
 ## License
 
