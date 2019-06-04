@@ -10,14 +10,16 @@ namespace System.Extensions.Test.IO
 	public class FilesystemTest
 		: AbstractFilesystemTest
 	{
-		private SerialTaskScheduler _scheduler;
+		private SerialTaskScheduler _ioScheduler;
 		private string _testclassPath;
+		private ITaskScheduler _taskScheduler;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
 			_testclassPath = Path.Combine(Path.GetTempPath(), "FilesystemTest");
-			_scheduler = new SerialTaskScheduler();
+			_ioScheduler = new SerialTaskScheduler();
+			_taskScheduler = new DefaultTaskScheduler();
 		}
 
 		[SetUp]
@@ -34,7 +36,7 @@ namespace System.Extensions.Test.IO
 		[OneTimeTearDown]
 		public void OneTimeTeardown()
 		{
-			_scheduler.Dispose();
+			_ioScheduler.Dispose();
 		}
 
 		[Test]
@@ -276,7 +278,7 @@ namespace System.Extensions.Test.IO
 
 		protected override IFilesystem Create()
 		{
-			return new Filesystem(_scheduler);
+			return new Filesystem(_ioScheduler, _taskScheduler);
 		}
 	}
 }

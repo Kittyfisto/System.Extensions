@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.IO.FS;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -19,18 +20,24 @@ namespace System.IO
 	{
 		private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		private readonly ISerialTaskScheduler _scheduler;
+		private readonly ISerialTaskScheduler _ioScheduler;
+		private readonly FilesystemWatchdog _watchdog;
 
 		/// <summary>
 		/// Initializes this object.
 		/// </summary>
-		/// <param name="scheduler"></param>
-		public Filesystem(ISerialTaskScheduler scheduler)
+		/// <param name="ioScheduler">The scheduler used to perform I/O tasks</param>
+		/// <param name="taskScheduler">The scheduler used for timers (to trigger periodic I/O tasks)</param>
+		public Filesystem(ISerialTaskScheduler ioScheduler,
+		                  ITaskScheduler taskScheduler)
 		{
-			if (scheduler == null)
-				throw new ArgumentNullException(nameof(scheduler));
+			if (ioScheduler == null)
+				throw new ArgumentNullException(nameof(ioScheduler));
+			if (taskScheduler == null)
+				throw new ArgumentNullException(nameof(taskScheduler));
 
-			_scheduler = scheduler;
+			_ioScheduler = ioScheduler;
+			_watchdog = new FilesystemWatchdog(this, taskScheduler);
 		}
 
 		/// <inheritdoc />
@@ -42,7 +49,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
+			return _ioScheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
 				Log.DebugFormat("Enumerating files of directory '{0}'...", path);
 				if (searchPattern == null)
@@ -75,7 +82,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
+			return _ioScheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
 				Log.DebugFormat("Enumerating directories of directory '{0}'...", path);
 				return Directory.EnumerateDirectories(path).ToList();
@@ -88,7 +95,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
+			return _ioScheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
 				Log.DebugFormat("Enumerating directories of directory '{0}'...", path);
 				return Directory.EnumerateDirectories(path, searchPattern).ToList();
@@ -103,7 +110,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew<IReadOnlyList<string>>(() =>
+			return _ioScheduler.StartNew<IReadOnlyList<string>>(() =>
 			{
 				Log.DebugFormat("Enumerating directories of directory '{0}'...", path);
 				return Directory.EnumerateDirectories(path, searchPattern, searchOption).ToList();
@@ -143,7 +150,7 @@ namespace System.IO
 				return Task.FromResult(false);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Testing if file '{0}' exists...", path);
 				return File.Exists(path);
@@ -156,7 +163,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Getting length of '{0}'...", path);
 				return new FileInfo(path).Length;
@@ -169,7 +176,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Testing if '{0}' is readonly...", path);
 				return new FileInfo(path).IsReadOnly;
@@ -190,7 +197,7 @@ namespace System.IO
 
 			path = CaptureFullPath(path);
 
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Writing {0} bytes to '{1}'...", copy, path);
 				File.WriteAllBytes(path, copy);
@@ -216,7 +223,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew<Stream>(() =>
+			return _ioScheduler.StartNew<Stream>(() =>
 			{
 				Log.DebugFormat("Opening file '{0}' for reading...", path);
 				return File.OpenRead(path);
@@ -229,7 +236,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew<Stream>(() =>
+			return _ioScheduler.StartNew<Stream>(() =>
 			{
 				Log.DebugFormat("Opening file '{0}' for writing...", path);
 				return File.OpenWrite(path);
@@ -244,7 +251,7 @@ namespace System.IO
 				throw new ArgumentNullException(nameof(stream));
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Writing data to {0}", path);
 				using (var targetStream = File.OpenWrite(path))
@@ -263,7 +270,7 @@ namespace System.IO
 
 			var sourceFilePath = CaptureFullPath(sourceFileName);
 			var destFilePath = CaptureFullPath(destFileName);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Copying '{0}' to '{1}'", sourceFilePath, destFilePath);
 				File.Copy(sourceFilePath, destFilePath);
@@ -276,12 +283,15 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Deleting file '{0}'", path);
 				File.Delete(path);
 			});
 		}
+
+		/// <inheritdoc />
+		public IFilesystemWatchdog Watchdog => _watchdog;
 
 		/// <summary>
 		///     **Always** equals <see cref="Directory.GetCurrentDirectory" />.
@@ -301,7 +311,7 @@ namespace System.IO
 		{
 			get
 			{
-				return _scheduler.StartNew<IEnumerable<IDirectoryInfoAsync>>(() =>
+				return _ioScheduler.StartNew<IEnumerable<IDirectoryInfoAsync>>(() =>
 				{
 					var drives = DriveInfo.GetDrives();
 					return drives.Select(x => DirectoryInfoAsync.FromRoot(this, x.Name)).ToList();
@@ -316,7 +326,7 @@ namespace System.IO
 
 			path = CaptureFullPath(path);
 
-			return _scheduler.StartNew<IDirectoryInfoAsync>(() =>
+			return _ioScheduler.StartNew<IDirectoryInfoAsync>(() =>
 			{
 				Log.DebugFormat("Creating directory '{0}'...", path);
 				var info = Directory.CreateDirectory(path);
@@ -330,7 +340,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Deleting directory '{0}'...", path);
 				Directory.Delete(path);
@@ -343,7 +353,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Deleting directory '{0}'{1}...", path, recursive ? " recursive" : string.Empty);
 				Directory.Delete(path, recursive);
@@ -357,7 +367,7 @@ namespace System.IO
 				return Task.FromResult(false);
 
 			path = CaptureFullPath(path);
-			return _scheduler.StartNew(() =>
+			return _ioScheduler.StartNew(() =>
 			{
 				Log.DebugFormat("Testing if directory '{0}' exists...", path);
 				return Directory.Exists(path);
@@ -369,7 +379,7 @@ namespace System.IO
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
-			return _scheduler.StartNew<Stream>(() => new FileStream(path, FileMode.Create,
+			return _ioScheduler.StartNew<Stream>(() => new FileStream(path, FileMode.Create,
 				FileAccess.Read | FileAccess.Write,
 				FileShare.None));
 		}
@@ -395,7 +405,7 @@ namespace System.IO
 
 		internal Task<IFileInfo> CaptureFile(string fullName)
 		{
-			return _scheduler.StartNew<IFileInfo>(() =>
+			return _ioScheduler.StartNew<IFileInfo>(() =>
 			{
 				Log.DebugFormat("Capturing properties of '{0}'...", fullName);
 
@@ -407,7 +417,7 @@ namespace System.IO
 
 		internal Task<IDirectoryInfo> CaptureDirectory(string path)
 		{
-			return _scheduler.StartNew<IDirectoryInfo>(() =>
+			return _ioScheduler.StartNew<IDirectoryInfo>(() =>
 			{
 				Log.DebugFormat("Capturing properties of '{0}'...", path);
 				return CaptureDirectoryBranch(path);

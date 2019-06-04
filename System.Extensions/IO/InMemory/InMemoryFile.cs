@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace System.IO
+namespace System.IO.InMemory
 {
 	internal sealed class InMemoryFile
 	{

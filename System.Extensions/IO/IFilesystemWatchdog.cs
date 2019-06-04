@@ -1,6 +1,9 @@
 ﻿namespace System.IO
 {
-	internal interface IFilesystemWatchdog
+	/// <summary>
+	/// 
+	/// </summary>
+	public interface IFilesystemWatchdog
 	{
 		/// <summary>
 		///     Creates a new filesystem-watch which notifies the given listener about the creation/deleting of files.
@@ -8,19 +11,34 @@
 		/// <remarks>
 		///     The given listener will continue to be notified until the returned watch is disposed of.
 		/// </remarks>
+		/// <remarks>
+		///     The directory watch WILL CONSUME RESOURCES until it is disposed of.
+		///     You MUST dispose of the returned object when you no longer need to watch for changes or
+		///     memory and CPU time will be wasted until the AppDomain is unloaded.
+		/// </remarks>
 		/// <param name="path"></param>
-		/// <param name="listener"></param>
+		/// <param name="searchOption"></param>
 		/// <returns></returns>
-		IFilesystemWatcher StartDirectoryWatch(string path, IDirectoryChangeListener listener);
+		IFilesystemWatcher StartDirectoryWatch(string path, SearchOption searchOption = SearchOption.TopDirectoryOnly);
 
 		/// <summary>
-		///     Stops the given watch.
-		///     Should be called when one is no longer interested in being notified of file related
-		///     events (in order to free-up system resources).
+		///     Creates a new filesystem-watch which notifies the given listener about the creation/deleting of files.
 		/// </summary>
-		/// <param name="filesystemWatcher"></param>
-		void StopWatch(IFilesystemWatcher filesystemWatcher);
+		/// <remarks>
+		///     The given listener will continue to be notified until the returned watch is disposed of.
+		/// </remarks>
+		/// <remarks>
+		///     The directory watch WILL CONSUME RESOURCES until it is disposed of.
+		///     You MUST dispose of the returned object when you no longer need to watch for changes or
+		///     memory and CPU time will be wasted until the AppDomain is unloaded.
+		/// </remarks>
+		/// <param name="path"></param>
+		/// <param name="maximumLatency">
+		///     The maximum amount of latency with which updates are perceived.
+		///     Shouldn't be set to less than 100ms.
+		/// </param>
+		/// <param name="searchOption"></param>
+		/// <returns></returns>
+		IFilesystemWatcher StartDirectoryWatch(string path, TimeSpan maximumLatency, SearchOption searchOption = SearchOption.TopDirectoryOnly);
 	}
-
-	
 }

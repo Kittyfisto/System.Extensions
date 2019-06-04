@@ -9,20 +9,22 @@ namespace System.Extensions.Test.IO
 	public sealed class FilesystemCompatibilityTest
 		: AbstractFileTest
 	{
-		private SerialTaskScheduler _scheduler;
+		private SerialTaskScheduler _ioScheduler;
 		private Filesystem _filesystem;
+		private ITaskScheduler _taskScheduler;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_scheduler = new SerialTaskScheduler();
-			_filesystem = new Filesystem(_scheduler);
+			_ioScheduler = new SerialTaskScheduler();
+			_taskScheduler = new DefaultTaskScheduler();
+			_filesystem = new Filesystem(_ioScheduler, _taskScheduler);
 		}
 
 		[OneTimeTearDown]
 		public void OneTimeTeardown()
 		{
-			_scheduler.Dispose();
+			_ioScheduler.Dispose();
 		}
 
 		[Test]

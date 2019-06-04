@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace System.IO
+namespace System.IO.InMemory
 {
 	internal sealed class InMemoryFileInfo
 		: IFileInfoAsync

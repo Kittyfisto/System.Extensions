@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace System.IO
+namespace System.IO.InMemory
 {
 	internal sealed class InMemoryDirectory
 	{

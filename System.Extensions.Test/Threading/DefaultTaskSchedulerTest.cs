@@ -44,9 +44,8 @@ namespace System.Extensions.Test.Threading
 				int counter = 0;
 				var task = scheduler.StartPeriodic(() => ++counter, TimeSpan.Zero);
 
-				new object().Property(x => counter).ShouldEventually().BeGreaterOrEqual(100,
-				                                                                        TimeSpan.FromSeconds(5),
-				                                                                        "because our periodic task should've been executed at least 100 times by now");
+				new object().Property(x => counter).ShouldAfter(TimeSpan.FromSeconds(5)).BeGreaterOrEqualTo(100,
+				                                                                                          "because our periodic task should've been executed at least 100 times by now");
 
 				scheduler.StopPeriodic(task);
 			}

@@ -907,7 +907,7 @@ namespace System.Extensions.Test.IO
 			Wait(_filesystem.WriteAllBytes("foo.dat", data));
 			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(data);
 		}
-		
+
 		[Test]
 		[Description("Verifies that Write overwrites previous content, but keeps its filesize")]
 		public void TestWriteAllBytes3()
@@ -917,6 +917,174 @@ namespace System.Extensions.Test.IO
 			_filesystem.WriteAllBytes("foo.dat", new byte[] {3, 4});
 			_filesystem.WriteAllBytes("foo.dat", new byte[] {4});
 			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(new byte[] {4}, "because every WriteAllBytes() operation should overwrite previous content");
+		}
+
+		[Test]
+		public void TestWatchNonExistantDirectory()
+		{
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("NonExistantFolder"))
+			{
+				watcher.Should().NotBeNull();
+				watcher.Files.Should().BeEmpty("because the watched folder doesn't exist");
+			}
+		}
+
+		[Test]
+		public void TestWatchEmptyDirectory()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.Files.Should().BeEmpty();
+			}
+		}
+
+		[Test]
+		public void TestWatchNonEmptyDirectory()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+
+				var file = watcher.Files.First();
+				file.Should().NotBeNull();
+				file.Name.Should().EndWith("a.txt");
+			}
+		}
+
+		[Test]
+		public void TestWatchCreateDeleteCreateDirectory()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
+
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+
+				_filesystem.DeleteFile("SomeFolder\\a.txt").Wait();
+				_filesystem.DeleteDirectory("SomeFolder").Wait();
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(0);
+
+				_filesystem.CreateDirectory("SomeFolder");
+				_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+			}
+		}
+
+		[Test]
+		public void TestWatchWriteAllBytes()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.MonitorEvents();
+				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
+
+				_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]).Wait();
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+				watcher.Files.Should().HaveCount(1);
+				var file = watcher.Files.First();
+				file.Should().NotBeNull();
+				file.Name.Should().EndWith("a.txt");
+
+				watcher.ShouldRaise(nameof(watcher.Changed));
+			}
+		}
+
+		[Test]
+		public void TestWatchCreateFile()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.MonitorEvents();
+				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
+
+				using (_filesystem.CreateFile("SomeFolder\\b.txt").Result)
+				{}
+
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+				watcher.Files.Should().HaveCount(1);
+				var file = watcher.Files.First();
+				file.Should().NotBeNull();
+				file.Name.Should().EndWith("b.txt");
+
+				watcher.ShouldRaise(nameof(watcher.Changed));
+			}
+		}
+
+		[Test]
+		public void TestWatchOpenWriteFile()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.MonitorEvents();
+				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
+
+				using (_filesystem.OpenWrite("SomeFolder\\b.txt").Result)
+				{}
+
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+				watcher.Files.Should().HaveCount(1);
+				var file = watcher.Files.First();
+				file.Should().NotBeNull();
+				file.Name.Should().EndWith("b.txt");
+
+				watcher.ShouldRaise(nameof(watcher.Changed));
+			}
+		}
+
+		[Test]
+		public void TestWatchAddIrrelevantFile()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.MonitorEvents();
+				watcher.Files.Should().BeEmpty();
+
+				_filesystem.WriteAllBytes("a.txt", new byte[123]).Wait();
+				watcher.Files.Should().BeEmpty();
+				watcher.ShouldNotRaise(nameof(watcher.Changed));
+			}
+		}
+
+		[Test]
+		public void TestWatchDeleteFile()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.MonitorEvents();
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+
+				_filesystem.DeleteFile("SomeFolder\\a.txt").Wait();
+				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
+
+				watcher.ShouldRaise(nameof(watcher.Changed));
+			}
+		}
+
+		[Test]
+		public void TestWatchTopLevelOnly()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			{
+				watcher.MonitorEvents();
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+
+				_filesystem.DeleteFile("SomeFolder\\a.txt").Wait();
+				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
+
+				watcher.ShouldRaise(nameof(watcher.Changed));
+			}
 		}
 	}
 }

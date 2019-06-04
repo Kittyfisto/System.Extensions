@@ -9,6 +9,15 @@ namespace System.IO
 	/// </summary>
 	public interface IFilesystem
 	{
+		#region Watching
+
+		/// <summary>
+		///   Allows monitoring of folders.
+		/// </summary>
+		IFilesystemWatchdog Watchdog { get; }
+
+		#endregion
+
 		#region Directories
 
 		/// <summary>

@@ -9,16 +9,18 @@ namespace System.Extensions.Test.IO
 	public sealed class DirectoryInfoAsyncCompatibilityTest
 		: AbstractFileTest
 	{
-		private SerialTaskScheduler _scheduler;
+		private SerialTaskScheduler _ioScheduler;
 		private Filesystem _filesystem;
 		private DirectoryInfo _directory;
 		private IDirectoryInfoAsync _asyncDirectory;
+		private ITaskScheduler _taskScheduler;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_scheduler = new SerialTaskScheduler();
-			_filesystem = new Filesystem(_scheduler);
+			_ioScheduler = new SerialTaskScheduler();
+			_taskScheduler = new DefaultTaskScheduler();
+			_filesystem = new Filesystem(_ioScheduler, _taskScheduler);
 
 			_directory = new DirectoryInfo(Directory.GetCurrentDirectory());
 			_asyncDirectory = _filesystem.Current;
@@ -27,7 +29,7 @@ namespace System.Extensions.Test.IO
 		[OneTimeTearDown]
 		public void OneTimeTeardown()
 		{
-			_scheduler.Dispose();
+			_ioScheduler.Dispose();
 		}
 
 		[Test]

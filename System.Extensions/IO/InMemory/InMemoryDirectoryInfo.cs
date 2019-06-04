@@ -3,7 +3,7 @@ using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace System.IO
+namespace System.IO.InMemory
 {
 	/// <summary>
 	/// This class is responsible for pro

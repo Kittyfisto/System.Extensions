@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.IO.InMemory;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -34,6 +35,7 @@ namespace System.IO
 		private readonly Dictionary<string, InMemoryDirectory> _roots;
 		private readonly object _syncRoot;
 		private readonly ISerialTaskScheduler _taskScheduler;
+		private readonly InMemoryFilesystemWatchdog _watchdog;
 
 		/// <summary>
 		///     Initializes this object.
@@ -57,11 +59,15 @@ namespace System.IO
 			_syncRoot = new object();
 			_taskScheduler = taskScheduler;
 			_roots = new Dictionary<string, InMemoryDirectory>(new PathComparer());
+			_watchdog = new InMemoryFilesystemWatchdog(this);
 
 			const string root = @"M:\";
 			AddRoot(root);
 			CurrentDirectory = root;
 		}
+
+		/// <inheritdoc />
+		public IFilesystemWatchdog Watchdog => _watchdog;
 
 		/// <inheritdoc />
 		public string CurrentDirectory { get; set; }
@@ -289,7 +295,11 @@ namespace System.IO
 				var directoryPath = Path.GetDirectoryName(path);
 				var directory = GetDirectory(directoryPath);
 				var fileName = Path.GetFileName(path);
-				return directory.CreateFile(fileName);
+				var stream = directory.CreateFile(fileName);
+
+				_watchdog.NotifyWatchers();
+
+				return stream;
 			});
 		}
 
@@ -320,6 +330,9 @@ namespace System.IO
 				var directory = GetDirectory(directoryPath);
 				var fileName = Path.GetFileName(path);
 				var stream = directory.OpenWriteSync(fileName);
+
+				_watchdog.NotifyWatchers();
+
 				return stream;
 			});
 		}
@@ -383,6 +396,8 @@ namespace System.IO
 					{
 						targetStream.Write(bytes, 0, bytes.Length);
 					}
+
+					_watchdog.NotifyWatchers();
 				}, TaskContinuationOptions.ExecuteSynchronously);
 		}
 
@@ -398,6 +413,8 @@ namespace System.IO
 				InMemoryDirectory directory = GetDirectory(directoryPath);
 				var fileName = Path.GetFileName(path);
 				directory.TryDeleteFile(fileName);
+
+				_watchdog.NotifyWatchers();
 			});
 		}
 
