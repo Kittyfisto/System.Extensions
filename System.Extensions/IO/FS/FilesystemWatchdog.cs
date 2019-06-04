@@ -25,18 +25,18 @@ namespace System.IO.FS
 
 		#region Implementation of IFilesystemWatchdog
 
-		public IFilesystemWatcher StartDirectoryWatch(string path,
+		public IFilesystemWatcher StartDirectoryWatch(string path,string searchPattern = null, 
 		                                              SearchOption searchOption = SearchOption.TopDirectoryOnly)
 		{
-			return StartDirectoryWatch(path, TimeSpan.FromMilliseconds(value: 500), searchOption);
+			return StartDirectoryWatch(path, TimeSpan.FromMilliseconds(value: 500), searchPattern, searchOption);
 		}
 
 		public IFilesystemWatcher StartDirectoryWatch(string path,
-		                                              TimeSpan maximumLatency,
+		                                              TimeSpan maximumLatency,string searchPattern = null, 
 		                                              SearchOption searchOption = SearchOption.TopDirectoryOnly)
 		{
 			var watcher = new FilesystemWatcher(this, _filesystem, _taskScheduler, maximumLatency,
-			                                    path, searchOption);
+			                                    path, searchPattern, searchOption);
 
 			lock (_syncRoot)
 			{

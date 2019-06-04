@@ -17,9 +17,10 @@
 		///     memory and CPU time will be wasted until the AppDomain is unloaded.
 		/// </remarks>
 		/// <param name="path"></param>
+		/// <param name="searchPattern"></param>
 		/// <param name="searchOption"></param>
 		/// <returns></returns>
-		IFilesystemWatcher StartDirectoryWatch(string path, SearchOption searchOption = SearchOption.TopDirectoryOnly);
+		IFilesystemWatcher StartDirectoryWatch(string path, string searchPattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly);
 
 		/// <summary>
 		///     Creates a new filesystem-watch which notifies the given listener about the creation/deleting of files.
@@ -37,8 +38,9 @@
 		///     The maximum amount of latency with which updates are perceived.
 		///     Shouldn't be set to less than 100ms.
 		/// </param>
+		/// <param name="searchPattern"></param>
 		/// <param name="searchOption"></param>
 		/// <returns></returns>
-		IFilesystemWatcher StartDirectoryWatch(string path, TimeSpan maximumLatency, SearchOption searchOption = SearchOption.TopDirectoryOnly);
+		IFilesystemWatcher StartDirectoryWatch(string path, TimeSpan maximumLatency, string searchPattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly);
 	}
 }

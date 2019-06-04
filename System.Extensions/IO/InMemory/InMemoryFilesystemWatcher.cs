@@ -13,19 +13,23 @@ namespace System.IO.InMemory
 
 		private readonly InMemoryFilesystemWatchdog _watchdog;
 		private readonly InMemoryFilesystem _filesystem;
-		private readonly string _path;
+		private readonly string _searchPattern;
 		private readonly SearchOption _searchOption;
-		private IReadOnlyList<IFileInfoAsync> _files;
 		private readonly object _syncRoot;
+
+		private IReadOnlyList<IFileInfoAsync> _files;
+		private string _path;
 
 		public InMemoryFilesystemWatcher(InMemoryFilesystemWatchdog watchdog,
 		                                 InMemoryFilesystem filesystem,
 		                                 string path,
+		                                 string searchPattern,
 		                                 SearchOption searchOption)
 		{
 			_watchdog = watchdog;
 			_filesystem = filesystem;
 			_path = path;
+			_searchPattern = searchPattern;
 			_searchOption = searchOption;
 			_syncRoot = new object();
 			_files = new IFileInfoAsync[0];
@@ -50,7 +54,15 @@ namespace System.IO.InMemory
 		public event Action Changed;
 #pragma warning restore 67
 
-		public string Path => _path;
+		public string Path
+		{
+			get { return _path;}
+			set
+			{
+				_path = value;
+				Update();
+			}
+		}
 
 		#endregion
 
@@ -68,7 +80,7 @@ namespace System.IO.InMemory
 		{
 			if (_filesystem.DirectoryExists(_path).Result)
 			{
-				return _filesystem.EnumerateFiles(_path).Result.Select(x => _filesystem.GetFileInfo(x)).ToList();
+				return _filesystem.EnumerateFiles(_path, _searchPattern, _searchOption).Result.Select(x => _filesystem.GetFileInfo(x)).ToList();
 			}
 
 			return new IFileInfoAsync[0];

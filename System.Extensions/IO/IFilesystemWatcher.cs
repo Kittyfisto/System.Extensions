@@ -16,7 +16,7 @@ namespace System.IO
 		/// <summary>
 		///     The (root) path being monitored.
 		/// </summary>
-		string Path { get; }
+		string Path { get; set; }
 
 		/// <summary>
 		///     This event is fired whenever changes to the given <see cref="Path" /> occurred.

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -12,20 +13,23 @@ namespace System.IO.FS
 		private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly Dictionary<string, IFileInfoAsync> _filesByPath;
-		private IReadOnlyList<IFileInfoAsync> _files;
 		private readonly FilesystemWatchdog _filesystemWatchdog;
 		private readonly Filesystem _filesystem;
-		private readonly string _path;
 		private readonly IPeriodicTask _task;
 		private readonly ITaskScheduler _taskScheduler;
 		private readonly SearchOption _searchOption;
 		private readonly object _syncRoot;
+		private readonly string _searchPattern;
+
+		private IReadOnlyList<IFileInfoAsync> _files;
+		private string _path;
 
 		public FilesystemWatcher(FilesystemWatchdog filesystemWatchdog,
 		                         Filesystem filesystem,
 		                         ITaskScheduler taskScheduler,
 		                         TimeSpan maximumLatency,
 		                         string path,
+		                         string searchPattern,
 		                         SearchOption searchOption)
 		{
 			_filesystemWatchdog = filesystemWatchdog;
@@ -35,6 +39,7 @@ namespace System.IO.FS
 			_syncRoot = new object();
 
 			_path = path;
+			_searchPattern = searchPattern;
 			_searchOption = searchOption;
 			_filesByPath = new Dictionary<string, IFileInfoAsync>();
 			_files = new IFileInfoAsync[0];
@@ -59,17 +64,28 @@ namespace System.IO.FS
 
 		private void EnumerateOnce()
 		{
+			var filePaths = EnumerateFiles();
+			Synchronize(filePaths);
+		}
+
+		[Pure]
+		private IReadOnlyList<string> EnumerateFiles()
+		{
 			try
 			{
-				var filePaths = _filesystem.EnumerateFiles(_path, searchPattern: null,
-				                                           searchOption: _searchOption,
-				                                           tolerateNonExistantPath: true).Result;
-				Synchronize(filePaths);
+				return _filesystem.EnumerateFiles(_path, searchPattern: _searchPattern,
+				                                  searchOption: _searchOption,
+				                                  tolerateNonExistantPath: true).Result;
 			}
 			catch (IOException e)
 			{
-				Console.WriteLine(e);
-				throw;
+				Log.DebugFormat("Caught exception: {0}", e);
+				return new string[0];
+			}
+			catch (Exception e)
+			{
+				Log.ErrorFormat("Caught unexpected exception: {0}", e);
+				return new string[0];
 			}
 		}
 
@@ -129,6 +145,11 @@ namespace System.IO.FS
 		public string Path
 		{
 			get { return _path; }
+			set
+			{
+				_path = value;
+				EnumerateOnce();
+			}
 		}
 
 #pragma warning disable 67

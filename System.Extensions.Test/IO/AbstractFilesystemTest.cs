@@ -1074,16 +1074,63 @@ namespace System.Extensions.Test.IO
 		public void TestWatchTopLevelOnly()
 		{
 			_filesystem.CreateDirectory("SomeFolder");
-			_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
 			{
-				watcher.MonitorEvents();
-				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
-
-				_filesystem.DeleteFile("SomeFolder\\a.txt").Wait();
+				_filesystem.CreateDirectory("SomeFolder\\Blub").Wait();
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
-				watcher.ShouldRaise(nameof(watcher.Changed));
+				_filesystem.WriteAllBytes("SomeFolder\\Blub\\b.txt", new byte[0]).Wait();
+				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
+
+				_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+			}
+		}
+
+		[Test]
+		public void TestWatchAllDirectories()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
+			_filesystem.CreateDirectory("SomeFolder\\Blub").Wait();
+			_filesystem.WriteAllBytes("SomeFolder\\Blub\\b.txt", new byte[0]).Wait();
+
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder", null, SearchOption.AllDirectories))
+			{
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(2);
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("a.txt"));
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("b.txt"));
+			}
+		}
+
+		[Test]
+		public void TestWatchWithSearchPattern1()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.WriteAllBytes("SomeFolder\\a", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\b", new byte[0]).Wait();
+
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder", "a"))
+			{
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("a"));
+			}
+		}
+
+		[Test]
+		public void TestWatchWithSearchPattern2()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.WriteAllBytes("SomeFolder\\a", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\ba", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\a\\b", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\c", new byte[0]).Wait();
+
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder", "*a", SearchOption.AllDirectories))
+			{
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(2);
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("a"));
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("ba"));
 			}
 		}
 	}

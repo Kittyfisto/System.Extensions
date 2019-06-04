@@ -75,7 +75,8 @@ namespace System.IO.InMemory
 				foreach (var file in directory.Files)
 				{
 					var fileName = file.FullPath;
-					if (isMatch(fileName))
+					//if (isMatch(fileName))
+					if (isMatch(file.Name))
 						files.Add(fileName);
 				}
 
