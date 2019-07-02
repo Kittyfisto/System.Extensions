@@ -228,7 +228,8 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(fileName, nameof(fileName));
 
 			var fullFileName = CaptureFullPath(fileName);
-			if (!TryGetFile(fullFileName, out var file))
+			InMemoryFile file;
+			if (!TryGetFile(fullFileName, out file))
 				throw new FileNotFoundException();
 
 			return file.Length;
@@ -246,6 +247,58 @@ namespace System.IO
 			using (var stream = OpenRead(path))
 			{
 				return stream.ReadToEnd();
+			}
+		}
+
+		/// <inheritdoc />
+		public string ReadAllText(string path)
+		{
+			using (var stream = OpenRead(path))
+			using (var reader = new StreamReader(stream))
+			{
+				return reader.ReadToEnd();
+			}
+		}
+
+		/// <inheritdoc />
+		public string ReadAllText(string path, Encoding encoding)
+		{
+			using (var stream = OpenRead(path))
+			using (var reader = new StreamReader(stream, encoding))
+			{
+				return reader.ReadToEnd();
+			}
+		}
+
+		/// <inheritdoc />
+		public IReadOnlyList<string> ReadAllLines(string path)
+		{
+			using (var stream = OpenRead(path))
+			using (var reader = new StreamReader(stream))
+			{
+				var lines = new List<string>();
+				while (!reader.EndOfStream)
+				{
+					lines.Add(reader.ReadLine());
+				}
+
+				return lines.ToArray();
+			}
+		}
+
+		/// <inheritdoc />
+		public IReadOnlyList<string> ReadAllLines(string path, Encoding encoding)
+		{
+			using (var stream = OpenRead(path))
+			using (var reader = new StreamReader(stream, encoding))
+			{
+				var lines = new List<string>();
+				while (!reader.EndOfStream)
+				{
+					lines.Add(reader.ReadLine());
+				}
+
+				return lines.ToArray();
 			}
 		}
 
@@ -343,6 +396,28 @@ namespace System.IO
 			using (var stream = OpenWrite(path))
 			{
 				stream.Write(bytes, 0, bytes.Length);
+				_watchdog.NotifyWatchers();
+			}
+		}
+
+		/// <inheritdoc />
+		public void WriteAllText(string path, string contents)
+		{
+			using (var stream = OpenWrite(path))
+			using (var writer = new StreamWriter(stream))
+			{
+				writer.Write(contents);
+				_watchdog.NotifyWatchers();
+			}
+		}
+
+		/// <inheritdoc />
+		public void WriteAllText(string path, string contents, Encoding encoding)
+		{
+			using (var stream = OpenWrite(path))
+			using (var writer = new StreamWriter(stream, encoding))
+			{
+				writer.Write(contents);
 				_watchdog.NotifyWatchers();
 			}
 		}

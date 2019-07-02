@@ -3,6 +3,7 @@ using System.Diagnostics.Contracts;
 using System.IO.FS;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using log4net;
 
@@ -162,14 +163,21 @@ namespace System.IO
 			if (bytes == null)
 				throw new ArgumentNullException(nameof(bytes));
 
-			// I don't like this copy but I also don't want to allow the user to introduce
-			// race conditions... What to do?
-			var copy = new byte[bytes.Length];
-			bytes.CopyTo(copy, 0);
-
 			path = CaptureFullPath(path);
-			Log.DebugFormat("Writing {0} bytes to '{1}'...", copy, path);
-			File.WriteAllBytes(path, copy);
+			Log.DebugFormat("Writing {0} bytes to '{1}'...", bytes.Length, path);
+			File.WriteAllBytes(path, bytes);
+		}
+
+		/// <inheritdoc />
+		public void WriteAllText(string path, string contents)
+		{
+			File.WriteAllText(path, contents);
+		}
+
+		/// <inheritdoc />
+		public void WriteAllText(string path, string contents, Encoding encoding)
+		{
+			File.WriteAllText(path, contents, encoding);
 		}
 
 		/// <inheritdoc />
@@ -179,6 +187,30 @@ namespace System.IO
 			{
 				return stream.ReadToEnd();
 			}
+		}
+
+		/// <inheritdoc />
+		public string ReadAllText(string path)
+		{
+			return File.ReadAllText(path);
+		}
+
+		/// <inheritdoc />
+		public string ReadAllText(string path, Encoding encoding)
+		{
+			return File.ReadAllText(path, encoding);
+		}
+
+		/// <inheritdoc />
+		public IReadOnlyList<string> ReadAllLines(string path)
+		{
+			return File.ReadAllLines(path);
+		}
+
+		/// <inheritdoc />
+		public IReadOnlyList<string> ReadAllLines(string path, Encoding encoding)
+		{
+			return File.ReadAllLines(path, encoding);
 		}
 
 		/// <inheritdoc />

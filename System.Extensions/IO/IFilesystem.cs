@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Security;
+using System.Text;
 
 namespace System.IO
 {
@@ -262,10 +263,27 @@ namespace System.IO
 		void WriteAllBytes(string path, byte[] bytes);
 
 		/// <summary>
+		///    Creates a new file, writes the specified string to the file, and then closes the file.
+		///    If the target file already exists, it is overwritten.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <param name="contents"></param>
+		void WriteAllText(string path, string contents);
+
+		/// <summary>
+		///    Creates a new file, writes the specified string to the file using the specified encoding,
+		///    and then closes the file. If the target file already exists, it is overwritten.
+		/// </summary>
+		/// <param name="path">The file to write to.</param>
+		/// <param name="contents">The string to write to the file.</param>
+		/// <param name="encoding">The encoding to apply to the string.</param>
+		void WriteAllText(string path, string contents, Encoding encoding);
+
+		/// <summary>
 		///     Opens a binary file, reads the contents of the file into a byte array,
 		///     and then closes the file.
 		/// </summary>
-		/// <param name="path"></param>
+		/// <param name="path">The file to open for reading.</param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentException">path is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
@@ -279,6 +297,34 @@ namespace System.IO
 		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
 		/// <exception cref="SecurityException">The caller does not have the required permission.</exception>
 		byte[] ReadAllBytes(string path);
+
+		/// <summary>
+		///    Opens a text file, reads all the text in the file into a string, and then closes the file.
+		/// </summary>
+		/// <param name="path">The file to open for reading.</param>
+		string ReadAllText(string path);
+
+		/// <summary>
+		///    Opens a file, reads all text in the file with the specified encoding, and then closes the file.
+		/// </summary>
+		/// <param name="path">The file to open for reading.</param>
+		/// <param name="encoding">The encoding applied to the contents of the file.</param>
+		string ReadAllText(string path, Encoding encoding);
+
+		/// <summary>
+		///    Opens a text file, reads all lines of the file, and then closes the file.
+		/// </summary>
+		/// <param name="path">The file to open for reading.</param>
+		/// <returns></returns>
+		IReadOnlyList<string> ReadAllLines(string path);
+
+		/// <summary>
+		///    Opens a file, reads all lines of the file with the specified encoding, and then closes the file.
+		/// </summary>
+		/// <param name="path">The file to open for reading.</param>
+		/// <param name="encoding">The encoding applied to the contents of the file.</param>
+		/// <returns></returns>
+		IReadOnlyList<string> ReadAllLines(string path, Encoding encoding);
 
 		/// <summary>
 		///     Copies an existing file to a new file. Overwriting a file of the same name is not allowed.

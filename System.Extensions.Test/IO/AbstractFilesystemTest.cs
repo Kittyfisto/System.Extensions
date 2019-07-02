@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -918,6 +919,62 @@ namespace System.Extensions.Test.IO
 			_filesystem.WriteAllBytes("foo.dat", new byte[] {3, 4});
 			_filesystem.WriteAllBytes("foo.dat", new byte[] {4});
 			_filesystem.ReadAllBytes("foo.dat").Should().Equal(new byte[] {4}, "because every WriteAllBytes() operation should overwrite previous content");
+		}
+
+		[Test]
+		public void TestWriteAllText()
+		{
+			_filesystem.WriteAllText("hello.txt", "No, you're breathtaking!");
+			_filesystem.ReadAllText("hello.txt").Should().Be("No, you're breathtaking!");
+		}
+
+		[Test]
+		public void TestWriteAllTextUtf32()
+		{
+			_filesystem.WriteAllText("hello.txt", "No, you're breathtaking!", Encoding.UTF32);
+			_filesystem.ReadAllText("hello.txt", Encoding.UTF32).Should().Be("No, you're breathtaking!");
+		}
+
+		[Test]
+		public void TestReadAllText()
+		{
+			_filesystem.WriteAllBytes("foo.dat", Encoding.UTF8.GetBytes("The lazy brown..."));
+			_filesystem.ReadAllText("foo.dat").Should().Be("The lazy brown...");
+		}
+
+		[Test]
+		public void TestReadAllTextUTF7()
+		{
+			_filesystem.WriteAllBytes("foo.dat", Encoding.UTF7.GetBytes("The lazy brown..."));
+			_filesystem.ReadAllText("foo.dat", Encoding.UTF7).Should().Be("The lazy brown...");
+		}
+
+		[Test]
+		public void TestReadAllTextUTF32()
+		{
+			_filesystem.WriteAllBytes("foo.dat", Encoding.UTF32.GetBytes("The lazy brown..."));
+			_filesystem.ReadAllText("foo.dat", Encoding.UTF32).Should().Be("The lazy brown...");
+		}
+
+		[Test]
+		public void TestReadAllTextFileDoesNotExist()
+		{
+			new Action(() => _filesystem.ReadAllText("foo.dat"))
+				.ShouldThrow<FileNotFoundException>();
+		}
+
+		[Test]
+		public void TestReadAllLines()
+		{
+			_filesystem.WriteAllBytes("foo.dat", Encoding.UTF8.GetBytes("a\r\nb\r\nc"));
+			_filesystem.ReadAllLines("foo.dat").Should().Equal(new[]{"a", "b", "c"});
+		}
+
+		[Test]
+		public void TestReadAllLinesFileDoesNotExist()
+		{
+			new Action(() => _filesystem.ReadAllLines("foo.dat"))
+				.ShouldThrow<FileNotFoundException>();
 		}
 
 		[Test]
