@@ -1,6 +1,8 @@
 # Task Extensions
 
 [![Build status](https://ci.appveyor.com/api/projects/status/t70n74bkqoyf7ktc?svg=true)](https://ci.appveyor.com/project/Kittyfisto/system-threading-tasks-extensions)
+[![NuGet](https://img.shields.io/nuget/dt/System.Threading.Extensions.svg)](http://nuget.org/packages/System.Threading.Extensions)
+[![NuGet](https://img.shields.io/nuget/v/System.Threading.Extensions.svg)](http://nuget.org/packages/System.Threading.Extensions)
 
 Several extensions to the awesome Task classes of the .NET Framework.
 
