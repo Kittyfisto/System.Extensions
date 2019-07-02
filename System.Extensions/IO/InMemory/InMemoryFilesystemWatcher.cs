@@ -17,7 +17,7 @@ namespace System.IO.InMemory
 		private readonly SearchOption _searchOption;
 		private readonly object _syncRoot;
 
-		private IReadOnlyList<IFileInfoAsync> _files;
+		private IReadOnlyList<IFileInfo> _files;
 		private string _path;
 
 		public InMemoryFilesystemWatcher(InMemoryFilesystemWatchdog watchdog,
@@ -32,7 +32,7 @@ namespace System.IO.InMemory
 			_searchPattern = searchPattern;
 			_searchOption = searchOption;
 			_syncRoot = new object();
-			_files = new IFileInfoAsync[0];
+			_files = new IFileInfo[0];
 
 			Update();
 		}
@@ -45,7 +45,7 @@ namespace System.IO.InMemory
 
 		#region Implementation of IFilesystemWatcher
 
-		public IEnumerable<IFileInfoAsync> Files
+		public IEnumerable<IFileInfo> Files
 		{
 			get { return _files; }
 		}
@@ -76,17 +76,17 @@ namespace System.IO.InMemory
 		#endregion
 
 		[Pure]
-		private IReadOnlyList<IFileInfoAsync> FindFiles()
+		private IReadOnlyList<IFileInfo> FindFiles()
 		{
-			if (_filesystem.DirectoryExists(_path).Result)
+			if (_filesystem.DirectoryExists(_path))
 			{
-				return _filesystem.EnumerateFiles(_path, _searchPattern, _searchOption).Result.Select(x => _filesystem.GetFileInfo(x)).ToList();
+				return _filesystem.EnumerateFiles(_path, _searchPattern, _searchOption).Select(x => _filesystem.GetFileInfo(x)).ToList();
 			}
 
-			return new IFileInfoAsync[0];
+			return new IFileInfo[0];
 		}
 
-		private void Synchronize(IReadOnlyList<IFileInfoAsync> files)
+		private void Synchronize(IReadOnlyList<IFileInfo> files)
 		{
 			bool changed = false;
 

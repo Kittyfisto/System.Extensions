@@ -16,16 +16,9 @@ namespace System.Extensions.Test.IO
 		public new InMemoryFilesystem Filesystem => (InMemoryFilesystem) base.Filesystem;
 
 		[Test]
-		public void TestCtor()
-		{
-			new Action(() => new InMemoryFilesystem(null))
-				.ShouldThrow<ArgumentNullException>();
-		}
-
-		[Test]
 		public void TestPrint1()
 		{
-			var print = Wait(Filesystem.Print());
+			var print = Filesystem.Print();
 			Console.WriteLine(print);
 			print.Should().Be("M:\\ [Drive]\r\n");
 		}
@@ -34,7 +27,7 @@ namespace System.Extensions.Test.IO
 		public void TestPrint2()
 		{
 			Filesystem.AddRoot("D:\\");
-			var print = Wait(Filesystem.Print());
+			var print = Filesystem.Print();
 			Console.WriteLine(print);
 			print.Should().Be("D:\\ [Drive]\r\nM:\\ [Drive]\r\n");
 		}

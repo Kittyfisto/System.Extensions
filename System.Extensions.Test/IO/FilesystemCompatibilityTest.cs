@@ -9,22 +9,20 @@ namespace System.Extensions.Test.IO
 	public sealed class FilesystemCompatibilityTest
 		: AbstractFileTest
 	{
-		private SerialTaskScheduler _ioScheduler;
 		private Filesystem _filesystem;
-		private ITaskScheduler _taskScheduler;
+		private DefaultTaskScheduler _taskScheduler;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_ioScheduler = new SerialTaskScheduler();
 			_taskScheduler = new DefaultTaskScheduler();
-			_filesystem = new Filesystem(_ioScheduler, _taskScheduler);
+			_filesystem = new Filesystem(_taskScheduler);
 		}
 
 		[OneTimeTearDown]
 		public void OneTimeTeardown()
 		{
-			_ioScheduler.Dispose();
+			_taskScheduler.Dispose();
 		}
 
 		[Test]
@@ -56,7 +54,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateFiles4()
 		{
 			new Action(() => Directory.EnumerateFiles(null)).ShouldThrow<ArgumentNullException>();
-			new Action(() => Wait(_filesystem.EnumerateFiles(null))).ShouldThrow<ArgumentNullException>();
+			new Action(() => _filesystem.EnumerateFiles(null)).ShouldThrow<ArgumentNullException>();
 		}
 
 		[Test]
@@ -73,7 +71,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateFiles6()
 		{
 			new Action(() => Directory.EnumerateFiles(AssemblyFilePath)).ShouldThrow<IOException>();
-			new Action(() => Wait(_filesystem.EnumerateFiles(AssemblyFilePath))).ShouldThrow<IOException>();
+			new Action(() => _filesystem.EnumerateFiles(AssemblyFilePath)).ShouldThrow<IOException>();
 		}
 
 		[Test]
@@ -161,7 +159,7 @@ namespace System.Extensions.Test.IO
 		public void TestDirectoryExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			Directory.Exists(invalidPath).Should().BeFalse();
-			Wait(_filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
+			_filesystem.DirectoryExists(invalidPath).Should().BeFalse();
 		}
 
 		[Test]
@@ -218,7 +216,7 @@ namespace System.Extensions.Test.IO
 		public void TestFileExists([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			File.Exists(invalidPath).Should().BeFalse();
-			Wait(_filesystem.FileExists(invalidPath)).Should().BeFalse();
+			_filesystem.FileExists(invalidPath).Should().BeFalse();
 		}
 
 		[Test]

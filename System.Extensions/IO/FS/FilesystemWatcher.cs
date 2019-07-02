@@ -12,7 +12,7 @@ namespace System.IO.FS
 	{
 		private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		private readonly Dictionary<string, IFileInfoAsync> _filesByPath;
+		private readonly Dictionary<string, IFileInfo> _filesByPath;
 		private readonly FilesystemWatchdog _filesystemWatchdog;
 		private readonly Filesystem _filesystem;
 		private readonly IPeriodicTask _task;
@@ -21,7 +21,7 @@ namespace System.IO.FS
 		private readonly object _syncRoot;
 		private readonly string _searchPattern;
 
-		private IReadOnlyList<IFileInfoAsync> _files;
+		private IReadOnlyList<IFileInfo> _files;
 		private string _path;
 
 		public FilesystemWatcher(FilesystemWatchdog filesystemWatchdog,
@@ -41,8 +41,8 @@ namespace System.IO.FS
 			_path = path;
 			_searchPattern = searchPattern;
 			_searchOption = searchOption;
-			_filesByPath = new Dictionary<string, IFileInfoAsync>();
-			_files = new IFileInfoAsync[0];
+			_filesByPath = new Dictionary<string, IFileInfo>();
+			_files = new IFileInfo[0];
 
 			_task = _taskScheduler.StartPeriodic(Update, maximumLatency, $"FilesystemWatcher({path})");
 		}
@@ -73,9 +73,10 @@ namespace System.IO.FS
 		{
 			try
 			{
-				return _filesystem.EnumerateFiles(_path, searchPattern: _searchPattern,
-				                                  searchOption: _searchOption,
-				                                  tolerateNonExistantPath: true).Result;
+				return _filesystem.EnumerateFiles(_path,
+				                                  _searchPattern,
+				                                  _searchOption,
+				                                  tolerateNonExistantPath: true);
 			}
 			catch (IOException e)
 			{
@@ -137,7 +138,7 @@ namespace System.IO.FS
 
 		#region Implementation of IFilesystemWatcher
 
-		public IEnumerable<IFileInfoAsync> Files
+		public IEnumerable<IFileInfo> Files
 		{
 			get { return _files; }
 		}

@@ -12,7 +12,7 @@ namespace System.Extensions.Test.Threading
 		{
 			var task = new PeriodicTask(42, () => { }, TimeSpan.FromSeconds(1));
 			task.Id.Should().Be(42);
-			task.IsRemoved.Should().BeFalse();
+			task.IsStopped.Should().BeFalse();
 			task.LastInvocation.Should().Be(DateTime.MinValue);
 		}
 	}

@@ -6,21 +6,19 @@ using NUnit.Framework;
 namespace System.Extensions.Test.IO
 {
 	[TestFixture]
-	public sealed class DirectoryInfoAsyncCompatibilityTest
+	public sealed class DirectoryInfoCompatibilityTest
 		: AbstractFileTest
 	{
-		private SerialTaskScheduler _ioScheduler;
 		private Filesystem _filesystem;
 		private DirectoryInfo _directory;
-		private IDirectoryInfoAsync _asyncDirectory;
+		private IDirectoryInfo _asyncDirectory;
 		private ITaskScheduler _taskScheduler;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_ioScheduler = new SerialTaskScheduler();
 			_taskScheduler = new DefaultTaskScheduler();
-			_filesystem = new Filesystem(_ioScheduler, _taskScheduler);
+			_filesystem = new Filesystem(_taskScheduler);
 
 			_directory = new DirectoryInfo(Directory.GetCurrentDirectory());
 			_asyncDirectory = _filesystem.Current;
@@ -28,9 +26,7 @@ namespace System.Extensions.Test.IO
 
 		[OneTimeTearDown]
 		public void OneTimeTeardown()
-		{
-			_ioScheduler.Dispose();
-		}
+		{}
 
 		[Test]
 		[Ignore("Not yet implemented")]

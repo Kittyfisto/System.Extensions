@@ -68,10 +68,10 @@ namespace System.Extensions.Test.Threading
 				var task = scheduler.StartPeriodic(() => { }, TimeSpan.FromSeconds(1));
 				var actual = task as PeriodicTask;
 				actual.Should().NotBeNull();
-				actual.IsRemoved.Should().BeFalse();
+				actual.IsStopped.Should().BeFalse();
 
 				scheduler.StopPeriodic(task).Should().BeTrue();
-				actual.IsRemoved.Should().BeTrue();
+				actual.IsStopped.Should().BeTrue();
 			}
 		}
 
@@ -84,10 +84,10 @@ namespace System.Extensions.Test.Threading
 				var task = scheduler1.StartPeriodic(() => { }, TimeSpan.FromSeconds(1));
 				var actual = task as PeriodicTask;
 				actual.Should().NotBeNull();
-				actual.IsRemoved.Should().BeFalse();
+				actual.IsStopped.Should().BeFalse();
 
 				scheduler2.StopPeriodic(task).Should().BeFalse("because this scheduler didn't create the task");
-				actual.IsRemoved.Should().BeFalse("because the task shouldn't have been stopped");
+				actual.IsStopped.Should().BeFalse("because the task shouldn't have been stopped");
 			}
 		}
 	}

@@ -43,7 +43,7 @@ namespace System.Threading
 			lock (_tasks)
 			{
 				foreach (var task in _tasks)
-					task.IsRemoved = true;
+					task.IsStopped = true;
 			}
 		}
 
@@ -120,14 +120,24 @@ namespace System.Threading
 			if (periodicTask == null)
 				return false;
 
-			if (Log.IsDebugEnabled)
-				Log.DebugFormat("Removing periodic task {0}", task);
+			if (TryRemoveTask(periodicTask))
+			{
+				if (Log.IsDebugEnabled)
+					Log.DebugFormat("Stopped periodic task {0}", task);
 
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool TryRemoveTask(PeriodicTask periodicTask)
+		{
 			lock (_tasks)
 			{
 				if (_tasks.Remove(periodicTask))
 				{
-					periodicTask.IsRemoved = true;
+					periodicTask.IsStopped = true;
 					return true;
 				}
 
@@ -151,14 +161,14 @@ namespace System.Threading
 		{
 			var periodicTask = task.Result;
 
-			if (periodicTask.IsRemoved)
+			if (periodicTask.IsStopped)
 			{
-				Log.DebugFormat("Periodic task '{0}' has been removed and will no longer be scheduled", task);
+				Log.DebugFormat("Periodic task '{0}' has been stopped and will no longer be scheduled", periodicTask);
 			}
 			else
 			{
 				if (Log.IsDebugEnabled)
-					Log.DebugFormat("Periodic task '{0}' has finished executing and is added to the task queue once more", task);
+					Log.DebugFormat("Periodic task '{0}' has finished executing and is added to the task queue once more", periodicTask);
 
 				RunOnce(periodicTask);
 			}

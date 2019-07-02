@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Security;
-using System.Threading.Tasks;
 
 namespace System.IO
 {
@@ -28,12 +27,12 @@ namespace System.IO
 		/// <summary>
 		///     An object representing the current directory.
 		/// </summary>
-		IDirectoryInfoAsync Current { get; }
+		IDirectoryInfo Current { get; }
 
 		/// <summary>
 		///     The current root directories (="drives") of this filesystem.
 		/// </summary>
-		Task<IEnumerable<IDirectoryInfoAsync>> Roots { get; }
+		IEnumerable<IDirectoryInfo> Roots { get; }
 
 		/// <summary>
 		///     Creates the given directory if it doesn't exist yet.
@@ -41,7 +40,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<IDirectoryInfoAsync> CreateDirectory(string path);
+		IDirectoryInfo CreateDirectory(string path);
 
 		/// <summary>
 		///     Deletes an empty directory from a specified path.
@@ -49,7 +48,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task DeleteDirectory(string path);
+		void DeleteDirectory(string path);
 
 		/// <summary>
 		///     Deletes the specified directory and, if indicated, any subdirectories and files
@@ -59,14 +58,14 @@ namespace System.IO
 		/// <param name="recursive"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task DeleteDirectory(string path, bool recursive);
+		void DeleteDirectory(string path, bool recursive);
 
 		/// <summary>
 		///     Determines whether the given path refers to an existing directory on disk.
 		/// </summary>
 		/// <param name="path">The path to test.</param>
 		/// <returns></returns>
-		Task<bool> DirectoryExists(string path);
+		bool DirectoryExists(string path);
 
 		/// <summary>
 		///     Obtains information about the given directory.
@@ -74,7 +73,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		IDirectoryInfoAsync GetDirectoryInfo(string path);
+		IDirectoryInfo GetDirectoryInfo(string path);
 
 		/// <summary>
 		///     Returns an enumerable collection of file names in a specified path which match
@@ -89,7 +88,7 @@ namespace System.IO
 		/// </param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<IReadOnlyList<string>> EnumerateFiles(string path,
+		IReadOnlyList<string> EnumerateFiles(string path,
 			string searchPattern = null,
 			SearchOption searchOption = SearchOption.TopDirectoryOnly,
 			bool tolerateNonExistantPath = false);
@@ -100,7 +99,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<IReadOnlyList<string>> EnumerateDirectories(string path);
+		IReadOnlyList<string> EnumerateDirectories(string path);
 
 		/// <summary>
 		///     Returns an enumerable collection of directory names in a specified path.
@@ -109,7 +108,7 @@ namespace System.IO
 		/// <param name="searchPattern"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern);
+		IReadOnlyList<string> EnumerateDirectories(string path, string searchPattern);
 
 		/// <summary>
 		///     Returns an enumerable collection of directory names in a specified path.
@@ -119,7 +118,7 @@ namespace System.IO
 		/// <param name="searchOption"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption);
+		IReadOnlyList<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption);
 
 		#endregion
 
@@ -133,14 +132,14 @@ namespace System.IO
 		/// <exception cref="ArgumentException"><paramref name="fileName"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
 		/// <exception cref="ArgumentNullException"><paramref name="fileName"/> is null.</exception>
 		/// <exception cref="PathTooLongException">The specified <paramref name="fileName"/> exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
-		IFileInfoAsync GetFileInfo(string fileName);
+		IFileInfo GetFileInfo(string fileName);
 
 		/// <summary>
 		///     Determines whether the specified file exists.
 		/// </summary>
 		/// <param name="path">The file to check.</param>
 		/// <returns></returns>
-		Task<bool> FileExists(string path);
+		bool FileExists(string path);
 
 		/// <summary>
 		///     The length of a file (in bytes).
@@ -148,7 +147,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<long> FileLength(string path);
+		long FileLength(string path);
 
 		/// <summary>
 		///     Whether or not the given file is readonly.
@@ -156,7 +155,7 @@ namespace System.IO
 		/// <param name="path"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">When <paramref name="path" /> is null</exception>
-		Task<bool> IsFileReadOnly(string path);
+		bool IsFileReadOnly(string path);
 
 		/// <summary>
 		///     Creates a file in a particular path.  If the file exists, it is replaced.
@@ -177,7 +176,7 @@ namespace System.IO
 		/// <exception cref="DirectoryNotFoundException">The specified <paramref name="path"/> is invalid, (for example, it is on an unmapped drive).</exception>
 		/// <exception cref="IOException">An I/O error occurred while creating the file.</exception>
 		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
-		Task<Stream> CreateFile(string path);
+		Stream CreateFile(string path);
 
 		/// <summary>
 		///     Opens the given file for reading.
@@ -194,7 +193,7 @@ namespace System.IO
 		/// <exception cref="FileNotFoundException">The file specified in <paramref name="path"/> was not found.</exception>
 		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
 		/// <exception cref="IOException">An I/O error occurred while opening the file.</exception>
-		Task<Stream> OpenRead(string path);
+		Stream OpenRead(string path);
 
 		/// <summary>
 		///     Opens an existing file or creates a new file for writing.
@@ -210,7 +209,7 @@ namespace System.IO
 		/// <exception cref="PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
 		/// <exception cref="DirectoryNotFoundException">The specified path is invalid, (for example, it is on an unmapped drive).</exception>
 		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
-		Task<Stream> OpenWrite(string path);
+		Stream OpenWrite(string path);
 
 		/// <summary>
 		///     Creates a new file, writes the specified stream from its current position, and then closes the file. If the target file already exists, it is overwritten.
@@ -235,7 +234,7 @@ namespace System.IO
 		/// The caller does not have the required permission.</exception>
 		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
 		/// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-		Task Write(string path, Stream stream);
+		void Write(string path, Stream stream);
 
 		/// <summary>
 		///     Writes the given data to the given file.
@@ -260,7 +259,7 @@ namespace System.IO
 		/// The caller does not have the required permission.</exception>
 		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
 		/// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-		Task WriteAllBytes(string path, byte[] bytes);
+		void WriteAllBytes(string path, byte[] bytes);
 
 		/// <summary>
 		///     Opens a binary file, reads the contents of the file into a byte array,
@@ -279,7 +278,7 @@ namespace System.IO
 		/// <exception cref="FileNotFoundException">The file specified in <paramref name="path"/> was not found.</exception>
 		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
 		/// <exception cref="SecurityException">The caller does not have the required permission.</exception>
-		Task<byte[]> ReadAllBytes(string path);
+		byte[] ReadAllBytes(string path);
 
 		/// <summary>
 		///     Copies an existing file to a new file. Overwriting a file of the same name is not allowed.
@@ -296,7 +295,7 @@ namespace System.IO
 		/// <exception cref="FileNotFoundException"><paramref name="sourceFileName"/> was not found.</exception>
 		/// <exception cref="IOException"><paramref name="destFileName"/> exists</exception>
 		/// <exception cref="NotSupportedException"><paramref name="sourceFileName"/> or <paramref name="destFileName"/> is in an invalid format.</exception>
-		Task CopyFile(string sourceFileName, string destFileName);
+		void CopyFile(string sourceFileName, string destFileName);
 
 		/// <summary>
 		///     Deletes the specified file.
@@ -320,7 +319,7 @@ namespace System.IO
 		/// path is a directory.
 		/// -or-
 		/// path specified a read-only file.</exception>
-		Task DeleteFile(string path);
+		void DeleteFile(string path);
 
 		#endregion
 	}

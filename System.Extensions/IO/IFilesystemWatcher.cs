@@ -11,7 +11,7 @@ namespace System.IO
 		/// <summary>
 		///     The current listing of files in the given folder(tree).
 		/// </summary>
-		IEnumerable<IFileInfoAsync> Files { get; }
+		IEnumerable<IFileInfo> Files { get; }
 
 		/// <summary>
 		///     The (root) path being monitored.

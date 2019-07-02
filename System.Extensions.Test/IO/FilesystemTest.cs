@@ -43,7 +43,7 @@ namespace System.Extensions.Test.IO
 		public void TestRoots2()
 		{
 			var actualRoots = DriveInfo.GetDrives().Select(x => new DirectoryInfo(x.Name)).ToList();
-			var roots = Wait(Filesystem.Roots);
+			var roots = Filesystem.Roots;
 
 			roots.Should().HaveCount(actualRoots.Count);
 			foreach (var root in roots)
@@ -57,28 +57,28 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestFileExists5()
 		{
-			Wait(Filesystem.FileExists("wdawaddwawadoknfawonafw"))
+			Filesystem.FileExists("wdawaddwawadoknfawonafw")
 				.Should().BeFalse("because the file doesn't exist");
 		}
 
 		[Test]
 		public void TestFileExists6()
 		{
-			Wait(Filesystem.FileExists(AssemblyFilePath))
+			Filesystem.FileExists(AssemblyFilePath)
 				.Should().BeTrue("because that assembly most certainly exists");
 		}
 
 		[Test]
 		public void TestDirectoryExists1()
 		{
-			Wait(Filesystem.DirectoryExists("dawwadwadadwawd"))
+			Filesystem.DirectoryExists("dawwadwadadwawd")
 				.Should().BeFalse("because the directory doesn't exist");
 		}
 
 		[Test]
 		public void TestDirectoryExists2()
 		{
-			Wait(Filesystem.DirectoryExists(AssemblyDirectory))
+			Filesystem.DirectoryExists(AssemblyDirectory)
 				.Should().BeTrue("because that directory most certainly exists");
 		}
 
@@ -86,7 +86,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateFiles8()
 		{
 			var expected = Directory.EnumerateFiles(AssemblyDirectory).ToList();
-			var actual = Wait(Filesystem.EnumerateFiles(AssemblyDirectory));
+			var actual = Filesystem.EnumerateFiles(AssemblyDirectory);
 
 			Console.WriteLine("Found {0} files", actual.Count);
 			actual.Should().NotBeNull();
@@ -98,7 +98,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string filter = "*.pdb";
 			var expected = Directory.EnumerateFiles(AssemblyDirectory, filter).ToList();
-			var actual = Wait(Filesystem.EnumerateFiles(AssemblyDirectory, filter));
+			var actual = Filesystem.EnumerateFiles(AssemblyDirectory, filter);
 
 			Console.WriteLine("Found {0} files", actual.Count);
 			actual.Should().NotBeNull();
@@ -113,16 +113,16 @@ namespace System.Extensions.Test.IO
 			actual.Should().NotBeNull();
 			actual.Name.Should().Be(expected.Name);
 			actual.FullPath.Should().Be(AssemblyFilePath);
-			Wait(actual.Length).Should().Be(expected.Length, "because both methods should find the same file size");
-			Wait(actual.Exists).Should().BeTrue("because the file most certainly exists");
-			Wait(actual.IsReadOnly).Should().Be(expected.IsReadOnly, "because both methods should find the same attribute");
+			actual.Length.Should().Be(expected.Length, "because both methods should find the same file size");
+			actual.Exists.Should().BeTrue("because the file most certainly exists");
+			actual.IsReadOnly.Should().Be(expected.IsReadOnly, "because both methods should find the same attribute");
 		}
 
 		[Test]
 		public void TestGetFileInfo3()
 		{
 			var expected = new FileInfo(AssemblyFilePath);
-			var actual = Wait(Filesystem.GetFileInfo(AssemblyFilePath).Capture());
+			var actual = Filesystem.GetFileInfo(AssemblyFilePath);
 			actual.Should().NotBeNull();
 			actual.Name.Should().Be(expected.Name);
 			actual.FullPath.Should().Be(AssemblyFilePath);
@@ -141,21 +141,21 @@ namespace System.Extensions.Test.IO
 			info.Should().NotBeNull();
 			info.Name.Should().Be(new DirectoryInfo(AssemblyDirectory).Name);
 			info.FullName.Should().Be(AssemblyDirectory);
-			Wait(info.Exists).Should().BeTrue("because the folder most certainly exists");
+			info.Exists.Should().BeTrue("because the folder most certainly exists");
 		}
 
 		[Test]
 		public void TestGetDirectoryInfo2()
 		{
 			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
-			var expected = Wait(Filesystem.EnumerateFiles(AssemblyDirectory));
-			var actual = Wait(info.EnumerateFiles());
+			var expected = Filesystem.EnumerateFiles(AssemblyDirectory);
+			var actual = info.EnumerateFiles();
 
 			foreach (var fileInfo in actual)
 			{
 				fileInfo.Should().NotBeNull();
 				expected.Should().Contain(fileInfo.FullPath);
-				Wait(fileInfo.Exists).Should().BeTrue();
+				fileInfo.Exists.Should().BeTrue();
 			}
 		}
 
@@ -163,14 +163,14 @@ namespace System.Extensions.Test.IO
 		public void TestGetDirectoryInfo3()
 		{
 			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
-			var expected = Wait(Filesystem.EnumerateFiles(AssemblyDirectory, "*.dll"));
-			var actual = Wait(info.EnumerateFiles("*.dll"));
+			var expected = Filesystem.EnumerateFiles(AssemblyDirectory, "*.dll");
+			var actual = info.EnumerateFiles("*.dll");
 
 			foreach (var fileInfo in actual)
 			{
 				fileInfo.Should().NotBeNull();
 				expected.Should().Contain(fileInfo.FullPath);
-				Wait(fileInfo.Exists).Should().BeTrue();
+				fileInfo.Exists.Should().BeTrue();
 			}
 		}
 
@@ -178,14 +178,14 @@ namespace System.Extensions.Test.IO
 		public void TestGetDirectoryInfo4([Values(SearchOption.AllDirectories, SearchOption.TopDirectoryOnly)] SearchOption searchOption)
 		{
 			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
-			var expected = Wait(Filesystem.EnumerateFiles(AssemblyDirectory, "*.dll", searchOption));
-			var actual = Wait(info.EnumerateFiles("*.dll", searchOption));
+			var expected = Filesystem.EnumerateFiles(AssemblyDirectory, "*.dll", searchOption);
+			var actual = info.EnumerateFiles("*.dll", searchOption);
 
 			foreach (var fileInfo in actual)
 			{
 				fileInfo.Should().NotBeNull();
 				expected.Should().Contain(fileInfo.FullPath);
-				Wait(fileInfo.Exists).Should().BeTrue();
+				fileInfo.Exists.Should().BeTrue();
 			}
 		}
 
@@ -193,7 +193,7 @@ namespace System.Extensions.Test.IO
 		public void TestGetDirectoryInfo5()
 		{
 			var actual = new DirectoryInfo(AssemblyDirectory);
-			var info = Wait(Filesystem.GetDirectoryInfo(AssemblyDirectory).Capture());
+			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
 			info.Name.Should().Be(actual.Name);
 			info.FullName.Should().Be(actual.FullName);
 			info.Exists.Should().Be(actual.Exists);
@@ -205,7 +205,7 @@ namespace System.Extensions.Test.IO
 		[Description("Verifies that a directory snapshot is linked correctly")]
 		public void TestGetDirectoryInfo6()
 		{
-			var info = Wait(Filesystem.GetDirectoryInfo(AssemblyDirectory).Capture());
+			var info = Filesystem.GetDirectoryInfo(AssemblyDirectory);
 			var root = info.Root;
 
 			var dir = info;
@@ -243,7 +243,7 @@ namespace System.Extensions.Test.IO
 			var actualDirectory = Filesystem.GetDirectoryInfo(directoryName);
 			Directory.Exists(directoryName).Should().BeFalse("because the directory does not exist yet");
 
-			Wait(actualDirectory.Create());
+			actualDirectory.Create();
 			Directory.Exists(directoryName).Should().BeTrue("because we've just created this directory");
 		}
 
@@ -255,7 +255,7 @@ namespace System.Extensions.Test.IO
 			var file = Filesystem.GetFileInfo(fileName);
 			File.Exists(fileName).Should().BeFalse("because the file does not exist yet");
 
-			using (Wait(file.Create()))
+			using (file.Create())
 			{
 				File.Exists(fileName).Should().BeTrue("because we've just created this file");
 			}
@@ -268,7 +268,7 @@ namespace System.Extensions.Test.IO
 			const string fileName = "Stuff";
 			var file = Filesystem.GetFileInfo(fileName);
 
-			using (var stream = Wait(file.Create()))
+			using (var stream = file.Create())
 			{
 				stream.WriteByte(42);
 			}
@@ -278,7 +278,7 @@ namespace System.Extensions.Test.IO
 
 		protected override IFilesystem Create()
 		{
-			return new Filesystem(_ioScheduler, _taskScheduler);
+			return new Filesystem(_taskScheduler);
 		}
 	}
 }

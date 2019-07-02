@@ -75,7 +75,7 @@
     <Compile Include="IO\AbstractFileTest.cs" />
     <Compile Include="IO\MurmurHash3Test.cs" />
     <Compile Include="IO\Directory2Test.cs" />
-    <Compile Include="IO\DirectoryInfoAsyncCompatibilityTest.cs" />
+    <Compile Include="IO\DirectoryInfoCompatibilityTest.cs" />
     <Compile Include="IO\FilesystemCompatibilityTest.cs" />
     <Compile Include="IO\FilesystemTest.cs" />
     <Compile Include="IO\GZipTest.cs" />

@@ -27,7 +27,7 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestRoots1()
 		{
-			var roots = Wait(Filesystem.Roots);
+			var roots = Filesystem.Roots;
 			roots.Should().NotBeNull();
 			roots.Should().NotBeEmpty();
 			foreach (var root in roots)
@@ -87,8 +87,8 @@ namespace System.Extensions.Test.IO
 		public void TestWriteAllBytesInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			new Action(() => File.WriteAllBytes(invalidPath, new byte[0])).ShouldThrow<ArgumentException>();
-			new Action(() => Wait(_filesystem.WriteAllBytes(invalidPath, new byte[0]))).ShouldThrow<ArgumentException>();
-			new Action(() => Wait(_filesystem.Write(invalidPath, new MemoryStream()))).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.WriteAllBytes(invalidPath, new byte[0])).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.Write(invalidPath, new MemoryStream())).ShouldThrow<ArgumentException>();
 		}
 
 		[Test]
@@ -96,13 +96,13 @@ namespace System.Extensions.Test.IO
 		public void TestFileExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
 			File.Exists(invalidPath).Should().BeFalse();
-			Wait(_filesystem.FileExists(invalidPath)).Should().BeFalse();
+			_filesystem.FileExists(invalidPath).Should().BeFalse();
 		}
 
 		[Test]
 		public void TestDirectoryExistsInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
-			Wait(_filesystem.DirectoryExists(invalidPath)).Should().BeFalse();
+			_filesystem.DirectoryExists(invalidPath).Should().BeFalse();
 		}
 
 		[Test]
@@ -197,12 +197,12 @@ namespace System.Extensions.Test.IO
 		[Description("Verifies that creating a directory works with a relative path")]
 		public void TestCreateDirectory1()
 		{
-			Wait(_filesystem.DirectoryExists("Foobar")).Should().BeFalse();
-			var directory = Wait(_filesystem.CreateDirectory("Foobar"));
+			_filesystem.DirectoryExists("Foobar").Should().BeFalse();
+			var directory = _filesystem.CreateDirectory("Foobar");
 			directory.Should().NotBeNull();
 			directory.Name.Should().Be("Foobar");
-			Wait(directory.Exists).Should().BeTrue();
-			Wait(_filesystem.DirectoryExists("Foobar")).Should().BeTrue();
+			directory.Exists.Should().BeTrue();
+			_filesystem.DirectoryExists("Foobar").Should().BeTrue();
 		}
 
 		[Test]
@@ -212,20 +212,20 @@ namespace System.Extensions.Test.IO
 			const string directoryName = "Foobar";
 			var directoryPath = Path.Combine(_filesystem.CurrentDirectory, directoryName);
 
-			Wait(_filesystem.DirectoryExists(directoryPath)).Should().BeFalse();
-			var directory = Wait(_filesystem.CreateDirectory(directoryPath));
+			_filesystem.DirectoryExists(directoryPath).Should().BeFalse();
+			var directory = _filesystem.CreateDirectory(directoryPath);
 			directory.Should().NotBeNull();
 			directory.Name.Should().Be(directoryName);
-			Wait(directory.Exists).Should().BeTrue();
-			Wait(_filesystem.DirectoryExists(directoryPath)).Should().BeTrue();
+			directory.Exists.Should().BeTrue();
+			_filesystem.DirectoryExists(directoryPath).Should().BeTrue();
 		}
 
 		[Test]
 		[Description("Verifies that trying to create a directory a 2nd time is accepted and simply returns a reference to the directory")]
 		public void TestCreateDirectory3()
 		{
-			var expected = Wait(_filesystem.CreateDirectory("Foobar"));
-			var actual = Wait(_filesystem.CreateDirectory("Foobar"));
+			var expected = _filesystem.CreateDirectory("Foobar");
+			var actual = _filesystem.CreateDirectory("Foobar");
 
 			actual.Should().NotBeNull();
 			actual.FullName.Should().Be(expected.FullName);
@@ -236,11 +236,11 @@ namespace System.Extensions.Test.IO
 		public void TestCreateDirectory4()
 		{
 			var path = Path.Combine(_filesystem.CurrentDirectory, "a", "b", "c");
-			Wait(_filesystem.CreateDirectory(path));
+			_filesystem.CreateDirectory(path);
 
-			Wait(_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a"))).Should().BeTrue();
-			Wait(_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a", "b"))).Should().BeTrue();
-			Wait(_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a", "b", "c"))).Should().BeTrue();
+			_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a")).Should().BeTrue();
+			_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a", "b")).Should().BeTrue();
+			_filesystem.DirectoryExists(Path.Combine(_filesystem.CurrentDirectory, "a", "b", "c")).Should().BeTrue();
 		}
 
 		[Test]
@@ -249,7 +249,7 @@ namespace System.Extensions.Test.IO
 		public void TestCreateDirectory5()
 		{
 			const string directory = "Z:\\foo\\bar";
-			new Action(() => Wait(_filesystem.CreateDirectory(directory)))
+			new Action(() => _filesystem.CreateDirectory(directory))
 				.ShouldThrow<DirectoryNotFoundException>()
 				.WithMessage("Could not find a part of the path 'Z:\\foo\\bar'.");
 		}
@@ -258,10 +258,10 @@ namespace System.Extensions.Test.IO
 		public void TestDirectoryCreate1()
 		{
 			var dir = _filesystem.GetDirectoryInfo("SomeDirectory");
-			Wait(dir.Exists).Should().BeFalse("because there's no such directory yet");
-			Wait(dir.Create());
-			Wait(dir.Exists).Should().BeTrue("because we've just created this directory");
-			Wait(_filesystem.DirectoryExists("SomeDirectory")).Should().BeTrue();
+			dir.Exists.Should().BeFalse("because there's no such directory yet");
+			dir.Create();
+			dir.Exists.Should().BeTrue("because we've just created this directory");
+			_filesystem.DirectoryExists("SomeDirectory").Should().BeTrue();
 		}
 
 		[Test]
@@ -269,8 +269,8 @@ namespace System.Extensions.Test.IO
 		public void TestDeleteDirectory1()
 		{
 			const string path = "foobar";
-			Wait(_filesystem.DirectoryExists(path)).Should().BeFalse();
-			new Action(() => Wait(_filesystem.DeleteDirectory(path))).ShouldThrow<DirectoryNotFoundException>();
+			_filesystem.DirectoryExists(path).Should().BeFalse();
+			new Action(() => _filesystem.DeleteDirectory(path)).ShouldThrow<DirectoryNotFoundException>();
 		}
 
 		[Test]
@@ -278,8 +278,8 @@ namespace System.Extensions.Test.IO
 		public void TestDeleteDirectory2()
 		{
 			const string path = "foo\\bar";
-			Wait(_filesystem.DirectoryExists(path)).Should().BeFalse();
-			new Action(() => Wait(_filesystem.DeleteDirectory(path))).ShouldThrow<DirectoryNotFoundException>();
+			_filesystem.DirectoryExists(path).Should().BeFalse();
+			new Action(() => _filesystem.DeleteDirectory(path)).ShouldThrow<DirectoryNotFoundException>();
 		}
 
 		[Test]
@@ -287,10 +287,10 @@ namespace System.Extensions.Test.IO
 		public void TestDeleteDirectory3()
 		{
 			const string path = "foobar";
-			Wait(_filesystem.CreateDirectory(path));
-			Wait(_filesystem.DirectoryExists(path)).Should().BeTrue();
-			Wait(_filesystem.DeleteDirectory(path));
-			Wait(_filesystem.DirectoryExists(path)).Should().BeFalse("because the directory should've been deleted");
+			_filesystem.CreateDirectory(path);
+			_filesystem.DirectoryExists(path).Should().BeTrue();
+			_filesystem.DeleteDirectory(path);
+			_filesystem.DirectoryExists(path).Should().BeFalse("because the directory should've been deleted");
 		}
 
 		[Test]
@@ -301,13 +301,13 @@ namespace System.Extensions.Test.IO
 			string filePath = Path.Combine(directory, "stuff.txt");
 			_filesystem.CreateDirectory(directory);
 			_filesystem.CreateFile(filePath);
-			Wait(_filesystem.FileExists(filePath)).Should().BeTrue();
+			_filesystem.FileExists(filePath).Should().BeTrue();
 
-			new Action(() => Wait(_filesystem.DeleteDirectory(directory))).ShouldThrow<IOException>();
-			new Action(() => Wait(_filesystem.GetDirectoryInfo(directory).Delete())).ShouldThrow<IOException>();
+			new Action(() => _filesystem.DeleteDirectory(directory)).ShouldThrow<IOException>();
+			new Action(() => _filesystem.GetDirectoryInfo(directory).Delete()).ShouldThrow<IOException>();
 
-			Wait(_filesystem.DirectoryExists(directory)).Should().BeTrue("because the directory shouldn't have been deleted");
-			Wait(_filesystem.FileExists(filePath)).Should().BeTrue("because the directory's contents shouldn't have been deleted");
+			_filesystem.DirectoryExists(directory).Should().BeTrue("because the directory shouldn't have been deleted");
+			_filesystem.FileExists(filePath).Should().BeTrue("because the directory's contents shouldn't have been deleted");
 		}
 
 		[Test]
@@ -322,18 +322,18 @@ namespace System.Extensions.Test.IO
 			var directoryInfo = _filesystem.GetDirectoryInfo(directory);
 			var subDirectoryInfo = _filesystem.GetDirectoryInfo(subDirectory);
 
-			Wait(directoryInfo.Exists).Should().BeTrue();
-			Wait(subDirectoryInfo.Exists).Should().BeTrue();
+			directoryInfo.Exists.Should().BeTrue();
+			subDirectoryInfo.Exists.Should().BeTrue();
 
-			Wait(_filesystem.DeleteDirectory(directory, true));
-			Wait(directoryInfo.Exists).Should().BeFalse();
-			Wait(subDirectoryInfo.Exists).Should().BeFalse();
+			_filesystem.DeleteDirectory(directory, true);
+			directoryInfo.Exists.Should().BeFalse();
+			subDirectoryInfo.Exists.Should().BeFalse();
 		}
 
 		[Test]
 		public void TestGetDirectoryCaseInsensitive()
 		{
-			var actual = Wait(_filesystem.CreateDirectory("FoO"));
+			var actual = _filesystem.CreateDirectory("FoO");
 
 			const string reason = "because we should retrieve an equal IDirectoryInfo object, regardless of the case";
 			_filesystem.GetDirectoryInfo("foo").Should().Be(actual, reason);
@@ -345,7 +345,7 @@ namespace System.Extensions.Test.IO
 		public void TestGetFileCaseInsensitive()
 		{
 			var actual = _filesystem.GetFileInfo("FoO");
-			using (Wait(_filesystem.CreateFile("FoO")))
+			using (_filesystem.CreateFile("FoO"))
 			{ }
 
 			const string reason = "because we should retrieve an equal IDirectoryInfo object, regardless of the case";
@@ -359,9 +359,9 @@ namespace System.Extensions.Test.IO
 		public void TestDeleteFile1()
 		{
 			const string filename = "some file.dat";
-			Wait(_filesystem.FileExists(filename)).Should().BeFalse("because there is no such file");
-			Wait(_filesystem.DeleteFile(filename));
-			Wait(_filesystem.FileExists(filename)).Should().BeFalse("because there is still no such file");
+			_filesystem.FileExists(filename).Should().BeFalse("because there is no such file");
+			_filesystem.DeleteFile(filename);
+			_filesystem.FileExists(filename).Should().BeFalse("because there is still no such file");
 		}
 
 		[Test]
@@ -369,10 +369,10 @@ namespace System.Extensions.Test.IO
 		public void TestDeleteFile2()
 		{
 			const string filename = "foo\\bar\\file.dat";
-			Wait(_filesystem.FileExists(filename)).Should().BeFalse("because there is no such file");
-			new Action(() => Wait(_filesystem.DeleteFile(filename))).ShouldThrow<DirectoryNotFoundException>(
+			_filesystem.FileExists(filename).Should().BeFalse("because there is no such file");
+			new Action(() => _filesystem.DeleteFile(filename)).ShouldThrow<DirectoryNotFoundException>(
 				"because IFilesystem implementations must mimic their .NET counterparts as far as throwing exceptions is concerned");
-			Wait(_filesystem.FileExists(filename)).Should().BeFalse("because there is still no such file");
+			_filesystem.FileExists(filename).Should().BeFalse("because there is still no such file");
 		}
 
 		[Test]
@@ -380,12 +380,12 @@ namespace System.Extensions.Test.IO
 		public void TestDeleteFile3()
 		{
 			const string filename = "some file.dat";
-			using (Wait(_filesystem.CreateFile(filename))) { }
-			Wait(_filesystem.FileExists(filename)).Should().BeTrue();
+			using (_filesystem.CreateFile(filename)) { }
+			_filesystem.FileExists(filename).Should().BeTrue();
 
-			Wait(_filesystem.DeleteFile(filename));
-			Wait(_filesystem.FileExists(filename)).Should().BeFalse("because we've just deleted the file");
-			new Action(() => Wait(_filesystem.OpenRead(filename))).ShouldThrow<FileNotFoundException>();
+			_filesystem.DeleteFile(filename);
+			_filesystem.FileExists(filename).Should().BeFalse("because we've just deleted the file");
+			new Action(() => _filesystem.OpenRead(filename)).ShouldThrow<FileNotFoundException>();
 		}
 
 		[Test]
@@ -393,13 +393,13 @@ namespace System.Extensions.Test.IO
 		public void TestCreateSubdirectory1()
 		{
 			var directory = _filesystem.Current;
-			var child = Wait(directory.CreateSubdirectory("SomeStuff"));
+			var child = directory.CreateSubdirectory("SomeStuff");
 			child.Should().NotBeNull();
 			child.Name.Should().Be("SomeStuff");
 			child.FullName.Should().Be(Path.Combine(_filesystem.CurrentDirectory, "SomeStuff"));
 
-			Wait(child.Exists).Should().BeTrue();
-			Wait(_filesystem.DirectoryExists(child.FullName)).Should().BeTrue();
+			child.Exists.Should().BeTrue();
+			_filesystem.DirectoryExists(child.FullName).Should().BeTrue();
 		}
 
 		[Test]
@@ -407,13 +407,13 @@ namespace System.Extensions.Test.IO
 		public void TestCreateSubdirectory2()
 		{
 			var directory = _filesystem.Current;
-			var child = Wait(directory.CreateSubdirectory("Some\\Stuff"));
+			var child = directory.CreateSubdirectory("Some\\Stuff");
 			child.Should().NotBeNull();
 			child.Name.Should().Be("Stuff");
 			child.FullName.Should().Be(Path.Combine(_filesystem.CurrentDirectory, "Some\\Stuff"));
 
-			Wait(child.Exists).Should().BeTrue();
-			Wait(_filesystem.DirectoryExists(child.FullName)).Should().BeTrue();
+			child.Exists.Should().BeTrue();
+			_filesystem.DirectoryExists(child.FullName).Should().BeTrue();
 		}
 
 		[Test]
@@ -421,8 +421,8 @@ namespace System.Extensions.Test.IO
 		public void TestCreateSubdirectory3()
 		{
 			var directory = _filesystem.Current;
-			var child = Wait(directory.CreateSubdirectory("Yes"));
-			var childDirectories = Wait(_filesystem.EnumerateDirectories(directory.FullName));
+			var child = directory.CreateSubdirectory("Yes");
+			var childDirectories = _filesystem.EnumerateDirectories(directory.FullName);
 			childDirectories.Should().NotBeNull();
 			childDirectories.Should().HaveCount(1);
 			childDirectories[0].Should().Be(child.FullName);
@@ -433,7 +433,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateDirectories1()
 		{
 			var path = _filesystem.CurrentDirectory;
-			Wait(_filesystem.EnumerateDirectories(path)).Should().BeEmpty("because we haven't created any additional directories");
+			_filesystem.EnumerateDirectories(path).Should().BeEmpty("because we haven't created any additional directories");
 		}
 
 		[Test]
@@ -441,7 +441,7 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateDirectories2()
 		{
 			var path = _filesystem.CurrentDirectory;
-			Wait(_filesystem.EnumerateDirectories(path, "*")).Should().BeEmpty("because we haven't created any additional directories");
+			_filesystem.EnumerateDirectories(path, "*").Should().BeEmpty("because we haven't created any additional directories");
 		}
 
 		[Test]
@@ -449,76 +449,76 @@ namespace System.Extensions.Test.IO
 		public void TestEnumerateDirectories3([ValueSource(nameof(SearchOptions))] SearchOption searchOption)
 		{
 			var path = _filesystem.CurrentDirectory;
-			Wait(_filesystem.EnumerateDirectories(path, "*", searchOption)).Should().BeEmpty("because we haven't created any additional directories");
+			_filesystem.EnumerateDirectories(path, "*", searchOption).Should().BeEmpty("because we haven't created any additional directories");
 		}
 
 		[Test]
 		[Description("Verifies that an empty directory can be enumerated")]
 		public void TestEnumerateFiles1()
 		{
-			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
+			_filesystem.EnumerateFiles(_filesystem.CurrentDirectory).Should().BeEmpty();
 		}
 		
 		[Test]
 		[Description("Verifies that an empty directory can be enumerated")]
 		public void TestEnumerateFiles2()
 		{
-			Wait(_filesystem.Current.EnumerateFiles()).Should().BeEmpty();
+			_filesystem.Current.EnumerateFiles().Should().BeEmpty();
 		}
 
 		[Test]
 		[Description("Verifies that a non-existing directory cannot be enumerated")]
 		public void TestEnumerateFiles3()
 		{
-			new Action(() => Wait(_filesystem.EnumerateFiles("daawdw"))).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.EnumerateFiles("daawdw")).ShouldThrow<DirectoryNotFoundException>();
 		}
 		
 		[Test]
 		[Description("Verifies that a non-existing directory cannot be enumerated")]
 		public void TestEnumerateFiles4()
 		{
-			new Action(() => Wait(_filesystem.GetDirectoryInfo("daawdw").EnumerateFiles())).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.GetDirectoryInfo("daawdw").EnumerateFiles()).ShouldThrow<DirectoryNotFoundException>();
 		}
 
 		[Test]
 		[Description("Verifies that a newly created file can be found")]
 		public void TestEnumerateFiles5()
 		{
-			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
-			using (Wait(_filesystem.CreateFile("a"))) { }
-			var files = Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory));
+			_filesystem.EnumerateFiles(_filesystem.CurrentDirectory).Should().BeEmpty();
+			using (_filesystem.CreateFile("a")) { }
+			var files = _filesystem.EnumerateFiles(_filesystem.CurrentDirectory);
 			files.Should().HaveCount(1);
 			var info = _filesystem.GetFileInfo(files.First());
-			Wait(info.Exists).Should().BeTrue("because we've just created that file");
+			info.Exists.Should().BeTrue("because we've just created that file");
 		}
 
 		[Test]
 		[Description("Verifies that only files matching the search pattern are returned")]
 		public void TestEnumerateFiles6()
 		{
-			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
-			using (Wait(_filesystem.CreateFile("a"))) { }
-			using (Wait(_filesystem.CreateFile("b"))) { }
+			_filesystem.EnumerateFiles(_filesystem.CurrentDirectory).Should().BeEmpty();
+			using (_filesystem.CreateFile("a")) { }
+			using (_filesystem.CreateFile("b")) { }
 
-			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*a")).Should().HaveCount(1);
-			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*b")).Should().HaveCount(1);
-			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*")).Should().HaveCount(2);
-			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*c")).Should().HaveCount(0);
+			_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*a").Should().HaveCount(1);
+			_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*b").Should().HaveCount(1);
+			_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*").Should().HaveCount(2);
+			_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*c").Should().HaveCount(0);
 		}
 		
 		[Test]
 		[Description("Verifies that only files matching the search pattern are returned")]
 		public void TestEnumerateFiles7()
 		{
-			Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory)).Should().BeEmpty();
-			using (Wait(_filesystem.CreateFile("a"))) { }
-			using (Wait(_filesystem.CreateFile("b"))) { }
+			_filesystem.EnumerateFiles(_filesystem.CurrentDirectory).Should().BeEmpty();
+			using (_filesystem.CreateFile("a")) { }
+			using (_filesystem.CreateFile("b")) { }
 
 			var directory = _filesystem.Current;
-			Wait(directory.EnumerateFiles("*a")).Should().HaveCount(1);
-			Wait(directory.EnumerateFiles("*b")).Should().HaveCount(1);
-			Wait(directory.EnumerateFiles("*")).Should().HaveCount(2);
-			Wait(directory.EnumerateFiles("*c")).Should().HaveCount(0);
+			directory.EnumerateFiles("*a").Should().HaveCount(1);
+			directory.EnumerateFiles("*b").Should().HaveCount(1);
+			directory.EnumerateFiles("*").Should().HaveCount(2);
+			directory.EnumerateFiles("*c").Should().HaveCount(0);
 		}
 
 		[Test]
@@ -529,7 +529,7 @@ namespace System.Extensions.Test.IO
 			_filesystem.CreateFile("A\\a.txt");
 			_filesystem.CreateFile("B\\b.txt");
 
-			var files = Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*", SearchOption.AllDirectories));
+			var files = _filesystem.EnumerateFiles(_filesystem.CurrentDirectory, "*", SearchOption.AllDirectories);
 			files.Should().HaveCount(2);
 			files.Should().BeEquivalentTo(new object[]
 			{
@@ -547,7 +547,7 @@ namespace System.Extensions.Test.IO
 			_filesystem.CreateFile("B\\b.txt");
 
 			var directory = _filesystem.Current;
-			var files = Wait(directory.EnumerateFiles("*", SearchOption.AllDirectories));
+			var files = directory.EnumerateFiles("*", SearchOption.AllDirectories);
 			files.Should().HaveCount(2);
 			var file = files.FirstOrDefault(x => x.Name.EndsWith("a.txt"));
 			file.Should().NotBeNull();
@@ -565,7 +565,7 @@ namespace System.Extensions.Test.IO
 			_filesystem.CreateFile("A\\a.txt");
 			_filesystem.CreateFile("B\\b.txt");
 
-			var files = Wait(_filesystem.EnumerateFiles("B", "*", SearchOption.AllDirectories));
+			var files = _filesystem.EnumerateFiles("B", "*", SearchOption.AllDirectories);
 			files.Should().HaveCount(1);
 			files.Should().BeEquivalentTo(new object[]
 			{
@@ -582,7 +582,7 @@ namespace System.Extensions.Test.IO
 			_filesystem.CreateFile("B\\b.txt");
 			
 			var directory = _filesystem.GetDirectoryInfo("B");
-			var files = Wait(directory.EnumerateFiles("*", SearchOption.AllDirectories));
+			var files = directory.EnumerateFiles("*", SearchOption.AllDirectories);
 			files.Should().HaveCount(1);
 			files.First().FullPath.Should().Be(Path.Combine(_filesystem.CurrentDirectory, "B\\b.txt"));
 		}
@@ -591,12 +591,12 @@ namespace System.Extensions.Test.IO
 		public void TestFileCreate1()
 		{
 			var file = _filesystem.GetFileInfo("foo.txt");
-			Wait(file.Exists).Should().BeFalse();
-			using (var stream = Wait(file.Create()))
+			file.Exists.Should().BeFalse();
+			using (var stream = file.Create())
 			{
 				stream.WriteByte(42);
 			}
-			Wait(file.Exists).Should().BeTrue();
+			file.Exists.Should().BeTrue();
 		}
 
 		[Test]
@@ -604,7 +604,7 @@ namespace System.Extensions.Test.IO
 		public void TestFileDelete1()
 		{
 			var file = _filesystem.GetFileInfo("foo.txt");
-			new Action(() => Wait(file.Delete())).ShouldNotThrow();
+			new Action(() => file.Delete()).ShouldNotThrow();
 		}
 
 		[Test]
@@ -612,13 +612,13 @@ namespace System.Extensions.Test.IO
 		public void TestFileDelete2()
 		{
 			var file = _filesystem.GetFileInfo("foo.txt");
-			using (Wait(file.Create()))
+			using (file.Create())
 			{ }
-			Wait(file.Exists).Should().BeTrue();
+			file.Exists.Should().BeTrue();
 
-			Wait(file.Delete());
-			Wait(file.Exists).Should().BeFalse();
-			Wait(_filesystem.FileExists("foo.txt")).Should().BeFalse();
+			file.Delete();
+			file.Exists.Should().BeFalse();
+			_filesystem.FileExists("foo.txt").Should().BeFalse();
 		}
 
 		[Test]
@@ -626,7 +626,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string fileName = "stuff.txt";
 
-			Wait(_filesystem.FileExists(fileName)).Should().BeFalse("because we haven't created any files yet");
+			_filesystem.FileExists(fileName).Should().BeFalse("because we haven't created any files yet");
 		}
 		
 		[Test]
@@ -634,7 +634,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string fileName = "stuff.txt";
 
-			Wait(_filesystem.GetFileInfo(fileName).Exists).Should().BeFalse("because we haven't created any files yet");
+			_filesystem.GetFileInfo(fileName).Exists.Should().BeFalse("because we haven't created any files yet");
 		}
 
 		[Test]
@@ -642,14 +642,14 @@ namespace System.Extensions.Test.IO
 		{
 			var fileName = Path.Combine(_filesystem.CurrentDirectory, "stuff.txt");
 
-			Wait(_filesystem.GetDirectoryInfo(_filesystem.CurrentDirectory).FileExists(fileName)).Should().BeFalse("because we haven't created any files yet");
+			_filesystem.GetDirectoryInfo(_filesystem.CurrentDirectory).FileExists(fileName).Should().BeFalse("because we haven't created any files yet");
 		}
 
 		[Test]
 		public void TestFileExists4()
 		{
 			const string fileName = "foobar\\stuff.txt";
-			Wait(_filesystem.FileExists(fileName)).Should().BeFalse("because the directory doesn't even exist");
+			_filesystem.FileExists(fileName).Should().BeFalse("because the directory doesn't even exist");
 		}
 		
 		[Test]
@@ -657,11 +657,11 @@ namespace System.Extensions.Test.IO
 		public void TestCopyFile1()
 		{
 			_filesystem.WriteAllBytes("a.dat", new byte[0]);
-			Wait(_filesystem.FileExists("b.txt")).Should().BeFalse();
+			_filesystem.FileExists("b.txt").Should().BeFalse();
 
 			_filesystem.CopyFile("a.dat", "b.txt");
-			Wait(_filesystem.ReadAllBytes("b.txt")).Should().BeEmpty();
-			Wait(_filesystem.FileExists("b.txt")).Should().BeTrue("because now that the file has been copied, it should exist");
+			_filesystem.ReadAllBytes("b.txt").Should().BeEmpty();
+			_filesystem.FileExists("b.txt").Should().BeTrue("because now that the file has been copied, it should exist");
 		}
 
 		[Test]
@@ -670,11 +670,11 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.WriteAllBytes("a.dat", new byte[] {4, 3, 2, 1});
 			_filesystem.CreateDirectory("foo");
-			Wait(_filesystem.FileExists("foo\\b.blub")).Should().BeFalse();
+			_filesystem.FileExists("foo\\b.blub").Should().BeFalse();
 
 			_filesystem.CopyFile("a.dat", "foo\\b.blub");
-			Wait(_filesystem.ReadAllBytes("foo\\b.blub")).Should().Equal(new byte[] {4, 3, 2, 1});
-			Wait(_filesystem.FileExists("foo\\b.blub")).Should().BeTrue("because now that the file has been copied, it should exist");
+			_filesystem.ReadAllBytes("foo\\b.blub").Should().Equal(new byte[] {4, 3, 2, 1});
+			_filesystem.FileExists("foo\\b.blub").Should().BeTrue("because now that the file has been copied, it should exist");
 		}
 
 		[Test]
@@ -683,40 +683,40 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.WriteAllBytes("a.dat", new byte[] {4, 3, 2, 1});
 			_filesystem.WriteAllBytes("b.dat", new byte[] {1, 2, 3});
-			new Action(() => Wait(_filesystem.CopyFile("a.dat", "b.dat"))).ShouldThrow<IOException>();
-			Wait(_filesystem.ReadAllBytes("b.dat")).Should().Equal(new byte[] {1, 2, 3}, "because the previous data should not have been overwritten");
+			new Action(() => _filesystem.CopyFile("a.dat", "b.dat")).ShouldThrow<IOException>();
+			_filesystem.ReadAllBytes("b.dat").Should().Equal(new byte[] {1, 2, 3}, "because the previous data should not have been overwritten");
 		}
 
 		[Test]
 		[Description("Verifies that copying from a non-existing directory is not allowed")]
 		public void TestCopyFile4()
 		{
-			new Action(() => Wait(_filesystem.CopyFile("foo\\a.dat", "b.dat"))).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.CopyFile("foo\\a.dat", "b.dat")).ShouldThrow<DirectoryNotFoundException>();
 		}
 		
 		[Test]
 		[Description("Verifies that copying to a non-existing directory is not allowed")]
 		public void TestCopyFile5()
 		{
-			using (Wait(_filesystem.CreateFile("a.dat")))
+			using (_filesystem.CreateFile("a.dat"))
 			{ }
-			new Action(() => Wait(_filesystem.CopyFile("a.dat", "blub\\b.dat"))).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.CopyFile("a.dat", "blub\\b.dat")).ShouldThrow<DirectoryNotFoundException>();
 		}
 
 		[Test]
 		[Description("Verifies that copying from a non-existing file is not allowed")]
 		public void TestCopyFile6()
 		{
-			new Action(() => Wait(_filesystem.CopyFile("a.dat", "b.dat"))).ShouldThrow<FileNotFoundException>();
+			new Action(() => _filesystem.CopyFile("a.dat", "b.dat")).ShouldThrow<FileNotFoundException>();
 		}
 
 		[Test]
 		public void TestCreateFile1()
 		{
 			const string fileName = "stuff.txt";
-			Wait(_filesystem.FileExists(fileName)).Should().BeFalse();
+			_filesystem.FileExists(fileName).Should().BeFalse();
 
-			using (var stream = Wait(_filesystem.CreateFile(fileName)))
+			using (var stream = _filesystem.CreateFile(fileName))
 			{
 				stream.Should().NotBeNull();
 				stream.CanRead.Should().BeTrue("because the file should've been opened for writing");
@@ -724,7 +724,7 @@ namespace System.Extensions.Test.IO
 				stream.Position.Should().Be(0, "because the stream should point towards the start of the file");
 				stream.Length.Should().Be(0, "because the file should be empty since it was just created");
 
-				Wait(_filesystem.FileExists(fileName)).Should().BeTrue("because we've just created that file");
+				_filesystem.FileExists(fileName).Should().BeTrue("because we've just created that file");
 			}
 		}
 
@@ -733,12 +733,12 @@ namespace System.Extensions.Test.IO
 		public void TestCreateFile2()
 		{
 			const string fileName = "stuff";
-			using (var stream = Wait(_filesystem.CreateFile(fileName)))
+			using (var stream = _filesystem.CreateFile(fileName))
 			{
 				stream.WriteByte(128);
 			}
 
-			using (var stream = Wait(_filesystem.CreateFile(fileName)))
+			using (var stream = _filesystem.CreateFile(fileName))
 			{
 				stream.CanRead.Should().BeTrue("because the file should've been opened for writing");
 				stream.CanWrite.Should().BeTrue("because the file should've been opened for reading");
@@ -752,7 +752,7 @@ namespace System.Extensions.Test.IO
 		public void TestCreateFile3()
 		{
 			const string fileName = "foo\\bar";
-			new Action(() => Wait(_filesystem.CreateFile(fileName))).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.CreateFile(fileName)).ShouldThrow<DirectoryNotFoundException>();
 		}
 
 		[Test]
@@ -760,10 +760,10 @@ namespace System.Extensions.Test.IO
 		public void TestCreateFile4()
 		{
 			const string fileName = "bar";
-			using (Wait(_filesystem.CreateFile(fileName.ToLower()))) { }
-			using (Wait(_filesystem.CreateFile(fileName.ToUpper()))) { }
+			using (_filesystem.CreateFile(fileName.ToLower())) { }
+			using (_filesystem.CreateFile(fileName.ToUpper())) { }
 
-			var files = Wait(_filesystem.EnumerateFiles(_filesystem.CurrentDirectory));
+			var files = _filesystem.EnumerateFiles(_filesystem.CurrentDirectory);
 			files.Should().HaveCount(1, "because only one file should've been created");
 		}
 
@@ -772,7 +772,7 @@ namespace System.Extensions.Test.IO
 		public void TestOpenRead1()
 		{
 			const string fileName = "stuff";
-			new Action(() => Wait(_filesystem.OpenRead(fileName))).ShouldThrow<FileNotFoundException>(
+			new Action(() => _filesystem.OpenRead(fileName)).ShouldThrow<FileNotFoundException>(
 				"because there's no such file");
 		}
 
@@ -781,12 +781,12 @@ namespace System.Extensions.Test.IO
 		public void TestOpenWrite1()
 		{
 			const string fileName = "stuff";
-			using (var stream = Wait(_filesystem.OpenWrite(fileName)))
+			using (var stream = _filesystem.OpenWrite(fileName))
 			{
 				stream.WriteByte(128);
 			}
 
-			using (var stream = Wait(_filesystem.OpenRead(fileName)))
+			using (var stream = _filesystem.OpenRead(fileName))
 			{
 				stream.Length.Should().Be(1);
 				stream.Position.Should().Be(0);
@@ -799,17 +799,17 @@ namespace System.Extensions.Test.IO
 		public void TestOpenWrite2()
 		{
 			const string fileName = "stuff";
-			using (var stream = Wait(_filesystem.OpenWrite(fileName)))
+			using (var stream = _filesystem.OpenWrite(fileName))
 			{
 				stream.WriteByte(255);
 			}
 
-			using (var stream = Wait(_filesystem.OpenWrite(fileName)))
+			using (var stream = _filesystem.OpenWrite(fileName))
 			{
 				stream.WriteByte(42);
 			}
 
-			using (var stream = Wait(_filesystem.OpenRead(fileName)))
+			using (var stream = _filesystem.OpenRead(fileName))
 			{
 				stream.Position.Should().Be(0);
 				stream.Length.Should().Be(1);
@@ -822,13 +822,13 @@ namespace System.Extensions.Test.IO
 		public void TestFileLength1()
 		{
 			const string fileName = "stuff";
-			using (var stream = Wait(_filesystem.OpenWrite(fileName)))
+			using (var stream = _filesystem.OpenWrite(fileName))
 			{
 			}
 
 			const string reason = "because we've written nothing to the file so far";
-			Wait(_filesystem.FileLength(fileName)).Should().Be(0, reason);
-			Wait(_filesystem.GetFileInfo(fileName).Length).Should().Be(0, reason);
+			_filesystem.FileLength(fileName).Should().Be(0, reason);
+			_filesystem.GetFileInfo(fileName).Length.Should().Be(0, reason);
 		}
 
 		[Test]
@@ -836,14 +836,14 @@ namespace System.Extensions.Test.IO
 		public void TestFileLength2()
 		{
 			const string fileName = "stuff";
-			using (var stream = Wait(_filesystem.OpenWrite(fileName)))
+			using (var stream = _filesystem.OpenWrite(fileName))
 			{
 				stream.Write(new byte[42], 0, 42);
 			}
 
 			const string reason = "because we've written 42 bytes to the file";
-			Wait(_filesystem.FileLength(fileName)).Should().Be(42, reason);
-			Wait(_filesystem.GetFileInfo(fileName).Length).Should().Be(42, reason);
+			_filesystem.FileLength(fileName).Should().Be(42, reason);
+			_filesystem.GetFileInfo(fileName).Length.Should().Be(42, reason);
 		}
 
 		[Test]
@@ -851,19 +851,20 @@ namespace System.Extensions.Test.IO
 		public void TestFileLength3()
 		{
 			const string fileName = "stuff";
-			using (var stream = Wait(_filesystem.OpenWrite(fileName)))
+			using (var stream = _filesystem.OpenWrite(fileName))
 			{
 				stream.Write(new byte[42], 0, 42);
 			}
 
 			var fileInfo = _filesystem.GetFileInfo(fileName);
-			Wait(fileInfo.Delete());
-			new Action(() => Wait(fileInfo.Length))
-				.ShouldThrow<AggregateException>()
-				.WithInnerException<FileNotFoundException>();
-			new Action(() => Wait(_filesystem.FileLength(fileName)))
-				.ShouldThrow<AggregateException>()
-				.WithInnerException<FileNotFoundException>();
+			fileInfo.Delete();
+			new Action(() =>
+				{
+					var unused = fileInfo.Length;
+				})
+				.ShouldThrow<FileNotFoundException>();
+			new Action(() => _filesystem.FileLength(fileName))
+				.ShouldThrow<FileNotFoundException>();
 		}
 
 		[Test]
@@ -878,8 +879,8 @@ namespace System.Extensions.Test.IO
 		{
 			var data = new byte[] {1, 2, 3, 4};
 			var stream = new MemoryStream(data);
-			Wait(_filesystem.Write("foo.dat", stream));
-			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(data);
+			_filesystem.Write("foo.dat", stream);
+			_filesystem.ReadAllBytes("foo.dat").Should().Equal(data);
 		}
 
 		[Test]
@@ -890,7 +891,7 @@ namespace System.Extensions.Test.IO
 			_filesystem.Write("foo.dat", new MemoryStream(new byte[] {2, 3, 4}));
 			_filesystem.Write("foo.dat", new MemoryStream(new byte[] {3, 4}));
 			_filesystem.Write("foo.dat", new MemoryStream(new byte[] {4}));
-			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(new byte[] {4}, "because every Write() operation should overwrite previous content");
+			_filesystem.ReadAllBytes("foo.dat").Should().Equal(new byte[] {4}, "because every Write() operation should overwrite previous content");
 		}
 
 		[Test]
@@ -904,8 +905,8 @@ namespace System.Extensions.Test.IO
 		public void TestWriteAllBytes2()
 		{
 			var data = new byte[] {1, 2, 3, 4};
-			Wait(_filesystem.WriteAllBytes("foo.dat", data));
-			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(data);
+			_filesystem.WriteAllBytes("foo.dat", data);
+			_filesystem.ReadAllBytes("foo.dat").Should().Equal(data);
 		}
 
 		[Test]
@@ -916,7 +917,7 @@ namespace System.Extensions.Test.IO
 			_filesystem.WriteAllBytes("foo.dat", new byte[] {2, 3, 4});
 			_filesystem.WriteAllBytes("foo.dat", new byte[] {3, 4});
 			_filesystem.WriteAllBytes("foo.dat", new byte[] {4});
-			Wait(_filesystem.ReadAllBytes("foo.dat")).Should().Equal(new byte[] {4}, "because every WriteAllBytes() operation should overwrite previous content");
+			_filesystem.ReadAllBytes("foo.dat").Should().Equal(new byte[] {4}, "because every WriteAllBytes() operation should overwrite previous content");
 		}
 
 		[Test]
@@ -964,8 +965,8 @@ namespace System.Extensions.Test.IO
 			{
 				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
 
-				_filesystem.DeleteFile("SomeFolder\\a.txt").Wait();
-				_filesystem.DeleteDirectory("SomeFolder").Wait();
+				_filesystem.DeleteFile("SomeFolder\\a.txt");
+				_filesystem.DeleteDirectory("SomeFolder");
 				watcher.Property(x => x.Files).ShouldEventually().HaveCount(0);
 
 				_filesystem.CreateDirectory("SomeFolder");
@@ -983,7 +984,7 @@ namespace System.Extensions.Test.IO
 				watcher.MonitorEvents();
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
-				_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]).Wait();
+				_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
 				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
 				watcher.Files.Should().HaveCount(1);
 				var file = watcher.Files.First();
@@ -1003,7 +1004,7 @@ namespace System.Extensions.Test.IO
 				watcher.MonitorEvents();
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
-				using (_filesystem.CreateFile("SomeFolder\\b.txt").Result)
+				using (_filesystem.CreateFile("SomeFolder\\b.txt"))
 				{}
 
 				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
@@ -1025,7 +1026,7 @@ namespace System.Extensions.Test.IO
 				watcher.MonitorEvents();
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
-				using (_filesystem.OpenWrite("SomeFolder\\b.txt").Result)
+				using (_filesystem.OpenWrite("SomeFolder\\b.txt"))
 				{}
 
 				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
@@ -1047,7 +1048,7 @@ namespace System.Extensions.Test.IO
 				watcher.MonitorEvents();
 				watcher.Files.Should().BeEmpty();
 
-				_filesystem.WriteAllBytes("a.txt", new byte[123]).Wait();
+				_filesystem.WriteAllBytes("a.txt", new byte[123]);
 				watcher.Files.Should().BeEmpty();
 				watcher.ShouldNotRaise(nameof(watcher.Changed));
 			}
@@ -1063,7 +1064,7 @@ namespace System.Extensions.Test.IO
 				watcher.MonitorEvents();
 				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
 
-				_filesystem.DeleteFile("SomeFolder\\a.txt").Wait();
+				_filesystem.DeleteFile("SomeFolder\\a.txt");
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
 				watcher.ShouldRaise(nameof(watcher.Changed));
@@ -1076,10 +1077,10 @@ namespace System.Extensions.Test.IO
 			_filesystem.CreateDirectory("SomeFolder");
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
 			{
-				_filesystem.CreateDirectory("SomeFolder\\Blub").Wait();
+				_filesystem.CreateDirectory("SomeFolder\\Blub");
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
-				_filesystem.WriteAllBytes("SomeFolder\\Blub\\b.txt", new byte[0]).Wait();
+				_filesystem.WriteAllBytes("SomeFolder\\Blub\\b.txt", new byte[0]);
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
 				_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
@@ -1092,8 +1093,8 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.CreateDirectory("SomeFolder");
 			_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
-			_filesystem.CreateDirectory("SomeFolder\\Blub").Wait();
-			_filesystem.WriteAllBytes("SomeFolder\\Blub\\b.txt", new byte[0]).Wait();
+			_filesystem.CreateDirectory("SomeFolder\\Blub");
+			_filesystem.WriteAllBytes("SomeFolder\\Blub\\b.txt", new byte[0]);
 
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder", null, SearchOption.AllDirectories))
 			{
@@ -1108,7 +1109,7 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.CreateDirectory("SomeFolder");
 			_filesystem.WriteAllBytes("SomeFolder\\a", new byte[0]);
-			_filesystem.WriteAllBytes("SomeFolder\\b", new byte[0]).Wait();
+			_filesystem.WriteAllBytes("SomeFolder\\b", new byte[0]);
 
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder", "a"))
 			{
@@ -1121,16 +1122,56 @@ namespace System.Extensions.Test.IO
 		public void TestWatchWithSearchPattern2()
 		{
 			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.CreateDirectory("SomeFolder\\b");
+
 			_filesystem.WriteAllBytes("SomeFolder\\a", new byte[0]);
 			_filesystem.WriteAllBytes("SomeFolder\\ba", new byte[0]);
-			_filesystem.WriteAllBytes("SomeFolder\\a\\b", new byte[0]);
-			_filesystem.WriteAllBytes("SomeFolder\\c", new byte[0]).Wait();
+			_filesystem.WriteAllBytes("SomeFolder\\b\\b", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\c", new byte[0]);
 
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder", "*a", SearchOption.AllDirectories))
 			{
 				watcher.Property(x => x.Files).ShouldEventually().HaveCount(2);
 				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("a"));
 				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("ba"));
+			}
+		}
+
+		[Test]
+		public void TestWatchNullSearchPattern()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.CreateDirectory("SomeFolder\\b");
+
+			_filesystem.WriteAllBytes("SomeFolder\\a", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\ba", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\b\\b", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\c", new byte[0]);
+
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder", null, SearchOption.AllDirectories))
+			{
+				watcher.Property(x => x.Files).ShouldEventually().HaveCount(4);
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("a"));
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("ba"));
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("b"));
+				watcher.Files.Should().Contain(x => x.FullPath.EndsWith("c"));
+			}
+		}
+
+		[Test]
+		public void TestWatchEmptySearchPattern()
+		{
+			_filesystem.CreateDirectory("SomeFolder");
+			_filesystem.CreateDirectory("SomeFolder\\b");
+
+			_filesystem.WriteAllBytes("SomeFolder\\a", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\ba", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\b\\b", new byte[0]);
+			_filesystem.WriteAllBytes("SomeFolder\\c", new byte[0]);
+
+			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder", "", SearchOption.AllDirectories))
+			{
+				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 			}
 		}
 	}

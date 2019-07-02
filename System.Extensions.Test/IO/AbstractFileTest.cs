@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
-using FluentAssertions;
 
 namespace System.Extensions.Test.IO
 {
@@ -37,22 +35,5 @@ namespace System.Extensions.Test.IO
 		}
 
 		protected static string AssemblyDirectory => Path.GetDirectoryName(AssemblyFilePath);
-
-		protected static void Wait(Task task)
-		{
-			task.Should().NotBeNull();
-
-			var waitTime = TimeSpan.FromSeconds(2);
-			task.Wait(waitTime).Should().BeTrue("because the task should've been finished after {0} seconds", waitTime.TotalSeconds);
-		}
-
-		protected static T Wait<T>(Task<T> task)
-		{
-			task.Should().NotBeNull();
-
-			var waitTime = TimeSpan.FromSeconds(2);
-			task.Wait(waitTime).Should().BeTrue("because the task should've been finished after {0} seconds", waitTime.TotalSeconds);
-			return task.Result;
-		}
 	}
 }

@@ -53,7 +53,7 @@ namespace System.Threading
 
 		/// <summary>
 		/// </summary>
-		public bool IsRemoved { get; set; }
+		public bool IsStopped { get; set; }
 
 		public long Id => _id;
 

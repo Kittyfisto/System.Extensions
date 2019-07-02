@@ -4,8 +4,6 @@ using System.IO.InMemory;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace System.IO
 {
@@ -22,7 +20,7 @@ namespace System.IO
 	///     which actually represent the directories and files (including content). These objects are
 	///     linked and there is only one object per folder and per file.
 	/// 
-	///     At the outer layer, there are <see cref="InMemoryDirectoryInfo"/> and <see cref="InMemoryFileInfo"/>
+	///     At the outer layer, there are <see cref="DirectoryInfo2"/> and <see cref="FileInfo2"/>
 	///     which represent the objects from the first layer, but do **NOT** hold any state (just like their
 	///     .NET counterparts). Instead they are proxies for the actual directories and files.
 	/// 
@@ -34,30 +32,15 @@ namespace System.IO
 	{
 		private readonly Dictionary<string, InMemoryDirectory> _roots;
 		private readonly object _syncRoot;
-		private readonly ISerialTaskScheduler _taskScheduler;
 		private readonly InMemoryFilesystemWatchdog _watchdog;
-
-		/// <summary>
-		///     Initializes this object.
-		///     All methods will be executed on a <see cref="ImmediateTaskScheduler" />.
-		/// </summary>
-		public InMemoryFilesystem()
-			: this(new ImmediateTaskScheduler())
-		{
-		}
 
 		/// <summary>
 		///     Initializes this object.
 		///     All methods will be executed using the given scheduler.
 		/// </summary>
-		/// <param name="taskScheduler"></param>
-		public InMemoryFilesystem(ISerialTaskScheduler taskScheduler)
+		public InMemoryFilesystem()
 		{
-			if (taskScheduler == null)
-				throw new ArgumentNullException(nameof(taskScheduler));
-
 			_syncRoot = new object();
-			_taskScheduler = taskScheduler;
 			_roots = new Dictionary<string, InMemoryDirectory>(new PathComparer());
 			_watchdog = new InMemoryFilesystemWatchdog(this);
 
@@ -73,82 +56,70 @@ namespace System.IO
 		public string CurrentDirectory { get; set; }
 
 		/// <inheritdoc />
-		public IDirectoryInfoAsync Current => GetDirectoryInfo(CurrentDirectory);
+		public IDirectoryInfo Current => GetDirectoryInfo(CurrentDirectory);
 
 		/// <inheritdoc />
-		public Task<IEnumerable<IDirectoryInfoAsync>> Roots
+		public IEnumerable<IDirectoryInfo> Roots
 		{
 			get
 			{
-				return _taskScheduler.StartNew<IEnumerable<IDirectoryInfoAsync>>(() =>
+				lock (_syncRoot)
 				{
-					lock (_syncRoot)
-					{
-						return _roots.Values.Select(CreateDirectoryInfo).ToList();
-					}
-				});
+					return _roots.Values.Select(x => CreateDirectoryInfo(x.FullName)).ToList();
+				}
 			}
 		}
 
 		/// <inheritdoc />
-		public Task<IDirectoryInfoAsync> CreateDirectory(string path)
+		public IDirectoryInfo CreateDirectory(string path)
 		{
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew<IDirectoryInfoAsync>(() =>
-			{
-				CreateDirectorySync(path);
-				return new InMemoryDirectoryInfo(this, _taskScheduler, path);
-			});
+			CreateDirectorySync(path);
+			return GetDirectoryInfo(path);
 		}
 
 		/// <inheritdoc />
-		public Task DeleteDirectory(string path)
+		public void DeleteDirectory(string path)
 		{
-			return DeleteDirectory(path, recursive: false);
+			DeleteDirectory(path, recursive: false);
 		}
 
 		/// <inheritdoc />
-		public Task DeleteDirectory(string path, bool recursive)
+		public void DeleteDirectory(string path, bool recursive)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew(() =>
+			var parent = Path.GetDirectoryName(path);
+			InMemoryDirectory directory = GetDirectory(parent);
+
+			var directoryName = Directory2.GetDirName(path);
+			bool isEmpty;
+			if (!directory.DeleteSubdirectory(directoryName, recursive, out isEmpty))
 			{
-				var parent = Path.GetDirectoryName(path);
-				InMemoryDirectory directory = GetDirectory(parent);
+				if (!isEmpty)
+					throw new IOException(string.Format("The directory '{0}' is not empty", path));
 
-				var directoryName = Directory2.GetDirName(path);
-				bool isEmpty;
-				if (!directory.DeleteSubdirectory(directoryName, recursive, out isEmpty))
-				{
-					if (!isEmpty)
-						throw new IOException(string.Format("The directory '{0}' is not empty", path));
-
-					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
-				}
-			});
+				throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+			}
 		}
 
 		/// <inheritdoc />
-		public Task<bool> DirectoryExists(string path)
+		public bool DirectoryExists(string path)
 		{
 			if (string.IsNullOrWhiteSpace(path))
-				return Task.FromResult(result: false);
+				return false;
 
 			if (Path2.HasIllegalCharacters(path))
-				return Task.FromResult(result: false);
+				return false;
 
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew(() =>
-			{
-				InMemoryDirectory unused;
-				return TryGetDirectory(path, out unused);
-			});
+			InMemoryDirectory unused;
+			return TryGetDirectory(path, out unused);
 		}
 
 		/// <inheritdoc />
-		public IDirectoryInfoAsync GetDirectoryInfo(string path)
+		public IDirectoryInfo GetDirectoryInfo(string path)
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
@@ -157,206 +128,187 @@ namespace System.IO
 				throw new ArgumentException(nameof(path));
 
 			path = CaptureFullPath(path);
-			return new InMemoryDirectoryInfo(this, _taskScheduler, path);
+			return CreateDirectoryInfo(path);
 		}
 
 		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateFiles(string path,
-		                                                  string searchPattern = null,
-		                                                  SearchOption searchOption = SearchOption.TopDirectoryOnly,
-		                                                  bool tolerateNonExistantPath = false)
+		public IReadOnlyList<string> EnumerateFiles(string path,
+		                                            string searchPattern = null,
+		                                            SearchOption searchOption = SearchOption.TopDirectoryOnly,
+		                                            bool tolerateNonExistantPath = false)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew(() =>
+			InMemoryDirectory directory;
+			if (!TryGetDirectory(path, out directory))
 			{
-				InMemoryDirectory directory;
-				if (!TryGetDirectory(path, out directory))
-				{
-					if (tolerateNonExistantPath)
-						return new List<string>();
+				if (tolerateNonExistantPath)
+					return new List<string>();
 
-					throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
-				}
+				throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
+			}
 
-				return directory.EnumerateFiles(searchPattern, searchOption);
-			});
+			return directory.EnumerateFiles(searchPattern, searchOption);
 		}
 
 		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateDirectories(string path)
+		public IReadOnlyList<string> EnumerateDirectories(string path)
 		{
 			return EnumerateDirectories(path, "*");
 		}
 
 		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern)
+		public IReadOnlyList<string> EnumerateDirectories(string path, string searchPattern)
 		{
 			return EnumerateDirectories(path, searchPattern, SearchOption.TopDirectoryOnly);
 		}
 
 		/// <inheritdoc />
-		public Task<IReadOnlyList<string>> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
+		public IReadOnlyList<string> EnumerateDirectories(string path, string searchPattern, SearchOption searchOption)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew<IReadOnlyList<string>>(() =>
+			InMemoryDirectory rootDirectory;
+			if (!TryGetDirectory(path, out rootDirectory))
+				return new string[0];
+
+			var regex = CreateRegex(searchPattern);
+			var directories = new Stack<InMemoryDirectory>();
+			var result = new List<string>();
+
+			directories.Push(rootDirectory);
+
+			while (directories.Count > 0)
 			{
-				InMemoryDirectory rootDirectory;
-				if (!TryGetDirectory(path, out rootDirectory))
-					return new string[0];
-
-				var regex = CreateRegex(searchPattern);
-				var directories = new Stack<InMemoryDirectory>();
-				var result = new List<string>();
-
-				directories.Push(rootDirectory);
-
-				while (directories.Count > 0)
+				var directory = directories.Pop();
+				foreach (var subDirectory in directory.Subdirectories)
 				{
-					var directory = directories.Pop();
-					foreach (var subDirectory in directory.Subdirectories)
+					if (regex.IsMatch(subDirectory.Name))
 					{
-						if (regex.IsMatch(subDirectory.Name))
+						if (searchOption == SearchOption.AllDirectories)
 						{
-							if (searchOption == SearchOption.AllDirectories)
-							{
-								directories.Push(subDirectory);
-							}
-							result.Add(subDirectory.FullName);
+							directories.Push(subDirectory);
 						}
+						result.Add(subDirectory.FullName);
 					}
 				}
+			}
 
-				return result;
-			});
+			return result;
 		}
 
 		/// <inheritdoc />
-		public IFileInfoAsync GetFileInfo(string fileName)
+		public IFileInfo GetFileInfo(string fileName)
 		{
 			Path2.ThrowIfPathIsInvalid(fileName, nameof(fileName));
 
 			var path = CaptureFullPath(fileName);
-			return new InMemoryFileInfo(this, _taskScheduler, path);
+			return new FileInfo2(this, path);
 		}
 
 		/// <inheritdoc />
-		public Task<bool> FileExists(string fileName)
+		public bool FileExists(string fileName)
 		{
 			if (fileName == null)
-				return Task.FromResult(result: false);
+				return false;
 
 			if (!Path2.IsValidPath(fileName))
-				return Task.FromResult(result: false);
+				return false;
 
-			var path = CaptureFullPath(fileName);
-			return new InMemoryFileInfo(this, _taskScheduler, path).Exists;
+			var fullFileName = CaptureFullPath(fileName);
+			InMemoryFile unused;
+			return TryGetFile(fullFileName, out unused);
 		}
 
 		/// <inheritdoc />
-		public Task<long> FileLength(string fileName)
+		public long FileLength(string fileName)
 		{
 			Path2.ThrowIfPathIsInvalid(fileName, nameof(fileName));
 
-			var path = CaptureFullPath(fileName);
-			return new InMemoryFileInfo(this, _taskScheduler, path).Length;
+			var fullFileName = CaptureFullPath(fileName);
+			if (!TryGetFile(fullFileName, out var file))
+				throw new FileNotFoundException();
+
+			return file.Length;
 		}
 
 		/// <inheritdoc />
-		public Task<bool> IsFileReadOnly(string path)
+		public bool IsFileReadOnly(string path)
 		{
 			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc />
-		public Task<byte[]> ReadAllBytes(string path)
+		public byte[] ReadAllBytes(string path)
 		{
-			return OpenRead(path)
-				.ContinueWith(task =>
-				{
-					using (var stream = task.Result)
-					{
-						return stream.ReadToEnd();
-					}
-				}, TaskContinuationOptions.ExecuteSynchronously);
+			using (var stream = OpenRead(path))
+			{
+				return stream.ReadToEnd();
+			}
 		}
 
 		/// <inheritdoc />
-		public Task<Stream> CreateFile(string path)
+		public Stream CreateFile(string path)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew(() =>
-			{
-				var directoryPath = Path.GetDirectoryName(path);
-				var directory = GetDirectory(directoryPath);
-				var fileName = Path.GetFileName(path);
-				var stream = directory.CreateFile(fileName);
+			var directoryPath = Path.GetDirectoryName(path);
+			var directory = GetDirectory(directoryPath);
+			var fileName = Path.GetFileName(path);
+			var stream = directory.CreateFile(fileName);
 
-				_watchdog.NotifyWatchers();
+			_watchdog.NotifyWatchers();
 
-				return stream;
-			});
+			return stream;
 		}
 
 		/// <inheritdoc />
-		public Task<Stream> OpenRead(string path)
+		public Stream OpenRead(string path)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew(() =>
-			{
-				var directoryPath = Path.GetDirectoryName(path);
-				var directory = GetDirectory(directoryPath);
-				var fileName = Path.GetFileName(path);
-				return directory.OpenReadSync(fileName);
-			});
+			var directoryPath = Path.GetDirectoryName(path);
+			var directory = GetDirectory(directoryPath);
+			var fileName = Path.GetFileName(path);
+			return directory.OpenReadSync(fileName);
 		}
 
 		/// <inheritdoc />
-		public Task<Stream> OpenWrite(string path)
+		public Stream OpenWrite(string path)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew(() =>
-			{
-				var directoryPath = Path.GetDirectoryName(path);
-				var directory = GetDirectory(directoryPath);
-				var fileName = Path.GetFileName(path);
-				var stream = directory.OpenWriteSync(fileName);
+			var directoryPath = Path.GetDirectoryName(path);
+			var directory = GetDirectory(directoryPath);
+			var fileName = Path.GetFileName(path);
+			var stream = directory.OpenWriteSync(fileName);
 
-				_watchdog.NotifyWatchers();
+			_watchdog.NotifyWatchers();
 
-				return stream;
-			});
+			return stream;
 		}
 
 		/// <inheritdoc />
-		public Task Write(string path, Stream stream)
+		public void Write(string path, Stream stream)
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
 			if (stream == null)
 				throw new ArgumentNullException(nameof(stream));
 
-			return OpenWrite(path)
-				.ContinueWith(task =>
-				{
-					using (var targetStream = task.Result)
-					{
-						stream.CopyTo(targetStream);
-					}
-				}, TaskContinuationOptions.ExecuteSynchronously);
+			using (var targetStream = OpenWrite(path))
+			{
+				stream.CopyTo(targetStream);
+			}
 		}
 
 		/// <inheritdoc />
-		public Task CopyFile(string sourceFileName, string destFileName)
+		public void CopyFile(string sourceFileName, string destFileName)
 		{
 			Path2.ThrowIfPathIsInvalid(sourceFileName, nameof(sourceFileName));
 			Path2.ThrowIfPathIsInvalid(destFileName, nameof(destFileName));
@@ -366,56 +318,47 @@ namespace System.IO
 			var destFileDirectory = Path.GetDirectoryName(destFilePath);
 			var destFile = Path.GetFileName(destFileName);
 
-			return OpenRead(sourceFilePath)
-			       .ContinueWith(task =>
-				{
-					var destDirectory = GetDirectory(destFileDirectory);
-					InMemoryFile file;
-					if (destDirectory.TryGetFile(destFile, out file))
-						throw new IOException(string.Format("The file '{0}' already exists", destFilePath));
+			using (var stream = OpenRead(sourceFilePath))
+			{
+				var destDirectory = GetDirectory(destFileDirectory);
+				InMemoryFile file;
+				if (destDirectory.TryGetFile(destFile, out file))
+					throw new IOException(string.Format("The file '{0}' already exists", destFilePath));
 
-					using (var targetStream = destDirectory.OpenWriteSync(destFile))
-					{
-						task.Result.CopyTo(targetStream);
-					}
-				}, TaskContinuationOptions.ExecuteSynchronously);
+				using (var targetStream = destDirectory.OpenWriteSync(destFile))
+				{
+					stream.CopyTo(targetStream);
+				}
+			}
 		}
 
 		/// <inheritdoc />
-		public Task WriteAllBytes(string path, byte[] bytes)
+		public void WriteAllBytes(string path, byte[] bytes)
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
 			if (bytes == null)
 				throw new ArgumentNullException(nameof(bytes));
 
-			return OpenWrite(path)
-				.ContinueWith(task =>
-				{
-					using (var targetStream = task.Result)
-					{
-						targetStream.Write(bytes, 0, bytes.Length);
-					}
-
-					_watchdog.NotifyWatchers();
-				}, TaskContinuationOptions.ExecuteSynchronously);
+			using (var stream = OpenWrite(path))
+			{
+				stream.Write(bytes, 0, bytes.Length);
+				_watchdog.NotifyWatchers();
+			}
 		}
 
 		/// <inheritdoc />
-		public Task DeleteFile(string path)
+		public void DeleteFile(string path)
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
 			path = CaptureFullPath(path);
-			return _taskScheduler.StartNew(() =>
-			{
-				var directoryPath = Path.GetDirectoryName(path);
-				InMemoryDirectory directory = GetDirectory(directoryPath);
-				var fileName = Path.GetFileName(path);
-				directory.TryDeleteFile(fileName);
+			var directoryPath = Path.GetDirectoryName(path);
+			InMemoryDirectory directory = GetDirectory(directoryPath);
+			var fileName = Path.GetFileName(path);
+			directory.TryDeleteFile(fileName);
 
-				_watchdog.NotifyWatchers();
-			});
+			_watchdog.NotifyWatchers();
 		}
 
 		/// <summary>
@@ -434,19 +377,16 @@ namespace System.IO
 		///     Creates a string which represents every file and directory in this filesystem.
 		/// </summary>
 		/// <returns></returns>
-		public Task<string> Print()
+		public string Print()
 		{
-			return _taskScheduler.StartNew(() =>
-			{
-				var builder = new StringBuilder();
-				foreach (var root in _roots.Values.OrderBy(x => x.Name)) root.Print(builder);
-				return builder.ToString();
-			});
+			var builder = new StringBuilder();
+			foreach (var root in _roots.Values.OrderBy(x => x.Name)) root.Print(builder);
+			return builder.ToString();
 		}
 
-		private IDirectoryInfoAsync CreateDirectoryInfo(InMemoryDirectory arg)
+		private IDirectoryInfo CreateDirectoryInfo(string fullName)
 		{
-			return new InMemoryDirectoryInfo(this, _taskScheduler, arg.FullName);
+			return DirectoryInfo2.Create(this, fullName);
 		}
 
 		[Pure]
