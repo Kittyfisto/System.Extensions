@@ -35,5 +35,14 @@ namespace System.Extensions.Test.IO
 		{
 			Path2.IsValidPath(validPath).Should().BeTrue();
 		}
+
+		[Test]
+		public void TestRemoveTrailingSeparators()
+		{
+			Path2.RemoveTrailingSeparators(@"C:\users\temp\").Should().Be(@"C:\users\temp");
+			Path2.RemoveTrailingSeparators(@"Debug\").Should().Be("Debug");
+			Path2.RemoveTrailingSeparators(@"Debug/").Should().Be("Debug");
+			Path2.RemoveTrailingSeparators(@"Debug").Should().Be("Debug");
+		}
 	}
 }

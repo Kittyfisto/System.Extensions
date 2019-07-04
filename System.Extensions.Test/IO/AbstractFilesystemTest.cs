@@ -304,7 +304,7 @@ namespace System.Extensions.Test.IO
 			_filesystem.CreateFile(filePath);
 			_filesystem.FileExists(filePath).Should().BeTrue();
 
-			new Action(() => _filesystem.DeleteDirectory(directory)).ShouldThrow<IOException>();
+			new Action(() => _filesystem.DeleteDirectory(directory)).ShouldThrow<IOException>("because deleting a non-empty directory is not allowed");
 			new Action(() => _filesystem.GetDirectoryInfo(directory).Delete()).ShouldThrow<IOException>();
 
 			_filesystem.DirectoryExists(directory).Should().BeTrue("because the directory shouldn't have been deleted");

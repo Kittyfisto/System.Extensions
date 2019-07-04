@@ -73,9 +73,9 @@ namespace System.IO
 		/// <inheritdoc />
 		public IDirectoryInfo CreateDirectory(string path)
 		{
-			path = CaptureFullPath(path);
-			CreateDirectorySync(path);
-			return GetDirectoryInfo(path);
+			var fullPath = CaptureFullPath(path);
+			CreateDirectorySync(fullPath);
+			return GetDirectoryInfo(fullPath);
 		}
 
 		/// <inheritdoc />
@@ -89,19 +89,20 @@ namespace System.IO
 		{
 			Path2.ThrowIfPathIsInvalid(path);
 
-			path = CaptureFullPath(path);
-			var parent = Path.GetDirectoryName(path);
-			InMemoryDirectory directory = GetDirectory(parent);
+			var fullPath = CaptureFullPath(path);
+			var directory = GetDirectory(fullPath);
 
-			var directoryName = Directory2.GetDirName(path);
+			var parent = directory.Parent;
+
 			bool isEmpty;
-			if (!directory.DeleteSubdirectory(directoryName, recursive, out isEmpty))
+			if (!parent.DeleteSubdirectory(directory.Name, recursive, out isEmpty))
 			{
 				if (!isEmpty)
 					throw new IOException(string.Format("The directory '{0}' is not empty", path));
 
 				throw new DirectoryNotFoundException(string.Format("Could not find a part of the path '{0}'", path));
 			}
+
 		}
 
 		/// <inheritdoc />

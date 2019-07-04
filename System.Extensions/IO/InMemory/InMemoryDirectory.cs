@@ -9,6 +9,7 @@ namespace System.IO.InMemory
 	internal sealed class InMemoryDirectory
 	{
 		private readonly Dictionary<string, InMemoryFile> _files;
+		private readonly InMemoryDirectory _parent;
 		private readonly string _name;
 		private readonly Dictionary<string, InMemoryDirectory> _subDirectories;
 		private readonly object _syncRoot;
@@ -17,12 +18,15 @@ namespace System.IO.InMemory
 		public InMemoryDirectory(InMemoryDirectory parent,
 		                         string name)
 		{
+			_parent = parent;
 			_name = name;
 			_fullName = parent != null ? Path.Combine(parent.FullName, name) : name;
 			_syncRoot = new object();
 			_subDirectories = new Dictionary<string, InMemoryDirectory>(new PathComparer());
 			_files = new Dictionary<string, InMemoryFile>(new PathComparer());
 		}
+
+		public InMemoryDirectory Parent => _parent;
 
 		public string FullName => _fullName;
 		
@@ -147,13 +151,16 @@ namespace System.IO.InMemory
 
 		public InMemoryDirectory CreateSubdirectory(string directoryName)
 		{
+			// We must clean this name in case there's stuff in there we don't want...
+			var cleanedDirectoryName = Path2.RemoveTrailingSeparators(directoryName);
+
 			lock (_syncRoot)
 			{
 				InMemoryDirectory directory;
-				if (!_subDirectories.TryGetValue(directoryName, out directory))
+				if (!_subDirectories.TryGetValue(cleanedDirectoryName, out directory))
 				{
-					directory = new InMemoryDirectory(this, directoryName);
-					_subDirectories.Add(directoryName, directory);
+					directory = new InMemoryDirectory(this, cleanedDirectoryName);
+					_subDirectories.Add(cleanedDirectoryName, directory);
 				}
 				return directory;
 			}
@@ -161,41 +168,20 @@ namespace System.IO.InMemory
 
 		public bool TryGetDirectory(string directoryName, out InMemoryDirectory directory)
 		{
+			// We must clean this name in case there's stuff in there we don't want...
+			var cleanedDirectoryName = Path2.RemoveTrailingSeparators(directoryName);
+
 			lock (_syncRoot)
 			{
-				return _subDirectories.TryGetValue(directoryName, out directory);
+				return _subDirectories.TryGetValue(cleanedDirectoryName, out directory);
 			}
 		}
 
 		public bool DeleteSubdirectory(string directoryName, bool recursive, out bool isEmpty)
 		{
-			lock (_syncRoot)
-			{
-				InMemoryDirectory directory;
-				if (_subDirectories.TryGetValue(directoryName, out directory))
-				{
-					if (directory.Files.Any())
-					{
-						// You wan never delete an entire directory tree which
-						// includes files
-						isEmpty = false;
-						return false;
-					}
-
-					if (!recursive && directory.Subdirectories.Any())
-					{
-						isEmpty = false;
-						return false;
-					}
-
-					_subDirectories.Remove(directoryName);
-					isEmpty = true;
-					return true;
-				}
-
-				isEmpty = true;
-				return false;
-			}
+			// We must clean this name in case there's stuff in there we don't want...
+			var cleanedDirectoryName = Path2.RemoveTrailingSeparators(directoryName);
+			return DeleteSubdirectoryPrivate(recursive, out isEmpty, cleanedDirectoryName);
 		}
 
 		public void Print(StringBuilder builder)
@@ -225,6 +211,14 @@ namespace System.IO.InMemory
 			}
 		}
 
+		public override string ToString()
+		{
+			lock (_syncRoot)
+			{
+				return $"{_fullName}, {_files.Count} file(s), {_subDirectories.Count} folder(s)";
+			}
+		}
+
 		[Pure]
 		private static Regex CreateRegex(string searchPattern)
 		{
@@ -234,6 +228,37 @@ namespace System.IO.InMemory
 			                       + "$";
 			var regex = new Regex(regexPattern);
 			return regex;
+		}
+
+		private bool DeleteSubdirectoryPrivate(bool recursive, out bool isEmpty, string directoryName)
+		{
+			lock (_syncRoot)
+			{
+				InMemoryDirectory directory;
+				if (_subDirectories.TryGetValue(directoryName, out directory))
+				{
+					if (directory.Files.Any())
+					{
+						// You wan never delete an entire directory tree which
+						// includes files
+						isEmpty = false;
+						return false;
+					}
+
+					if (!recursive && directory.Subdirectories.Any())
+					{
+						isEmpty = false;
+						return false;
+					}
+
+					_subDirectories.Remove(directoryName);
+					isEmpty = true;
+					return true;
+				}
+
+				isEmpty = true;
+				return false;
+			}
 		}
 	}
 }

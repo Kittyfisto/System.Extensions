@@ -217,7 +217,6 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
-		[Ignore("Broke it again")]
 		[Description("Verifies that name and fullname behave identical to their DirectoryInfo counterparts")]
 		public void TestGetDirectoryInfo7()
 		{
