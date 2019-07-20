@@ -50,7 +50,7 @@ namespace System.Extensions.Test.IO
 		public void TestGetHashCode1([ValueSource(nameof(InvalidPaths))] string path)
 		{
 			var comparer = new PathComparer();
-			new Action(() => comparer.GetHashCode(path)).ShouldNotThrow();
+			new Action(() => comparer.GetHashCode(path)).Should().NotThrow();
 			comparer.GetHashCode(path).Should().Be(comparer.GetHashCode(path));
 		}
 

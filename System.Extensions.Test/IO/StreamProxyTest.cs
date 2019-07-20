@@ -48,8 +48,8 @@ namespace System.Extensions.Test.IO
 			var proxy = new StreamProxy(stream, allowWrite: false);
 
 			const string reason = "because the stream does not support writing";
-			new Action(() => proxy.WriteByte(32)).ShouldThrow<NotSupportedException>(reason);
-			new Action(() => proxy.Write(new byte[32], 0, 32)).ShouldThrow<NotSupportedException>(reason);
+			new Action(() => proxy.WriteByte(32)).Should().Throw<NotSupportedException>(reason);
+			new Action(() => proxy.Write(new byte[32], 0, 32)).Should().Throw<NotSupportedException>(reason);
 
 			stream.Length.Should().Be(0, "because the original stream should not have been written to");
 		}
@@ -77,8 +77,8 @@ namespace System.Extensions.Test.IO
 			var proxy = new StreamProxy(stream, allowRead: false);
 
 			const string reason = "because the stream does not support reading";
-			new Action(() => proxy.ReadByte()).ShouldThrow<NotSupportedException>(reason);
-			new Action(() => proxy.Read(new byte[32], 0, 32)).ShouldThrow<NotSupportedException>(reason);
+			new Action(() => proxy.ReadByte()).Should().Throw<NotSupportedException>(reason);
+			new Action(() => proxy.Read(new byte[32], 0, 32)).Should().Throw<NotSupportedException>(reason);
 
 			stream.Position.Should().Be(0, "because the original stream should not have been read from");
 		}
@@ -113,7 +113,7 @@ namespace System.Extensions.Test.IO
 			var proxy = new StreamProxy(stream, allowWrite: false);
 			stream.Length.Should().Be(0);
 
-			new Action(() => proxy.SetLength(42)).ShouldThrow<NotSupportedException>("because the stream does not support writing");
+			new Action(() => proxy.SetLength(42)).Should().Throw<NotSupportedException>("because the stream does not support writing");
 			proxy.Length.Should().Be(0);
 			stream.Length.Should().Be(0);
 		}
@@ -123,7 +123,7 @@ namespace System.Extensions.Test.IO
 		{
 			var stream = new MemoryStream();
 			var proxy = new StreamProxy(stream, allowWrite: allowWrite);
-			new Action(() => proxy.Flush()).ShouldNotThrow();
+			new Action(() => proxy.Flush()).Should().NotThrow();
 		}
 
 		[Test]
@@ -133,7 +133,7 @@ namespace System.Extensions.Test.IO
 			stream.WriteByte(1);
 			stream.WriteByte(1);
 			var proxy = new StreamProxy(stream, allowSeek: false);
-			new Action(() => proxy.Position = 1).ShouldThrow<NotSupportedException>("because the stream does not support seeking");
+			new Action(() => proxy.Position = 1).Should().Throw<NotSupportedException>("because the stream does not support seeking");
 		}
 
 		[Test]
@@ -155,7 +155,7 @@ namespace System.Extensions.Test.IO
 			stream.WriteByte(1);
 			stream.WriteByte(1);
 			var proxy = new StreamProxy(stream, allowSeek: false);
-			new Action(() => proxy.Seek(1, SeekOrigin.Begin)).ShouldThrow<NotSupportedException>("because the stream does not support seeking");
+			new Action(() => proxy.Seek(1, SeekOrigin.Begin)).Should().Throw<NotSupportedException>("because the stream does not support seeking");
 		}
 
 		[Test]
@@ -166,15 +166,15 @@ namespace System.Extensions.Test.IO
 			proxy.Dispose();
 
 			const string reason = "because the proxy has been disposed of";
-			new Action(() => proxy.WriteByte(32)).ShouldThrow<ObjectDisposedException>(reason);
-			new Action(() => proxy.Write(new byte[1], 0, 1)).ShouldThrow<ObjectDisposedException>(reason);
-			new Action(() => proxy.ReadByte()).ShouldThrow<ObjectDisposedException>(reason);
-			new Action(() => proxy.Read(new byte[1], 0, 1)).ShouldThrow<ObjectDisposedException>(reason);
-			new Action(() => proxy.Position = 32).ShouldThrow<ObjectDisposedException>(reason);
-			new Action(() => proxy.Seek(1, SeekOrigin.Current)).ShouldThrow<ObjectDisposedException>(reason);
-			new Action(() => proxy.SetLength(1)).ShouldThrow<ObjectDisposedException>(reason);
+			new Action(() => proxy.WriteByte(32)).Should().Throw<ObjectDisposedException>(reason);
+			new Action(() => proxy.Write(new byte[1], 0, 1)).Should().Throw<ObjectDisposedException>(reason);
+			new Action(() => proxy.ReadByte()).Should().Throw<ObjectDisposedException>(reason);
+			new Action(() => proxy.Read(new byte[1], 0, 1)).Should().Throw<ObjectDisposedException>(reason);
+			new Action(() => proxy.Position = 32).Should().Throw<ObjectDisposedException>(reason);
+			new Action(() => proxy.Seek(1, SeekOrigin.Current)).Should().Throw<ObjectDisposedException>(reason);
+			new Action(() => proxy.SetLength(1)).Should().Throw<ObjectDisposedException>(reason);
 
-			new Action(() => proxy.Flush()).ShouldNotThrow("because Flush() isn't specified to throw if called on a disposed object");
+			new Action(() => proxy.Flush()).Should().NotThrow("because Flush() isn't specified to throw if called on a disposed object");
 		}
 	}
 }

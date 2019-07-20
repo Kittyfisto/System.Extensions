@@ -9,7 +9,7 @@ namespace System.Extensions.Test
 		[Test]
 		public void TestToHexString1()
 		{
-			new Action(() => ByteArrayExtensions.ToHexString(null)).ShouldThrow<ArgumentNullException>();
+			new Action(() => ByteArrayExtensions.ToHexString(null)).Should().Throw<ArgumentNullException>();
 		}
 
 		[Test]

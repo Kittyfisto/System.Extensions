@@ -32,8 +32,8 @@ namespace System.Extensions.Test.IO
 		[Ignore("Not yet implemented")]
 		public void TestCreateSubdirectory([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
-			new Action(() => _directory.CreateSubdirectory(invalidPath)).ShouldThrow<ArgumentException>();
-			new Action(() => _filesystem.Current.CreateSubdirectory(invalidPath)).ShouldThrow<ArgumentException>();
+			new Action(() => _directory.CreateSubdirectory(invalidPath)).Should().Throw<ArgumentException>();
+			new Action(() => _filesystem.Current.CreateSubdirectory(invalidPath)).Should().Throw<ArgumentException>();
 		}
 	}
 }

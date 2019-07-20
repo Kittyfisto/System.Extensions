@@ -87,9 +87,9 @@ namespace System.Extensions.Test.IO
 		[Description("Verifies that the filesystem implementation behaves just like File.Write when given invalid paths")]
 		public void TestWriteAllBytesInvalidPath([ValueSource(nameof(InvalidPaths))] string invalidPath)
 		{
-			new Action(() => File.WriteAllBytes(invalidPath, new byte[0])).ShouldThrow<ArgumentException>();
-			new Action(() => _filesystem.WriteAllBytes(invalidPath, new byte[0])).ShouldThrow<ArgumentException>();
-			new Action(() => _filesystem.Write(invalidPath, new MemoryStream())).ShouldThrow<ArgumentException>();
+			new Action(() => File.WriteAllBytes(invalidPath, new byte[0])).Should().Throw<ArgumentException>();
+			new Action(() => _filesystem.WriteAllBytes(invalidPath, new byte[0])).Should().Throw<ArgumentException>();
+			new Action(() => _filesystem.Write(invalidPath, new MemoryStream())).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
@@ -109,87 +109,87 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestGetDirectoryInfoInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.GetDirectoryInfo(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.GetDirectoryInfo(path)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestGetFileInfoInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.GetFileInfo(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.GetFileInfo(path)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestCreateFileInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.CreateFile(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.CreateFile(path)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestOpenReadInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.OpenRead(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.OpenRead(path)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestDeleteFileInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.DeleteFile(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.DeleteFile(path)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestDeleteDirectoryInvalidPath([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.DeleteDirectory(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.DeleteDirectory(path)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateDirectoriesInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.EnumerateDirectories(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateDirectories(path)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateDirectoriesInvalidPath2([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.EnumerateDirectories(path, "*.*")).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateDirectories(path, "*.*")).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateDirectoriesInvalidPath3([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateFilesInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.EnumerateFiles(path)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateFiles(path)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateFilesInvalidPath2([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.EnumerateFiles(path, "*.*")).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateFiles(path, "*.*")).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestEnumerateFilesInvalidPath3([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => _filesystem.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly)).ShouldThrow<ArgumentException>();
+			new Action(() => _filesystem.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly)).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestCopyFileInvalidPath1([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => File.Copy(path, "foo.dat")).ShouldThrow<ArgumentException>();
-			new Action(() => _filesystem.CopyFile(path, "foo.dat")).ShouldThrow<ArgumentException>();
+			new Action(() => File.Copy(path, "foo.dat")).Should().Throw<ArgumentException>();
+			new Action(() => _filesystem.CopyFile(path, "foo.dat")).Should().Throw<ArgumentException>();
 		}
 
 		[Test]
 		public void TestCopyFileInvalidPath2([ValueSource(nameof(InvalidPaths))] string path)
 		{
-			new Action(() => File.Copy("foo.dat", path)).ShouldThrow<ArgumentException>();
-			new Action(() => _filesystem.CopyFile("foo.dat", path)).ShouldThrow<ArgumentException>();
+			new Action(() => File.Copy("foo.dat", path)).Should().Throw<ArgumentException>();
+			new Action(() => _filesystem.CopyFile("foo.dat", path)).Should().Throw<ArgumentException>();
 		}
 
 		#endregion
@@ -251,7 +251,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string directory = "Z:\\foo\\bar";
 			new Action(() => _filesystem.CreateDirectory(directory))
-				.ShouldThrow<DirectoryNotFoundException>()
+				.Should().Throw<DirectoryNotFoundException>()
 				.WithMessage("Could not find a part of the path 'Z:\\foo\\bar'.");
 		}
 
@@ -271,7 +271,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string path = "foobar";
 			_filesystem.DirectoryExists(path).Should().BeFalse();
-			new Action(() => _filesystem.DeleteDirectory(path)).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.DeleteDirectory(path)).Should().Throw<DirectoryNotFoundException>();
 		}
 
 		[Test]
@@ -280,7 +280,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string path = "foo\\bar";
 			_filesystem.DirectoryExists(path).Should().BeFalse();
-			new Action(() => _filesystem.DeleteDirectory(path)).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.DeleteDirectory(path)).Should().Throw<DirectoryNotFoundException>();
 		}
 
 		[Test]
@@ -304,8 +304,8 @@ namespace System.Extensions.Test.IO
 			_filesystem.CreateFile(filePath);
 			_filesystem.FileExists(filePath).Should().BeTrue();
 
-			new Action(() => _filesystem.DeleteDirectory(directory)).ShouldThrow<IOException>();
-			new Action(() => _filesystem.GetDirectoryInfo(directory).Delete()).ShouldThrow<IOException>();
+			new Action(() => _filesystem.DeleteDirectory(directory)).Should().Throw<IOException>();
+			new Action(() => _filesystem.GetDirectoryInfo(directory).Delete()).Should().Throw<IOException>();
 
 			_filesystem.DirectoryExists(directory).Should().BeTrue("because the directory shouldn't have been deleted");
 			_filesystem.FileExists(filePath).Should().BeTrue("because the directory's contents shouldn't have been deleted");
@@ -371,7 +371,7 @@ namespace System.Extensions.Test.IO
 		{
 			const string filename = "foo\\bar\\file.dat";
 			_filesystem.FileExists(filename).Should().BeFalse("because there is no such file");
-			new Action(() => _filesystem.DeleteFile(filename)).ShouldThrow<DirectoryNotFoundException>(
+			new Action(() => _filesystem.DeleteFile(filename)).Should().Throw<DirectoryNotFoundException>(
 				"because IFilesystem implementations must mimic their .NET counterparts as far as throwing exceptions is concerned");
 			_filesystem.FileExists(filename).Should().BeFalse("because there is still no such file");
 		}
@@ -386,7 +386,7 @@ namespace System.Extensions.Test.IO
 
 			_filesystem.DeleteFile(filename);
 			_filesystem.FileExists(filename).Should().BeFalse("because we've just deleted the file");
-			new Action(() => _filesystem.OpenRead(filename)).ShouldThrow<FileNotFoundException>();
+			new Action(() => _filesystem.OpenRead(filename)).Should().Throw<FileNotFoundException>();
 		}
 
 		[Test]
@@ -471,14 +471,14 @@ namespace System.Extensions.Test.IO
 		[Description("Verifies that a non-existing directory cannot be enumerated")]
 		public void TestEnumerateFiles3()
 		{
-			new Action(() => _filesystem.EnumerateFiles("daawdw")).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.EnumerateFiles("daawdw")).Should().Throw<DirectoryNotFoundException>();
 		}
 		
 		[Test]
 		[Description("Verifies that a non-existing directory cannot be enumerated")]
 		public void TestEnumerateFiles4()
 		{
-			new Action(() => _filesystem.GetDirectoryInfo("daawdw").EnumerateFiles()).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.GetDirectoryInfo("daawdw").EnumerateFiles()).Should().Throw<DirectoryNotFoundException>();
 		}
 
 		[Test]
@@ -605,7 +605,7 @@ namespace System.Extensions.Test.IO
 		public void TestFileDelete1()
 		{
 			var file = _filesystem.GetFileInfo("foo.txt");
-			new Action(() => file.Delete()).ShouldNotThrow();
+			new Action(() => file.Delete()).Should().NotThrow();
 		}
 
 		[Test]
@@ -684,7 +684,7 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.WriteAllBytes("a.dat", new byte[] {4, 3, 2, 1});
 			_filesystem.WriteAllBytes("b.dat", new byte[] {1, 2, 3});
-			new Action(() => _filesystem.CopyFile("a.dat", "b.dat")).ShouldThrow<IOException>();
+			new Action(() => _filesystem.CopyFile("a.dat", "b.dat")).Should().Throw<IOException>();
 			_filesystem.ReadAllBytes("b.dat").Should().Equal(new byte[] {1, 2, 3}, "because the previous data should not have been overwritten");
 		}
 
@@ -692,7 +692,7 @@ namespace System.Extensions.Test.IO
 		[Description("Verifies that copying from a non-existing directory is not allowed")]
 		public void TestCopyFile4()
 		{
-			new Action(() => _filesystem.CopyFile("foo\\a.dat", "b.dat")).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.CopyFile("foo\\a.dat", "b.dat")).Should().Throw<DirectoryNotFoundException>();
 		}
 		
 		[Test]
@@ -701,14 +701,14 @@ namespace System.Extensions.Test.IO
 		{
 			using (_filesystem.CreateFile("a.dat"))
 			{ }
-			new Action(() => _filesystem.CopyFile("a.dat", "blub\\b.dat")).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.CopyFile("a.dat", "blub\\b.dat")).Should().Throw<DirectoryNotFoundException>();
 		}
 
 		[Test]
 		[Description("Verifies that copying from a non-existing file is not allowed")]
 		public void TestCopyFile6()
 		{
-			new Action(() => _filesystem.CopyFile("a.dat", "b.dat")).ShouldThrow<FileNotFoundException>();
+			new Action(() => _filesystem.CopyFile("a.dat", "b.dat")).Should().Throw<FileNotFoundException>();
 		}
 
 		[Test]
@@ -753,7 +753,7 @@ namespace System.Extensions.Test.IO
 		public void TestCreateFile3()
 		{
 			const string fileName = "foo\\bar";
-			new Action(() => _filesystem.CreateFile(fileName)).ShouldThrow<DirectoryNotFoundException>();
+			new Action(() => _filesystem.CreateFile(fileName)).Should().Throw<DirectoryNotFoundException>();
 		}
 
 		[Test]
@@ -773,7 +773,7 @@ namespace System.Extensions.Test.IO
 		public void TestOpenRead1()
 		{
 			const string fileName = "stuff";
-			new Action(() => _filesystem.OpenRead(fileName)).ShouldThrow<FileNotFoundException>(
+			new Action(() => _filesystem.OpenRead(fileName)).Should().Throw<FileNotFoundException>(
 				"because there's no such file");
 		}
 
@@ -863,16 +863,16 @@ namespace System.Extensions.Test.IO
 				{
 					var unused = fileInfo.Length;
 				})
-				.ShouldThrow<FileNotFoundException>();
+				.Should().Throw<FileNotFoundException>();
 			new Action(() => _filesystem.FileLength(fileName))
-				.ShouldThrow<FileNotFoundException>();
+				.Should().Throw<FileNotFoundException>();
 		}
 
 		[Test]
 		public void TestWrite1()
 		{
 			new Action(() => _filesystem.Write("foo.dat", null))
-				.ShouldThrow<ArgumentNullException>();
+				.Should().Throw<ArgumentNullException>();
 		}
 
 		[Test]
@@ -899,7 +899,7 @@ namespace System.Extensions.Test.IO
 		public void TestWriteAllBytes1()
 		{
 			new Action(() => _filesystem.WriteAllBytes("foo.dat", null))
-				.ShouldThrow<ArgumentNullException>();
+				.Should().Throw<ArgumentNullException>();
 		}
 
 		[Test]
@@ -960,7 +960,7 @@ namespace System.Extensions.Test.IO
 		public void TestReadAllTextFileDoesNotExist()
 		{
 			new Action(() => _filesystem.ReadAllText("foo.dat"))
-				.ShouldThrow<FileNotFoundException>();
+				.Should().Throw<FileNotFoundException>();
 		}
 
 		[Test]
@@ -974,7 +974,7 @@ namespace System.Extensions.Test.IO
 		public void TestReadAllLinesFileDoesNotExist()
 		{
 			new Action(() => _filesystem.ReadAllLines("foo.dat"))
-				.ShouldThrow<FileNotFoundException>();
+				.Should().Throw<FileNotFoundException>();
 		}
 
 		[Test]
@@ -1037,8 +1037,8 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.CreateDirectory("SomeFolder");
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			using (var monitor = watcher.Monitor())
 			{
-				watcher.MonitorEvents();
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
 				_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
@@ -1048,7 +1048,7 @@ namespace System.Extensions.Test.IO
 				file.Should().NotBeNull();
 				file.Name.Should().EndWith("a.txt");
 
-				watcher.ShouldRaise(nameof(watcher.Changed));
+				monitor.Should().Raise(nameof(watcher.Changed));
 			}
 		}
 
@@ -1057,8 +1057,8 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.CreateDirectory("SomeFolder");
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			using (var monitor = watcher.Monitor())
 			{
-				watcher.MonitorEvents();
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
 				using (_filesystem.CreateFile("SomeFolder\\b.txt"))
@@ -1070,7 +1070,7 @@ namespace System.Extensions.Test.IO
 				file.Should().NotBeNull();
 				file.Name.Should().EndWith("b.txt");
 
-				watcher.ShouldRaise(nameof(watcher.Changed));
+				monitor.Should().Raise(nameof(watcher.Changed));
 			}
 		}
 
@@ -1079,8 +1079,8 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.CreateDirectory("SomeFolder");
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			using (var monitor = watcher.Monitor())
 			{
-				watcher.MonitorEvents();
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
 				using (_filesystem.OpenWrite("SomeFolder\\b.txt"))
@@ -1092,7 +1092,7 @@ namespace System.Extensions.Test.IO
 				file.Should().NotBeNull();
 				file.Name.Should().EndWith("b.txt");
 
-				watcher.ShouldRaise(nameof(watcher.Changed));
+				monitor.Should().Raise(nameof(watcher.Changed));
 			}
 		}
 
@@ -1101,13 +1101,13 @@ namespace System.Extensions.Test.IO
 		{
 			_filesystem.CreateDirectory("SomeFolder");
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			using (var monitor = watcher.Monitor())
 			{
-				watcher.MonitorEvents();
 				watcher.Files.Should().BeEmpty();
 
 				_filesystem.WriteAllBytes("a.txt", new byte[123]);
 				watcher.Files.Should().BeEmpty();
-				watcher.ShouldNotRaise(nameof(watcher.Changed));
+				monitor.Should().NotRaise(nameof(watcher.Changed));
 			}
 		}
 
@@ -1117,14 +1117,14 @@ namespace System.Extensions.Test.IO
 			_filesystem.CreateDirectory("SomeFolder");
 			_filesystem.WriteAllBytes("SomeFolder\\a.txt", new byte[123]);
 			using (var watcher = _filesystem.Watchdog.StartDirectoryWatch("SomeFolder"))
+			using (var monitor = watcher.Monitor())
 			{
-				watcher.MonitorEvents();
 				watcher.Property(x => x.Files).ShouldEventually().HaveCount(1);
 
 				_filesystem.DeleteFile("SomeFolder\\a.txt");
 				watcher.Property(x => x.Files).ShouldEventually().BeEmpty();
 
-				watcher.ShouldRaise(nameof(watcher.Changed));
+				monitor.Should().Raise(nameof(watcher.Changed));
 			}
 		}
 

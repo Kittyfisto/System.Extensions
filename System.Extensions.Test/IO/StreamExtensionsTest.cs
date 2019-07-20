@@ -10,7 +10,7 @@ namespace System.Extensions.Test.IO
 		[Test]
 		public void TestReadToEnd1()
 		{
-			new Action(() => ((Stream) null).ReadToEnd()).ShouldThrow<NullReferenceException>();
+			new Action(() => ((Stream) null).ReadToEnd()).Should().Throw<NullReferenceException>();
 		}
 
 		[Test]

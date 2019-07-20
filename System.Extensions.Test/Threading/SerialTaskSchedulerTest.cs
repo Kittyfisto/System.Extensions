@@ -59,7 +59,7 @@ namespace System.Extensions.Test.Threading
 				waitHandle.Set();
 				task1.Wait(TimeSpan.FromSeconds(1)).Should().BeTrue("because the first task should've finished by now");
 
-				new Action(() => task2.Wait(TimeSpan.FromSeconds(1))).ShouldThrow<TaskCanceledException>("because the second task should've been cancelled");
+				new Action(() => task2.Wait(TimeSpan.FromSeconds(1))).Should().Throw<TaskCanceledException>("because the second task should've been cancelled");
 				task2.IsCompleted.Should().BeTrue("because the second task should've been cancelled");
 				task2.IsCanceled.Should().BeTrue("because the second task should've been cancelled");
 				task2.IsFaulted.Should().BeFalse("becuase the second task should've been cancelled");
@@ -91,7 +91,7 @@ namespace System.Extensions.Test.Threading
 				waitHandle.Set();
 				task1.Wait(TimeSpan.FromSeconds(1)).Should().BeTrue("because the first task should've finished by now");
 
-				new Action(() => task2.Wait(TimeSpan.FromSeconds(1))).ShouldThrow<TaskCanceledException>("because the second task should've been cancelled");
+				new Action(() => task2.Wait(TimeSpan.FromSeconds(1))).Should().Throw<TaskCanceledException>("because the second task should've been cancelled");
 				task2.IsCompleted.Should().BeTrue("becuase the second task should've been cancelled");
 				task2.IsCanceled.Should().BeTrue("because the second task should've been cancelled");
 				task2.IsFaulted.Should().BeFalse("becuase the second task should've been cancelled");
@@ -124,7 +124,7 @@ namespace System.Extensions.Test.Threading
 				waitHandle.Set();
 				task1.Wait(TimeSpan.FromSeconds(1)).Should().BeTrue("because the first task should've finished by now");
 
-				new Action(() => task2.Wait(TimeSpan.FromSeconds(1))).ShouldThrow<TaskCanceledException>("because the second task should've been cancelled");
+				new Action(() => task2.Wait(TimeSpan.FromSeconds(1))).Should().Throw<TaskCanceledException>("because the second task should've been cancelled");
 				task2.IsCompleted.Should().BeTrue("becuase the second task should've been cancelled");
 				task2.IsCanceled.Should().BeTrue("because the second task should've been cancelled");
 				task2.IsFaulted.Should().BeFalse("becuase the second task should've been cancelled");
@@ -157,7 +157,7 @@ namespace System.Extensions.Test.Threading
 				waitHandle.Set();
 				task1.Wait(TimeSpan.FromSeconds(1)).Should().BeTrue("because the first task should've finished by now");
 
-				new Action(() => task2.Wait(TimeSpan.FromSeconds(1))).ShouldThrow<TaskCanceledException>("because the second task should've been cancelled");
+				new Action(() => task2.Wait(TimeSpan.FromSeconds(1))).Should().Throw<TaskCanceledException>("because the second task should've been cancelled");
 				task2.IsCompleted.Should().BeTrue("becuase the second task should've been cancelled");
 				task2.IsCanceled.Should().BeTrue("because the second task should've been cancelled");
 				task2.IsFaulted.Should().BeFalse("becuase the second task should've been cancelled");

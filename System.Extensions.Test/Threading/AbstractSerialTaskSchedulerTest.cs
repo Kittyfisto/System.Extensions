@@ -39,9 +39,9 @@ namespace System.Extensions.Test.Threading
 				task.Should().NotBeNull();
 
 				new Action(() => task.Wait(TimeSpan.FromSeconds(1)))
-					.ShouldThrow<AggregateException>()
+					.Should().Throw<AggregateException>()
 					.WithInnerException<UnauthorizedAccessException>()
-					.WithInnerMessage("Stuff");
+					.WithMessage("Stuff");
 			}
 		}
 
@@ -70,9 +70,9 @@ namespace System.Extensions.Test.Threading
 				task.Should().NotBeNull();
 
 				new Action(() => task.Wait(TimeSpan.FromSeconds(1)))
-					.ShouldThrow<AggregateException>()
+					.Should().Throw<AggregateException>()
 					.WithInnerException<UnauthorizedAccessException>()
-					.WithInnerMessage("Stuff");
+					.WithMessage("Stuff");
 			}
 		}
 

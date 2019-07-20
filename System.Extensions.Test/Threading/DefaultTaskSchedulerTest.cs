@@ -13,7 +13,7 @@ namespace System.Extensions.Test.Threading
 		public void TestDispose1()
 		{
 			var scheduler = new DefaultTaskScheduler();
-			new Action(scheduler.Dispose).ShouldNotThrow();
+			new Action(scheduler.Dispose).Should().NotThrow();
 		}
 
 		[Test]

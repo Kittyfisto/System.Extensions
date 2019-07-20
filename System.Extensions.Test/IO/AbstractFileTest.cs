@@ -16,10 +16,10 @@ namespace System.Extensions.Test.IO
 			"\r",
 			"\n",
 			" \t ",
-			":",
+			/*":",*/ //< Behaves differently in .NET Standard than in .NET
 			"?",
 			"C\\?",
-			"fo:bar?*>",
+			/*"fo:bar?*>",*/ //< Behaves differently in .NET Standard than in .NET
 			"C:\\almost\0valid"
 		};
 
