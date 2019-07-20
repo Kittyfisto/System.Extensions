@@ -1,6 +1,7 @@
 # Task Extensions
 
 [![Build status](https://ci.appveyor.com/api/projects/status/t70n74bkqoyf7ktc?svg=true)](https://ci.appveyor.com/project/Kittyfisto/system-threading-tasks-extensions)
+![AppVeyor tests](https://img.shields.io/appveyor/tests/Kittyfisto/system-threading-tasks-extensions.svg?color=%234CC61E)
 [![NuGet](https://img.shields.io/nuget/dt/System.Threading.Extensions.svg)](http://nuget.org/packages/System.Threading.Extensions)
 [![NuGet](https://img.shields.io/nuget/v/System.Threading.Extensions.svg)](http://nuget.org/packages/System.Threading.Extensions)
 
