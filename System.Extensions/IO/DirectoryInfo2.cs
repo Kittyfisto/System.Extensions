@@ -44,7 +44,7 @@ namespace System.IO
 			_root = root ?? this;
 			_parent = parent;
 			_fullName = fullName;
-			_name = Path.GetFileName(fullName);
+			_name = Path.GetFileName(Path2.RemoveTrailingSeparators(fullName));
 			if (string.IsNullOrEmpty(_name))
 				_name = fullName;
 		}

@@ -92,5 +92,16 @@ namespace System.IO
 			}
 			return false;
 		}
+
+		public static string RemoveTrailingSeparators(string fullName)
+		{
+			var separators = new[] {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar};
+			if (fullName.EndsWithAny(separators))
+			{
+				return fullName.Substring(0, fullName.Length - 1);
+			}
+
+			return fullName;
+		}
 	}
 }
