@@ -214,6 +214,12 @@ namespace System.IO
 		}
 
 		/// <inheritdoc />
+		public Stream Open(string path, FileMode mode, FileAccess access, FileShare share)
+		{
+			return new FileStream(path, mode, access, share);
+		}
+
+		/// <inheritdoc />
 		public Stream OpenRead(string path)
 		{
 			Path2.ThrowIfPathIsInvalid(path);

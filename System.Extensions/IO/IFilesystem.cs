@@ -201,6 +201,26 @@ namespace System.IO
 		Stream CreateFile(string path);
 
 		/// <summary>
+		///     Opens the given file.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <param name="mode"></param>
+		/// <param name="access"></param>
+		/// <param name="share"></param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentException"><paramref name="path"/> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by InvalidPathChars.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="path"/> is null.</exception>
+		/// <exception cref="PathTooLongException">The specified <paramref name="path"/> exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+		/// <exception cref="DirectoryNotFoundException">The specified <paramref name="path"/> is invalid, (for example, it is on an unmapped drive).</exception>
+		/// <exception cref="UnauthorizedAccessException"><paramref name="path"/> specified a directory.
+		/// -or-
+		/// The caller does not have the required permission.</exception>
+		/// <exception cref="FileNotFoundException">The file specified in <paramref name="path"/> was not found.</exception>
+		/// <exception cref="NotSupportedException"><paramref name="path"/> is in an invalid format.</exception>
+		/// <exception cref="IOException">An I/O error occurred while opening the file.</exception>
+		Stream Open(string path, FileMode mode, FileAccess access, FileShare share);
+
+		/// <summary>
 		///     Opens the given file for reading.
 		/// </summary>
 		/// <param name="path"></param>

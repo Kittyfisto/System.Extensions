@@ -769,6 +769,33 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestOpen_FileModeCreate_DoesNotExist()
+		{
+			_filesystem.FileExists("bar.txt").Should().BeFalse();
+
+			using (var stream = _filesystem.Open("bar.txt", FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+			{
+				stream.CanRead.Should().BeTrue();
+				stream.CanWrite.Should().BeTrue();
+				stream.Should().NotBeNull();
+			}
+			_filesystem.FileExists("bar.txt").Should().BeTrue();
+		}
+
+		[Test]
+		public void TestOpen_FileModeCreate_AlreadyExists()
+		{
+			_filesystem.WriteAllText("bar.txt", "Hello, World!");
+
+			using (var stream = _filesystem.Open("bar.txt", FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+			{
+				stream.Should().NotBeNull();
+				stream.Position.Should().Be(0);
+				stream.Length.Should().Be(0, "because FileMode.Create should have truncated the file");
+			}
+		}
+
+		[Test]
 		[Description("Verifies that OpenRead throws when the file doesn't exist")]
 		public void TestOpenRead1()
 		{

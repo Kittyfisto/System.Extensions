@@ -2,6 +2,7 @@
 using System.Diagnostics.Contracts;
 using System.IO.InMemory;
 using System.Linq;
+using System.Security.Permissions;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -335,6 +336,61 @@ namespace System.IO
 			_watchdog.NotifyWatchers();
 
 			return stream;
+		}
+
+		/// <inheritdoc />
+		public Stream Open(string path, FileMode mode, FileAccess access, FileShare share)
+		{
+			Stream stream;
+			switch (mode)
+			{
+				case FileMode.Open:
+					return OpenRead(path);
+				case FileMode.Append:
+					stream = OpenWrite(path);
+					try
+					{
+						stream.Position = stream.Length;
+						return stream;
+					}
+					catch (Exception)
+					{
+						stream.Dispose();
+						throw;
+					}
+				case FileMode.CreateNew:
+					if (FileExists(path))
+						throw new IOException($"The given file already exists: {path}");
+					return OpenWrite(path);
+				case FileMode.Truncate:
+					if (!FileExists(path))
+						throw new FileNotFoundException($"No such file: {path}");
+					stream = OpenWrite(path);
+					try
+					{
+						stream.SetLength(0);
+						return stream;
+					}
+					catch (Exception)
+					{
+						stream.Dispose();
+						throw;
+					}
+				case FileMode.Create:
+					stream = OpenWrite(path);
+					try
+					{
+						stream.SetLength(0);
+						return stream;
+					}
+					catch (Exception)
+					{
+						stream.Dispose();
+						throw;
+					}
+				default:
+					throw new NotImplementedException();
+			}
 		}
 
 		/// <inheritdoc />
