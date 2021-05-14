@@ -2,7 +2,6 @@
 using System.Diagnostics.Contracts;
 using System.IO.InMemory;
 using System.Linq;
-using System.Security.Permissions;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -56,19 +55,19 @@ namespace System.IO
 		/// <inheritdoc />
 		public DateTime FileCreationTimeUtc(string fullPath)
 		{
-			throw new NotImplementedException();
+			return GetFileInfo(fullPath).CreationTimeUtc;
 		}
 
 		/// <inheritdoc />
 		public DateTime FileLastAccessTimeUtc(string fullPath)
 		{
-			throw new NotImplementedException();
+			return GetFileInfo(fullPath).LastAccessTimeUtc;
 		}
 
 		/// <inheritdoc />
 		public DateTime FileLastWriteTimeUtc(string fullPath)
 		{
-			throw new NotImplementedException();
+			return GetFileInfo(fullPath).LastWriteTimeUtc;
 		}
 
 		/// <inheritdoc />
@@ -225,7 +224,7 @@ namespace System.IO
 			Path2.ThrowIfPathIsInvalid(fileName, nameof(fileName));
 
 			var path = CaptureFullPath(fileName);
-			return new FileInfo2(this, path);
+			return new InMemoryFileInfo(this, path);
 		}
 
 		/// <inheritdoc />
@@ -643,6 +642,52 @@ namespace System.IO
 			                       + "$";
 			var regex = new Regex(regexPattern);
 			return regex;
+		}
+
+		sealed class InMemoryFileInfo
+			: FileInfo2
+		{
+			private readonly InMemoryFilesystem _filesystem;
+
+			public InMemoryFileInfo(InMemoryFilesystem filesystem, string fullPath)
+				: base(filesystem, fullPath)
+			{
+				_filesystem = filesystem;
+			}
+
+			#region Overrides of FileInfo2
+
+			public override DateTime CreationTimeUtc
+			{
+				get
+				{
+					if (!_filesystem.TryGetFile(FullPath, out var file))
+						return new DateTime(1601, 01, 01);
+					return file.Created;
+				}
+			}
+
+			public override DateTime LastAccessTimeUtc
+			{
+				get
+				{
+					if (!_filesystem.TryGetFile(FullPath, out var file))
+						return new DateTime(1601, 01, 01);
+					return file.LastAccessed;
+				}
+			}
+
+			public override DateTime LastWriteTimeUtc
+			{
+				get
+				{
+					if (!_filesystem.TryGetFile(FullPath, out var file))
+						return new DateTime(1601, 01, 01);
+					return file.LastWritten;
+				}
+			}
+
+			#endregion
 		}
 	}
 }

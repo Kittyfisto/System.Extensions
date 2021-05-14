@@ -283,19 +283,19 @@ namespace System.IO
 		/// <inheritdoc />
 		public DateTime FileCreationTimeUtc(string fullPath)
 		{
-			return new FileInfo(fullPath).CreationTimeUtc;
+			return CaptureFile(fullPath).CreationTimeUtc;
 		}
 
 		/// <inheritdoc />
 		public DateTime FileLastAccessTimeUtc(string fullPath)
 		{
-			return new FileInfo(fullPath).LastAccessTimeUtc;
+			return CaptureFile(fullPath).LastAccessTimeUtc;
 		}
 
 		/// <inheritdoc />
 		public DateTime FileLastWriteTimeUtc(string fullPath)
 		{
-			return new FileInfo(fullPath).LastWriteTimeUtc;
+			return CaptureFile(fullPath).LastWriteTimeUtc;
 		}
 
 		/// <summary>
@@ -396,13 +396,57 @@ namespace System.IO
 		{
 			Log.DebugFormat("Capturing properties of '{0}'...", fullName);
 
-			return new FileInfo2(this, fullName);
+			return new ActualFileInfo(this, fullName);
 		}
 
 		internal IDirectoryInfo CreateDirectoryInfo(string path)
 		{
 			Log.DebugFormat("Capturing properties of '{0}'...", path);
 			return DirectoryInfo2.Create(this, path);
+		}
+
+		sealed class ActualFileInfo
+			: FileInfo2
+		{
+			private FileInfo _fileInfo;
+
+			public ActualFileInfo(IFilesystem filesystem, string fullPath)
+				: base(filesystem, fullPath)
+			{}
+
+			#region Overrides of FileInfo2
+
+			public override DateTime CreationTimeUtc
+			{
+				get
+				{
+					if (_fileInfo == null)
+						_fileInfo = new FileInfo(FullPath);
+					return _fileInfo.CreationTimeUtc;
+				}
+			}
+
+			public override DateTime LastAccessTimeUtc
+			{
+				get
+				{
+					if (_fileInfo == null)
+						_fileInfo = new FileInfo(FullPath);
+					return _fileInfo.LastAccessTimeUtc;
+				}
+			}
+
+			public override DateTime LastWriteTimeUtc
+			{
+				get
+				{
+					if (_fileInfo == null)
+						_fileInfo = new FileInfo(FullPath);
+					return _fileInfo.LastWriteTimeUtc;
+				}
+			}
+
+			#endregion
 		}
 	}
 }

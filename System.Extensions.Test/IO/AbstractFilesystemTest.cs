@@ -769,6 +769,29 @@ namespace System.Extensions.Test.IO
 		}
 
 		[Test]
+		public void TestTimeCreated_DoesNotExist()
+		{
+			_filesystem.FileExists("foo").Should().BeFalse();
+			_filesystem.FileCreationTimeUtc("foo").Should().Be(new DateTime(1601, 01, 01));
+			_filesystem.GetFileInfo("foo").CreationTimeUtc.Should().Be(new DateTime(1601, 01, 01));
+		}
+
+		[Test]
+		public void TestTimeCreated_DoesExist()
+		{
+			var before = DateTime.UtcNow;
+			_filesystem.CreateFile("foo");
+			var after = DateTime.UtcNow;
+
+			var created = _filesystem.FileCreationTimeUtc("foo");
+			created.Should().BeOnOrAfter(before);
+			created.Should().BeOnOrBefore(after);
+
+			var created2 = _filesystem.GetFileInfo("foo").CreationTimeUtc;
+			created2.Should().Be(created);
+		}
+
+		[Test]
 		public void TestOpen_FileModeCreate_DoesNotExist()
 		{
 			_filesystem.FileExists("bar.txt").Should().BeFalse();

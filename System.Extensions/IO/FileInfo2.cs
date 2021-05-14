@@ -1,6 +1,6 @@
 ﻿namespace System.IO
 {
-	internal sealed class FileInfo2
+	internal abstract class FileInfo2
 		: IFileInfo
 	{
 		private readonly IFilesystem _filesystem;
@@ -8,13 +8,10 @@
 		private readonly string _fullPath;
 		private readonly string _directoryPath;
 
-		public FileInfo2(IFilesystem filesystem,
-		                 string fullPath)
+		protected FileInfo2(IFilesystem filesystem,
+		                    string fullPath)
 		{
-			if (filesystem == null)
-				throw new ArgumentNullException(nameof(filesystem));
-
-			_filesystem = filesystem;
+			_filesystem = filesystem ?? throw new ArgumentNullException(nameof(filesystem));
 			_fullPath = fullPath;
 			_directoryPath = Path.GetDirectoryName(fullPath);
 			_name = Path.GetFileName(fullPath);
@@ -72,19 +69,19 @@
 			}
 		}
 
-		public DateTime CreationTimeUtc
+		public abstract DateTime CreationTimeUtc
 		{
-			get { return _filesystem.FileCreationTimeUtc(_fullPath); }
+			get;
 		}
 
-		public DateTime LastAccessTimeUtc
+		public abstract DateTime LastAccessTimeUtc
 		{
-			get { return _filesystem.FileLastAccessTimeUtc(_fullPath); }
+			get;
 		}
 
-		public DateTime LastWriteTimeUtc
+		public abstract DateTime LastWriteTimeUtc
 		{
-			get { return _filesystem.FileLastWriteTimeUtc(_fullPath); }
+			get;
 		}
 
 		public Stream Create()
