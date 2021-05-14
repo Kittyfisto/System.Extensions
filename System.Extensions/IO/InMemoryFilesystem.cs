@@ -53,6 +53,24 @@ namespace System.IO
 		public IFilesystemWatchdog Watchdog => _watchdog;
 
 		/// <inheritdoc />
+		public DateTime FileCreationTimeUtc(string fullPath)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc />
+		public DateTime FileLastAccessTimeUtc(string fullPath)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc />
+		public DateTime FileLastWriteTimeUtc(string fullPath)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc />
 		public string CurrentDirectory { get; set; }
 
 		/// <inheritdoc />

@@ -126,6 +126,27 @@ namespace System.IO
 		#region Files
 
 		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="fullPath"></param>
+		/// <returns></returns>
+		DateTime FileCreationTimeUtc(string fullPath);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="fullPath"></param>
+		/// <returns></returns>
+		DateTime FileLastAccessTimeUtc(string fullPath);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="fullPath"></param>
+		/// <returns></returns>
+		DateTime FileLastWriteTimeUtc(string fullPath);
+
+		/// <summary>
 		///     Obtains information about the given file.
 		/// </summary>
 		/// <param name="fileName"></param>

@@ -72,6 +72,21 @@
 			}
 		}
 
+		public DateTime CreationTimeUtc
+		{
+			get { return _filesystem.FileCreationTimeUtc(_fullPath); }
+		}
+
+		public DateTime LastAccessTimeUtc
+		{
+			get { return _filesystem.FileLastAccessTimeUtc(_fullPath); }
+		}
+
+		public DateTime LastWriteTimeUtc
+		{
+			get { return _filesystem.FileLastWriteTimeUtc(_fullPath); }
+		}
+
 		public Stream Create()
 		{
 			return _filesystem.CreateFile(_fullPath);

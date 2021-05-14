@@ -274,6 +274,24 @@ namespace System.IO
 		/// <inheritdoc />
 		public IFilesystemWatchdog Watchdog => _watchdog;
 
+		/// <inheritdoc />
+		public DateTime FileCreationTimeUtc(string fullPath)
+		{
+			return new FileInfo(fullPath).CreationTimeUtc;
+		}
+
+		/// <inheritdoc />
+		public DateTime FileLastAccessTimeUtc(string fullPath)
+		{
+			return new FileInfo(fullPath).LastAccessTimeUtc;
+		}
+
+		/// <inheritdoc />
+		public DateTime FileLastWriteTimeUtc(string fullPath)
+		{
+			return new FileInfo(fullPath).LastWriteTimeUtc;
+		}
+
 		/// <summary>
 		///     **Always** equals <see cref="Directory.GetCurrentDirectory" />.
 		///     Changing this property changes <see cref="Directory.SetCurrentDirectory" />.

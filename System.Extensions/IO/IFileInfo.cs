@@ -44,6 +44,21 @@
 		bool Exists { get; }
 
 		/// <summary>
+		///     The time the file was created, in in coordinated universal time (UTC).
+		/// </summary>
+		DateTime CreationTimeUtc { get; }
+
+		/// <summary>
+		///     The time the file was last accessed, in in coordinated universal time (UTC).
+		/// </summary>
+		DateTime LastAccessTimeUtc { get; }
+
+		/// <summary>
+		///     The time the file was last written to, in in coordinated universal time (UTC).
+		/// </summary>
+		DateTime LastWriteTimeUtc { get; }
+
+		/// <summary>
 		///     Creates a file in a particular path.  If the file exists, it is replaced.
 		///     The file is opened with ReadWrite accessand cannot be opened by another 
 		///     application until it has been closed.  An IOException is thrown if the 
