@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>net472;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>System.Extensions.Test</AssemblyName>
     <RootNamespace>System.Extensions.Test</RootNamespace>
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\System.Extensions\System.Extensions.NETStandard.csproj" />
+    <ProjectReference Include="..\System.Extensions\System.Extensions.csproj" />
   </ItemGroup>
 
 </Project>
