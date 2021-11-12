@@ -6,22 +6,35 @@ namespace System.Extensions.Test.IO
 {
 	public abstract class AbstractFileTest
 	{
+#if NET
 		public static IEnumerable<string> InvalidPaths => new[]
 		{
 			null,
 			"",
 			" ",
 			"  ",
-			"\t",
-			"\r",
-			"\n",
-			" \t ",
 			/*":",*/ //< Behaves differently in .NET Standard than in .NET
-			"?",
-			"C\\?",
 			/*"fo:bar?*>",*/ //< Behaves differently in .NET Standard than in .NET
 			"C:\\almost\0valid"
 		};
+#else
+		public static IEnumerable<string> InvalidPaths => new[]
+        {
+            null,
+            "",
+            " ",
+            "  ",
+            "\t",
+            "\r",
+            "\n",
+            " \t ",
+            /*":",*/ //< Behaves differently in .NET Standard than in .NET
+            "?",
+            "C\\?",
+            /*"fo:bar?*>",*/ //< Behaves differently in .NET Standard than in .NET
+            "C:\\almost\0valid"
+        };
+#endif
 
 		protected static string AssemblyFilePath
 		{

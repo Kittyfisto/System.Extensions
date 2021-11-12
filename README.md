@@ -7,7 +7,7 @@
 
 Several extensions to the awesome Task classes of the .NET Framework.
 
-## Usage
+## Tasks
 
 This library features an ITaskScheduler interface that allows the creation of periodic- and one shot tasks.
 Periodic tasks are meant to be used as a replacement for timers. Using periodic tasks allows for far better unit testing
@@ -20,9 +20,20 @@ void SomeMethod(ITaskScheduler scheduler)
 }
 ```
 
+## Filesystem
+
+This libary offers an [`IFilesystem`](src/System.Extensions/IO/IFilesystem.cs) interface which offers methods with an often identical syntax that .NET natively offers through
+classes such as `File`, `FileInfo`, `DirectoryInfo`, etc... The purpose of this interface is to offer an indirection which allows simpler unit testing of code which interacts
+with the filesystem. While production code will most likely use an instance of [`Filesystem`](src/System.Extensions/IO/Filesystem.cs), unit tests may either mock the
+`IFilesystem` interface themselves (using Google.Moq or equivalent frameworks) or use [`InMemoryFileSystem`](src/System.Extensions/IO/InMemoryFilesystem.cs) which stores the contents
+of the filesystem it represents in memory instead.  
+The benefit of using this interface is two-fold:
+- Classes which interact with the filesystem can be easily unit tested
+- Tests which would interact with the real filesystem now interact with an InMemoryFileSystem, which isolates tests from each other, improving robustness *and* test performance
+
 ## Credits
 
-Simon Mießler 2019
+Simon Mießler 2021
 
 ## License
 

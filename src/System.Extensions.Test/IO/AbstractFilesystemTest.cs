@@ -784,7 +784,7 @@ namespace System.Extensions.Test.IO
 			var after = DateTime.UtcNow;
 
 			var created = _filesystem.FileCreationTimeUtc("foo");
-			created.Should().BeCloseTo(before, TimeSpan.FromMilliseconds(10));
+			created.Should().BeCloseTo(before, TimeSpan.FromMilliseconds(20));
 
 			var created2 = _filesystem.GetFileInfo("foo").CreationTimeUtc;
 			created2.Should().Be(created);

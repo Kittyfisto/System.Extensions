@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <AssemblyName>System.Extensions</AssemblyName>
+    <RootNamespace>System.Extensions</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	
+	<PackageId>System.Threading.Extensions</PackageId>
+	<Authors>Simon Mießler</Authors>
+	<PackageTags>.NET Tasks Timers Schedulers AsyncIO Folderwatch</PackageTags>
+	<Description>This library provides interfaces and implementations for Task- and Filesystem operations. It ships implementations which can be used in unit testing,
+	for example to achieve deterministic scheduling when writing tests involving tasks, timers. Furthermore, it ships an implementation which implements an InMemoryFileSystem
+	which can be used to write unit tests for classes which interact with the filesystem, without involving any disk I/O, thus speeding up tests and improving isolation
+	of unit tests from failures / parallel executions.</Description>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageProjectUrl>https://github.com/Kittyfisto/System.Extensions</PackageProjectUrl>
+	<Version>2.0.0.0</Version>
+	<AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\..\bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\..\bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.12" />
+  </ItemGroup>
+</Project>

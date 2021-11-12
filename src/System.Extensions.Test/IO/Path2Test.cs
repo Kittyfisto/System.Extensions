@@ -8,6 +8,14 @@ namespace System.Extensions.Test.IO
 	[TestFixture]
 	public sealed class Path2Test
 	{
+#if NET
+        public static IEnumerable<string> InvalidPaths => new[]
+        {
+            null,
+            "",
+            "\0"
+        };
+#else
 		public static IEnumerable<string> InvalidPaths => new[]
 		{
 			null,
@@ -17,6 +25,7 @@ namespace System.Extensions.Test.IO
 			@"X:\>",
 			"\0"
 		};
+#endif
 
 		public static IEnumerable<string> ValidPaths => new[]
 		{
