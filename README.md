@@ -22,10 +22,10 @@ void SomeMethod(ITaskScheduler scheduler)
 
 ## Filesystem
 
-This libary offers an [`IFilesystem`](src\System.Extensions\IFilesystem.cs) interface which offers methods with an often identical syntax that .NET natively offers through
+This libary offers an [`IFilesystem`](src/System.Extensions/IO/IFilesystem.cs) interface which offers methods with an often identical syntax that .NET natively offers through
 classes such as `File`, `FileInfo`, `DirectoryInfo`, etc... The purpose of this interface is to offer an indirection which allows simpler unit testing of code which interacts
-with the filesystem. While production code will most likely use an instance of [`Filesystem`](src\System.Extensions\Filesystem.cs), unit tests may either mock the
-`IFilesystem` interface themselves (using Google.Moq or equivalent frameworks) or use [`InMemoryFileSystem`](src\System.Extensions\InMemoryFileSystem.cs) which stores the contents
+with the filesystem. While production code will most likely use an instance of [`Filesystem`](src/System.Extensions/IO/Filesystem.cs), unit tests may either mock the
+`IFilesystem` interface themselves (using Google.Moq or equivalent frameworks) or use [`InMemoryFileSystem`](src/System.Extensions/IO/InMemoryFilesystem.cs) which stores the contents
 of the filesystem it represents in memory instead.  
 The benefit of using this interface is two-fold:
 - Classes which interact with the filesystem can be easily unit tested
