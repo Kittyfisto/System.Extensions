@@ -66,6 +66,7 @@ namespace System.Extensions.Test.IO
 			new Action(() => _filesystem.EnumerateFiles(null, searchPattern)).Should().Throw<ArgumentNullException>();
 		}
 
+#if NETFRAMEWORK
 		[Test]
 		[Description("Verifies that both IFilesystem.EnumerateFiles and Directory.EnumerateFiles throw identical exceptions")]
 		public void TestEnumerateFiles6()
@@ -73,6 +74,7 @@ namespace System.Extensions.Test.IO
 			new Action(() => Directory.EnumerateFiles(AssemblyFilePath)).Should().Throw<IOException>();
 			new Action(() => _filesystem.EnumerateFiles(AssemblyFilePath)).Should().Throw<IOException>();
 		}
+#endif
 
 		[Test]
 		[Description("Verifies that EnumerateDirectories throws the same exception when given invalid paths")]
