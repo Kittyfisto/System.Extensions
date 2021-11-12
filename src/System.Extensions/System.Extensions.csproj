@@ -4,6 +4,15 @@
     <AssemblyName>System.Extensions</AssemblyName>
     <RootNamespace>System.Extensions</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	
+	<PackageId>System.Threading.Extensions</PackageId>
+	<Authors>Kittyfisto</Authors>
+	<PackageTags>.NET Tasks Timers Schedulers AsyncIO Folderwatch</PackageTags>
+	<Description>This library provides interfaces and implementations for Task- and Filesystem operations. It ships implementations which can be used in unit testing,
+	for example to achieve deterministic scheduling when writing tests involving tasks, timers. Furthermore, it ships an implementation which implements an InMemoryFileSystem
+	which can be used to write unit tests for classes which interact with the filesystem, without involving any disk I/O, thus speeding up tests and improving isolation
+	of unit tests from failures / parallel executions.</Description>
+	<PackageLicenseFile>../../License</PackageLicenseFile>
 	<Version>2.0.0.0</Version>
 	<AssemblyVersion>2.0.0.0</AssemblyVersion>
     <FileVersion>2.0.0.0</FileVersion>
