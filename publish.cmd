@@ -1,15 +1,17 @@
 @setlocal
 @echo off
+SETLOCAL ENABLEDELAYEDEXPANSION
 
 echo Files in directory:
 dir . /a-d
 
 echo Looking for nuget package...
-FOR %%F IN (System.Threading.Extensions.*.nupkg) DO (
+FOR %%F IN (Bin/Release/System.Threading.Extensions.*.nupkg) DO (
  set NUGET_PACKAGE=%%F
 )
 
-if not %NUGET_PACKAGE%=="" (
+if not "%NUGET_PACKAGE%"=="" (
+	echo Found nuget package: %NUGET_PACKAGE%
 	if "%APPVEYOR_REPO_BRANCH%"=="master" (
 		echo Publishing nuget package...
 		@nuget push -Source https://api.nuget.org/v3/index.json -ApiKey %NUGET_API_KEY% %NUGET_PACKAGE%
