@@ -14,6 +14,7 @@
 	which can be used to write unit tests for classes which interact with the filesystem, without involving any disk I/O, thus speeding up tests and improving isolation
 	of unit tests from failures / parallel executions.</Description>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageProjectUrl>https://github.com/Kittyfisto/System.Extensions</PackageProjectUrl>
 	<Version>2.0.0.0</Version>
 	<AssemblyVersion>2.0.0.0</AssemblyVersion>
     <FileVersion>2.0.0.0</FileVersion>
